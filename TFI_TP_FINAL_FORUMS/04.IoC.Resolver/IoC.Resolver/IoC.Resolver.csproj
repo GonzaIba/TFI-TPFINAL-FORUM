@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\02.Core\Core.Business\Core.Business.csproj" />
+    <ProjectReference Include="..\..\02.Core\Core.Contracts\Core.Contracts.csproj" />
+    <ProjectReference Include="..\..\03.Infrastructure\Infrastructure.Data.SQL\Infrastructure.Data.SQL.csproj" />
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.EmailService\CrossCutting.EmailService.csproj" />
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.StorageService\CrossCutting.StorageService.csproj" />
+  </ItemGroup>
+
+</Project>

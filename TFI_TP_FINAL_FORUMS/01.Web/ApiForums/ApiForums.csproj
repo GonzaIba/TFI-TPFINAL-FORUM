@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.10" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.MongoDB" Version="5.3.1" />
+    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="6.3.0" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\02.Core\Core.Business\Core.Business.csproj" />
+    <ProjectReference Include="..\..\02.Core\Core.Contracts\Core.Contracts.csproj" />
+    <ProjectReference Include="..\..\02.Core\Core.Domain\Core.Domain.csproj" />
+    <ProjectReference Include="..\..\03.Infrastructure\Infrastructure.Data.SQL\Infrastructure.Data.SQL.csproj" />
+    <ProjectReference Include="..\..\04.IoC.Resolver\IoC.Resolver\IoC.Resolver.csproj" />
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.EmailService\CrossCutting.EmailService.csproj" />
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Extensions\CrossCutting.Extensions.csproj" />
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Helpers\CrossCutting.Helpers.csproj" />
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.StorageService\CrossCutting.StorageService.csproj" />
+  </ItemGroup>
+
+</Project>

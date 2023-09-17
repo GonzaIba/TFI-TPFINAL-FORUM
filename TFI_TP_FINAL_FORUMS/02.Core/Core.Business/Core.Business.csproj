@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.60.0" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.60.0.3043" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.ML" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.EmailService\CrossCutting.EmailService.csproj" />
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Extensions\CrossCutting.Extensions.csproj" />
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Helpers\CrossCutting.Helpers.csproj" />
+    <ProjectReference Include="..\Core.Contracts\Core.Contracts.csproj" />
+    <ProjectReference Include="..\Core.Domain\Core.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

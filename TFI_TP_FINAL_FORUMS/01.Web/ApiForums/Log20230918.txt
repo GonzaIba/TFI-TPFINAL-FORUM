@@ -1,0 +1,96 @@
+2023-09-18 11:02:49.229 -03:00 [INF] BackgroundService Running
+2023-09-18 13:31:33.479 -03:00 [INF] BackgroundService Running
+2023-09-18 13:34:00.498 -03:00 [INF] OK
+2023-09-18 13:36:15.658 -03:00 [INF] OK
+2023-09-18 13:48:23.430 -03:00 [INF] BackgroundService Running
+2023-09-18 13:49:21.013 -03:00 [INF] BackgroundService Running
+2023-09-18 13:51:06.724 -03:00 [INF] BackgroundService Running
+2023-09-18 13:51:30.030 -03:00 [INF] BackgroundService Running
+2023-09-18 13:51:54.277 -03:00 [INF] OK
+2023-09-18 14:01:17.876 -03:00 [INF] BackgroundService Running
+2023-09-18 14:03:09.636 -03:00 [INF] BackgroundService Running
+2023-09-18 14:04:34.857 -03:00 [INF] BackgroundService Running
+2023-09-18 14:06:48.539 -03:00 [INF] BackgroundService Running
+2023-09-18 14:07:57.623 -03:00 [INF] BackgroundService Running
+2023-09-18 14:08:21.496 -03:00 [INF] BackgroundService Running
+2023-09-18 14:09:12.706 -03:00 [INF] BackgroundService Running
+2023-09-18 14:12:08.982 -03:00 [INF] BackgroundService Running
+2023-09-18 14:14:03.702 -03:00 [INF] BackgroundService Running
+2023-09-18 14:16:24.087 -03:00 [INF] BackgroundService Running
+2023-09-18 14:16:39.774 -03:00 [ERR] Error mapping types.
+
+Mapping types:
+List`1 -> IEnumerable`1
+System.Collections.Generic.List`1[[Core.Domain.Models.PublicacionModel, Core.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]] -> System.Collections.Generic.IEnumerable`1[[Core.Domain.Response.PublicacionesResponse, Core.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+AutoMapper.AutoMapperMappingException: Error mapping types.
+
+Mapping types:
+List`1 -> IEnumerable`1
+System.Collections.Generic.List`1[[Core.Domain.Models.PublicacionModel, Core.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]] -> System.Collections.Generic.IEnumerable`1[[Core.Domain.Response.PublicacionesResponse, Core.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+ ---> AutoMapper.AutoMapperMappingException: Missing type map configuration or unsupported mapping.
+
+Mapping types:
+PublicacionModel -> PublicacionesResponse
+Core.Domain.Models.PublicacionModel -> Core.Domain.Response.PublicacionesResponse
+   at lambda_method35(Closure, PublicacionModel, PublicacionesResponse, ResolutionContext)
+   at lambda_method34(Closure, Object, IEnumerable`1, ResolutionContext)
+   --- End of inner exception stack trace ---
+   at lambda_method34(Closure, Object, IEnumerable`1, ResolutionContext)
+   at ApiForums.Controllers.PublicacionesController.ObtenerPublicaciones() in D:\Repositorios-SmartGit\TFI-TPFINAL-FORUM\TFI_TP_FINAL_FORUMS\01.Web\ApiForums\Controllers\PublicacionesController.cs:line 58
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ApiForums.Middleware.ExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Repositorios-SmartGit\TFI-TPFINAL-FORUM\TFI_TP_FINAL_FORUMS\01.Web\ApiForums\Middleware\ExceptionMiddleware.cs:line 28
+2023-09-18 14:17:26.368 -03:00 [INF] BackgroundService Running
+2023-09-18 14:17:32.121 -03:00 [ERR] Error mapping types.
+
+Mapping types:
+EntityQueryable`1 -> IEnumerable`1
+Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[[Core.Domain.Models.PublicacionModel, Core.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]] -> System.Collections.Generic.IEnumerable`1[[Core.Domain.Response.PublicacionesResponse, Core.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+AutoMapper.AutoMapperMappingException: Error mapping types.
+
+Mapping types:
+EntityQueryable`1 -> IEnumerable`1
+Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[[Core.Domain.Models.PublicacionModel, Core.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]] -> System.Collections.Generic.IEnumerable`1[[Core.Domain.Response.PublicacionesResponse, Core.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+ ---> AutoMapper.AutoMapperMappingException: Missing type map configuration or unsupported mapping.
+
+Mapping types:
+PublicacionModel -> PublicacionesResponse
+Core.Domain.Models.PublicacionModel -> Core.Domain.Response.PublicacionesResponse
+   at lambda_method35(Closure, PublicacionModel, PublicacionesResponse, ResolutionContext)
+   at lambda_method19(Closure, Object, IEnumerable`1, ResolutionContext)
+   --- End of inner exception stack trace ---
+   at lambda_method19(Closure, Object, IEnumerable`1, ResolutionContext)
+   at ApiForums.Controllers.PublicacionesController.ObtenerPublicaciones() in D:\Repositorios-SmartGit\TFI-TPFINAL-FORUM\TFI_TP_FINAL_FORUMS\01.Web\ApiForums\Controllers\PublicacionesController.cs:line 58
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ApiForums.Middleware.ExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Repositorios-SmartGit\TFI-TPFINAL-FORUM\TFI_TP_FINAL_FORUMS\01.Web\ApiForums\Middleware\ExceptionMiddleware.cs:line 28
+2023-09-18 14:18:05.284 -03:00 [INF] BackgroundService Running
+2023-09-18 14:18:59.588 -03:00 [INF] BackgroundService Running
+2023-09-18 14:19:15.977 -03:00 [INF] OK
+2023-09-18 16:20:33.066 -03:00 [INF] OK
+2023-09-18 16:21:26.781 -03:00 [INF] OK
+2023-09-18 16:44:20.327 -03:00 [INF] OK
+2023-09-18 17:07:55.811 -03:00 [INF] OK
+2023-09-18 17:12:48.454 -03:00 [INF] OK

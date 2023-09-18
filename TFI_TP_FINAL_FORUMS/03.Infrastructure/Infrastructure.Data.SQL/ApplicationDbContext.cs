@@ -1,4 +1,5 @@
-﻿using Core.Domain.IdentityModels;
+﻿using Core.Domain.GenericEntityClass;
+using Core.Domain.IdentityModels;
 using CrossCutting.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -22,12 +23,13 @@ namespace Infrastructure.Data.SQL
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly)
                 .SetPropertyDefaultSqlValue("CreateDate", "getdate()")
                 .SetPropertyDefaultValue<bool>("Active", true)
-                .SetPropertyQueryFilter("Active", true);
+                .SetPropertyQueryFilter("Active", true)
+                .ConfigureGenericProperties(typeof(GenericEntity));
+            
+            base.OnModelCreating(modelBuilder);
         }
 
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

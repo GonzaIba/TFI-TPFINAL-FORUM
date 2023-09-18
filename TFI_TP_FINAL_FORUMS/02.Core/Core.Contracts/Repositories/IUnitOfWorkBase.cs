@@ -16,5 +16,7 @@ namespace Core.Contracts.Repositories
         Task<int> SaveChangesAsync();
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+
+        Task<bool> Complete();
     }
 }

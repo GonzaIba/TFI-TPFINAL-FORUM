@@ -58,6 +58,11 @@ namespace Infrastructure.Data.SQL.UoW
         {
             return await _context.SaveChangesAsync(cancellationToken);
         }
+        
+        public async Task<bool> Complete()
+        {
+            return await _context.SaveChangesAsync() > 0;
+        }
 
         private bool disposed = false;
 

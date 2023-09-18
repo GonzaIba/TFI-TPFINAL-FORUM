@@ -50,6 +50,12 @@ namespace Core.Business.Services
             return Task.Run(() => _repository.TableNoTracking.AsEnumerable<T>());
         }
 
+        public virtual async Task<IEnumerable<T>> Get(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = "", bool ignoreQueryFilters = false, bool tracking = false)
+        {
+            var result = await _repository.Get(filter, orderBy, includeProperties, ignoreQueryFilters, tracking);
+            return result;
+        }
+
         protected async Task<T> GetByIdAsync(Expression<Func<T, bool>> func)
         {
             var result = (await _repository.Get(func)).FirstOrDefault();
@@ -57,14 +63,14 @@ namespace Core.Business.Services
             return result;
         }
 
-        public virtual IEnumerable<T> GetPagedElements<S>(
+        public virtual async Task<IEnumerable<T>> GetPagedElements<S>(
             int pageIndex,
             int pageCount,
             Expression<Func<T, S>> orderByExpression,
             bool ascending = true,
             Expression<Func<T, bool>> filter = null)
         {
-            return _repository.GetPagedElements(pageIndex, pageCount, orderByExpression, ascending, filter);
+            return await _repository.GetPagedElements(pageIndex, pageCount, orderByExpression, ascending, filter);
         }
 
         public async Task<bool> CreateAsync(IEnumerable<T> entities)

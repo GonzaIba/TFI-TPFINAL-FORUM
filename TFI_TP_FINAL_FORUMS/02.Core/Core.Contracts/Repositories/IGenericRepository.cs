@@ -60,7 +60,7 @@ namespace Core.Contracts.Repositories
             bool ignoreQueryFilters = false,
             bool tracking = true);
 
-        public IEnumerable<T> GetPagedElements<S>(
+        public Task<IEnumerable<T>> GetPagedElements<S>(
             int pageIndex,
             int pageCount,
             Expression<Func<T, S>> orderByExpression,

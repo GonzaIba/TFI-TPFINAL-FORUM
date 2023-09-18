@@ -20,11 +20,18 @@ namespace Core.Contracts.Services
 
         public Task UpdateAsync(T entity);
 
-        public IEnumerable<T> GetPagedElements<S>(
+        public Task<IEnumerable<T>> GetPagedElements<S>(
             int pageIndex,
             int pageCount,
             Expression<Func<T, S>> orderByExpression,
             bool ascending,
             Expression<Func<T, bool>> filter = null);
+
+        public Task<IEnumerable<T>> Get(
+        Expression<Func<T, bool>> filter = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+        string includeProperties = "",
+        bool ignoreQueryFilters = false,
+        bool tracking = true);
     }
 }

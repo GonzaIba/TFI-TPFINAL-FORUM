@@ -172,7 +172,7 @@ namespace Infrastructure.Data.SQL.Repositories
             return result.FirstOrDefault();
         }
 
-        public virtual IEnumerable<T> GetPagedElements<S>(
+        public virtual async Task<IEnumerable<T>> GetPagedElements<S>(
             int pageIndex,
             int pageCount,
             Expression<Func<T, S>> orderByExpression,

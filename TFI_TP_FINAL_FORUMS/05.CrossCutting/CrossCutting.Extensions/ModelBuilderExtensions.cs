@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Principal;
 using System.Text;
 
 namespace CrossCutting.Extensions
@@ -45,6 +46,29 @@ namespace CrossCutting.Extensions
                     entityType.SetQueryFilter(filter);
                 }
             }
+            return builder;
+        }
+
+        public static ModelBuilder ConfigureGenericProperties(this ModelBuilder builder, Type genericEntity)
+        {
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                // Verificar si la entidad hereda de GenericEntity
+                if (genericEntity.IsAssignableFrom(entityType.ClrType))
+                {
+                    try
+                    {
+                        //builder.Entity(entityType.ClrType).Property("Active").IsRequired(true).HasColumnType("bit");
+                        //builder.Entity(entityType.ClrType).Property("CreateDate").IsRequired(true).HasColumnType("datetime");
+                        //builder.Entity(entityType.ClrType).Property("UpdateDate").IsRequired(false).HasColumnType("datetime");
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+                }
+            }
+
             return builder;
         }
 

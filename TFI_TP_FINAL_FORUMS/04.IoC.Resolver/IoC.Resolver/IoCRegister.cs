@@ -15,7 +15,6 @@ using CrossCutting.StorageService.Configurations;
 using CrossCutting.StorageService.Contracts;
 using CrossCutting.StorageService.Factory;
 using CrossCutting.StorageService.Services;
-using CrossCutting.ReCaptcha;
 
 namespace IoC.Resolver
 {
@@ -59,14 +58,6 @@ namespace IoC.Resolver
             services.AddConfig<FileSystemStorageConfiguration>(configuration, nameof(GenericStorageConfiguration) + "." + nameof(FileSystemStorageConfiguration));
             services.AddConfig<GoogleCloudStorageConfiguration>(configuration, nameof(GenericStorageConfiguration) + "." + nameof(GoogleCloudStorageConfiguration));
             services.AddConfig<AzureBlobStorageConfiguration>(configuration, nameof(GenericStorageConfiguration) + "." + nameof(AzureBlobStorageConfiguration));
-
-            return services;
-        }
-
-        private static IServiceCollection RegisterRecaptcha(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddConfig<RecaptchaConfiguration>(configuration, nameof(RecaptchaConfiguration));
-            services.AddScoped<IRecaptchaService, RecaptchaService>();
 
             return services;
         }

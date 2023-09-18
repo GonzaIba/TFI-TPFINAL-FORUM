@@ -16,6 +16,8 @@ using Core.Business.Services;
 using Microsoft.ML;
 using ApiForums.Mapping;
 using ApiForums.StartupConfiguration;
+using Api.StartupConfiguration;
+using ApiForums.Middleware;
 
 internal class Program
 {
@@ -40,6 +42,7 @@ internal class Program
         #region Configure Personalized
         builder.Services.ConfigureIoC(builder.Configuration);
         builder.Services.ConfigureLogger(builder?.Configuration);
+        builder.Services.ConfigureSwagger(builder?.Configuration);
         builder.Services.AddHttpContextAccessor();
         //builder.Services.TryAddScoped<SignInManager<Users>>();
         #endregion
@@ -60,27 +63,7 @@ internal class Program
         );
         #endregion
 
-        #region Configure Identity
-        //Porque usamos Identity Core? porque tenemos configurado ya por defecto nuestras settings de JWT
-        //Entonces is usamos AddIdentity este ya configura la autorización y nos pisaría nuestros settings. (se puede ver en la definición de Identity)
-        builder.Services.AddIdentityCore<Users>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = true;
-            options.User.RequireUniqueEmail = true;
-            //options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 6;
-        })
-        .AddSignInManager<SignInManager<Users>>()
-        .AddRoles<Roles>()
-        .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
-        #endregion
-
         #region Configure AppSettings Inyection
-        builder.Services.AddConfig<FrontConfiguration>(builder.Configuration, nameof(FrontConfiguration));
         builder.Services.AddConfig<ActionLoggerMiddlewareConfiguration>(builder.Configuration, nameof(ActionLoggerMiddlewareConfiguration));
         builder.Services.AddConfig<ProfileImageConfiguration>(builder.Configuration, nameof(ProfileImageConfiguration));
         #endregion
@@ -101,8 +84,8 @@ internal class Program
         #endregion
 
         #region Configure ML (Machine Learning)
-        var modelPath = builder.Configuration["ML_Config:ModelPath"] ?? "";
-        builder.Services.AddSingleton(new QuestionPredictionEngine(modelPath));
+        //var modelPath = builder.Configuration["ML_Config:ModelPath"] ?? "";
+        //builder.Services.AddSingleton(new QuestionPredictionEngine(modelPath));
         //builder.Services.AddSingleton<PredictionEngine<QuestionModel, QuestionPrediction>>();
         #endregion
         #endregion
@@ -115,13 +98,12 @@ internal class Program
             var services = scope.ServiceProvider;
             Configure(app,
                       app.Environment,
-                      services.GetRequiredService<ApplicationDbContext>(),
-                      services.GetRequiredService<RoleManager<Roles>>()
+                      services.GetRequiredService<ApplicationDbContext>()
                       );
         }
 
         #region Configure Init Application
-        void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext context, RoleManager<Roles> _roleManager)
+        void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext context)
         {
             #region Configure Development Environment
             if (env.IsDevelopment())
@@ -139,15 +121,6 @@ internal class Program
             {
                 c.RoutePrefix = String.Empty;
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "UAI TFI-TP-FINAL API V1");
-                c.OAuthClientId(builder.Configuration["AuthenticationConfiguration:Google:ClientId"]);
-                c.OAuthClientSecret(builder.Configuration["AuthenticationConfiguration:Google:ClientSecret"]);
-                c.OAuth2RedirectUrl("https://localhost:44352/signin-google");
-                c.OAuthAppName("API - Swagger");
-                c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
-                c.OAuthUsePkce();
-                c.OAuthScopeSeparator(" ");
-                c.EnableValidator(null);
-                c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { { "audience", "" } });
             });
             #endregion
 
@@ -165,6 +138,7 @@ internal class Program
             #endregion
 
             #region Configure Default Methods .NET
+            app.UseMiddleware<ExceptionMiddleware>();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();
@@ -175,28 +149,6 @@ internal class Program
             {
                 endpoints.MapControllers();
             });
-            #endregion
-
-            #region Set Default Roles If Not Exists
-            if (_roleManager.FindByNameAsync("Admin").Result == null && _roleManager.FindByNameAsync("User").Result == null)
-            //{
-            //    //Create Roles
-            //    var role = new Roles();
-            //    role.Name = "Admin";
-            //    IdentityResult roleResult = _roleManager.CreateAsync(role).Result;
-
-            //    role = new Roles();
-            //    role.Name = "User";
-            //    roleResult = _roleManager.CreateAsync(role).Result;
-            //}
-            {
-                _roleManager.CreateAsync(role: new Roles { Name = "Admin", NormalizedName = "ADMIN" }).Wait();
-                _roleManager.CreateAsync(role: new Roles { Name = "User", NormalizedName = "USER" }).Wait();
-            }
-            #endregion
-
-            #region Configure SignalR
-            //app.UseMiddleware<ActionLoggerMiddleware>();
             #endregion
         }
         #endregion

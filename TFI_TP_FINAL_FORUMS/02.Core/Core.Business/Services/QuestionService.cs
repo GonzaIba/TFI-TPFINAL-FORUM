@@ -2,7 +2,6 @@
 using Core.Contracts.Services;
 using Core.Domain.IdentityModels;
 using Core.Domain.ML;
-using CrossCutting.Helpers.JWT;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using Microsoft.ML.Trainers;

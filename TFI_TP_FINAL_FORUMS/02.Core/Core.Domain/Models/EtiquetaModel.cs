@@ -11,12 +11,12 @@ namespace Core.Domain.Models
     {
         public EtiquetaModel()
         {
-            EtiquetasPublicacion = new HashSet<EtiquetaPublicacionModel>();
+            EtiquetasPublicaciones = new HashSet<EtiquetaPublicacionModel>();
         }
         public int IDEtiqueta { get; set; }
         public string NombreEtiqueta { get; set; }
 
         // Propiedades de navegación
-        public ICollection<EtiquetaPublicacionModel> EtiquetasPublicacion { get; set; }
+        public ICollection<EtiquetaPublicacionModel> EtiquetasPublicaciones { get; set; }
     }
 }

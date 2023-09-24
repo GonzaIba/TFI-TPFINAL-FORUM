@@ -52,7 +52,7 @@ namespace Core.Business.Services
         {
             try
             {
-                var result = await _repository.Get(tracking: false, ignoreQueryFilters: true);
+                var result = await _repository.Get(tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
                 return result;
             }
             catch (Exception ex)

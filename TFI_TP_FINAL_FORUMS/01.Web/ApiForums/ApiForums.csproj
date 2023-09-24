@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\02.Core\Core.Contracts\Core.Contracts.csproj" />
     <ProjectReference Include="..\..\02.Core\Core.Domain\Core.Domain.csproj" />
     <ProjectReference Include="..\..\03.Infrastructure\Infrastructure.Data.SQL\Infrastructure.Data.SQL.csproj" />
+    <ProjectReference Include="..\..\03.Infrastructure\Infrastructure.ML\Infrastructure.ML.csproj" />
     <ProjectReference Include="..\..\04.IoC.Resolver\IoC.Resolver\IoC.Resolver.csproj" />
     <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.EmailService\CrossCutting.EmailService.csproj" />
     <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Extensions\CrossCutting.Extensions.csproj" />

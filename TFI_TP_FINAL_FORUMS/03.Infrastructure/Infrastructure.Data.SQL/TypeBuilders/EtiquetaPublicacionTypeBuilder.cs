@@ -23,10 +23,10 @@ namespace Infrastructure.Data.SQL.TypeBuilders
                 .HasForeignKey(ep => ep.IDPublicacion);
 
             builder.HasOne(ep => ep.Etiqueta)
-                .WithMany(e => e.EtiquetasPublicacion)
+                .WithMany(e => e.EtiquetasPublicaciones)
                 .HasForeignKey(ep => ep.IDEtiqueta);
             
-            builder.ToTable("EtiquetasPublicacion");
+            builder.ToTable("EtiquetasPublicaciones");
         }
     }
 }

@@ -19,10 +19,4 @@
     <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Extensions\CrossCutting.Extensions.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="MLmodels\questionModels.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

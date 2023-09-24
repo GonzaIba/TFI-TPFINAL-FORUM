@@ -55,6 +55,23 @@ namespace ApiForums.Controllers
             try
             {
                 var publicaciones = await _publicacionService.ObtenerPublicaciones();
+                var publicacionesResponse = _mapper.Map<IEnumerable<PublicacionesResponse>>(publicaciones);
+                
+                return Ok(publicacionesResponse);
+            }
+            catch (ApiForumException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("PredecirEtiquetaPublicacion")]
+        public async Task<IActionResult> ObtenerPublicaciones([FromBody]string texto)
+        {
+            try
+            {
+                var publicaciones = await _publicacionService.ObtenerPublicaciones();
                 var publicacionModel = _mapper.Map<IEnumerable<PublicacionesResponse>>(publicaciones);
 
                 return Ok(publicacionModel);

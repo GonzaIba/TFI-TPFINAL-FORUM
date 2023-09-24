@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Infrastructure_ML;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Infrastructure_ML.PublicacionTituloML;
 
 namespace ApiForums.Controllers
 {
@@ -15,14 +17,19 @@ namespace ApiForums.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route("GetQuestions")]
-        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        [Route("PredictLabel")]
+        public async Task<IActionResult> PredictLabelML(string questionText)
         {
             try
             {
-                
+                // Get the question object from the text
+                var question = new ModelInput { Text = questionText };
 
-                return Ok();
+                // Use the prediction engine to get the recommended tags
+                var predictionEngine = PublicacionTituloML.Predict(question);
+
+                // Return the recommended tags
+                return Ok(predictionEngine);
             }
             catch (Exception ex)
             {

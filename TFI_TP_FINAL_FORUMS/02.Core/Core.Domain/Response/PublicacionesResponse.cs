@@ -14,9 +14,12 @@ namespace Core.Domain.Response
         public string Contenido { get; set; }
         public int Recompensa { get; set; }
         public int Visitas { get; set; }
+        public int Respuestas { get; set; }
         public bool Respondida { get; set; }
         public bool Cerrada { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaCierre { get; set; }
+
+        public List<string> Etiquetas { get; set; }
     }
 }

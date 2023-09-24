@@ -9,5 +9,6 @@ namespace Core.Contracts.Services
 {
     public interface IEtiquetaService : IGenericService<EtiquetaModel>
     {
+        Task<IEnumerable<EtiquetaModel>> ObtenerEtiquetasDetalle();
     }
 }

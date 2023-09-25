@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using CrossCutting.Extensions;
 using CrossCutting.Helpers;
+using Infrastructure.ML.Repositories;
 
 namespace ApiForums.Background
 {

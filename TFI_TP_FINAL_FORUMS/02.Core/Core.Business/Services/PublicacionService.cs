@@ -3,25 +3,32 @@ using Core.Contracts.Repositories;
 using Core.Contracts.Services;
 using Core.Domain.Exceptions;
 using Core.Domain.Models;
+using Infrastructure.ML.Contracts;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Core.Business.Services
 {
     public class PublicacionService : GenericService<PublicacionModel>, IPublicacionService
     {
         private readonly IUsersService _usersService;
+        private readonly ITextoPrediccionRepositoryML _textoPrediccionRepositoryML;
         public PublicacionService(
             IUnitOfWork unitOfWork,
-            IUsersService usersService
+            IUsersService usersService,
+            ITextoPrediccionRepositoryML textoPrediccionRepositoryML
             )
         : base(unitOfWork, unitOfWork.GetRepository<IPublicacionRepository>())
         {
             _usersService = usersService;
+            _textoPrediccionRepositoryML = textoPrediccionRepositoryML;
         }
 
         public async Task<bool> CrearPublicacion(string userId, PublicacionModel publicacion)
@@ -60,6 +67,13 @@ namespace Core.Business.Services
 
                 throw ex;
             }
+        }
+
+        public async Task<IEnumerable<string>> PredecirEtiquetas(string texto)
+        {
+            ModelInput modelInput = new ModelInput { Texto = texto };
+            var etiquetas = await _textoPrediccionRepositoryML.PredecirEtiquetas(modelInput,5);
+            return etiquetas;
         }
     }
 }

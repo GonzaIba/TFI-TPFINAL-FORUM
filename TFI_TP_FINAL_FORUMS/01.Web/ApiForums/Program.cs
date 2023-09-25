@@ -18,6 +18,9 @@ using ApiForums.Mapping;
 using ApiForums.StartupConfiguration;
 using Api.StartupConfiguration;
 using ApiForums.Middleware;
+using Infrastructure.ML.Repositories;
+using Infrastructure.ML.Contracts;
+using System.Configuration;
 
 internal class Program
 {
@@ -40,11 +43,13 @@ internal class Program
         #endregion
 
         #region Configure Personalized
+        // Obtén el valor de modelPath de tu configuración de la aplicación
+        var modelPath = builder.Configuration["ML_Config:TextoPrediccionesPath"];
+        builder.Services.AddSingleton<ITextoPrediccionRepositoryML>(x => new TextoPrediccionRepositoryML(modelPath));
         builder.Services.ConfigureIoC(builder.Configuration);
         builder.Services.ConfigureLogger(builder?.Configuration);
         builder.Services.ConfigureSwagger(builder?.Configuration);
         builder.Services.AddHttpContextAccessor();
-        //builder.Services.TryAddScoped<SignInManager<Users>>();
         #endregion
 
         #region Configure DbContext

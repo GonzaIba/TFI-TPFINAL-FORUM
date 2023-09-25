@@ -66,15 +66,13 @@ namespace ApiForums.Controllers
         }
 
         [HttpGet]
-        [Route("PredecirEtiquetaPublicacion")]
-        public async Task<IActionResult> ObtenerPublicaciones([FromBody]string texto)
+        [Route("PredecirEtiquetasPorTexto")]
+        public async Task<IActionResult> PredecirEtiquetasPorTexto(string texto)
         {
             try
             {
-                var publicaciones = await _publicacionService.ObtenerPublicaciones();
-                var publicacionModel = _mapper.Map<IEnumerable<PublicacionesResponse>>(publicaciones);
-
-                return Ok(publicacionModel);
+                var publicaciones = await _publicacionService.PredecirEtiquetas(texto);
+                return Ok(publicaciones);
             }
             catch (ApiForumException ex)
             {

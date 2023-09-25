@@ -15,8 +15,8 @@ namespace Infrastructure_ML
         #region model input class
         public class ModelInput
         {
-            [ColumnName(@"Pregunta")]
-            public string Pregunta { get; set; }
+            [ColumnName(@"Texto")]
+            public string Texto { get; set; }
 
             [ColumnName(@"Etiquetas")]
             public string Etiquetas { get; set; }

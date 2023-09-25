@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Compression;
+using System.Numerics;
 using Infrastructure_ML;
 using Microsoft.ML;
 using Microsoft.ML.Data;
@@ -11,13 +12,17 @@ class Program
 {
     static void Main(string[] args)
     {
-        string questionText = "pizza";
+        string questionText = "¿Como se cocina un";
         // Get the question object from the text
-        var question = new ModelInput { Pregunta = questionText };
+        var question = new ModelInput { Texto = questionText };
 
         // Use the prediction engine to get the recommended tags
-        //PublicacionTituloML.Train("D:\\Repositorios-SmartGit\\TFI-TPFINAL-FORUM\\TFI_TP_FINAL_FORUMS\\ConsoleApp1\\bin\\Debug\\net7.0\\PublicacionTituloML.mlnet");
+        PublicacionTituloML.Train("D:\\Repositorios-SmartGit\\TFI-TPFINAL-FORUM\\TFI_TP_FINAL_FORUMS\\ConsoleApp1\\bin\\Debug\\net7.0\\PublicacionTituloML.mlnet");
         var predictionEngine = PublicacionTituloML.Predict(question);
+
+        var results = PublicacionTituloML.PredictAllLabels(question);
+
+
 
         Console.WriteLine(predictionEngine.PredictedLabel);
     }

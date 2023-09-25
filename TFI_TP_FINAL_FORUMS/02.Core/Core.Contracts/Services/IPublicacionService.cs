@@ -11,5 +11,6 @@ namespace Core.Contracts.Services
     {
         Task<bool> CrearPublicacion(string userId,PublicacionModel publicacion);
         Task<IEnumerable<PublicacionModel>> ObtenerPublicaciones();
+        Task<IEnumerable<string>> PredecirEtiquetas(string texto);
     }
 }

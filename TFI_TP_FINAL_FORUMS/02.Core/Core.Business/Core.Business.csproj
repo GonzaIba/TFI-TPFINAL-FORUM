@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\03.Infrastructure\Infrastructure.ML\Infrastructure.ML.csproj" />
     <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.EmailService\CrossCutting.EmailService.csproj" />
     <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Extensions\CrossCutting.Extensions.csproj" />
     <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Helpers\CrossCutting.Helpers.csproj" />

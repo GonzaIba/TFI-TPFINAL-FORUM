@@ -11,25 +11,28 @@ using static Infrastructure_ML.PublicacionTituloML;
 using Microsoft.ML.Trainers;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Core.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.ML.Repositories
 {
-    public class TextoPrediccionRepositoryML : ITextoPrediccionRepositoryML
+    public class TextoPrediccionRepositoryML : GenericRepositoryML<TextoPrediccionModel> ,ITextoPrediccionRepositoryML
     {
         private readonly Lazy<PredictionEngine<ModelInput, ModelOutput>> PredictEngine;
         private readonly string _modelPath;
+        private MLContext _mlContext;
 
-        public TextoPrediccionRepositoryML(string modelPath)
+        public TextoPrediccionRepositoryML(string modelPath, MLContext mlContext)
+            : base(BuildPipeline(mlContext), mlContext)
         {
             PredictEngine = new Lazy<PredictionEngine<ModelInput, ModelOutput>>(() => CargarModelo(), true);
             _modelPath = modelPath;
+            _mlContext = mlContext;
         }
         
         public PredictionEngine<ModelInput, ModelOutput> CargarModelo()
         {
-            var mlContext = new MLContext();
-            ITransformer mlModel = mlContext.Model.Load(_modelPath, out var _);
-            return mlContext.Model.CreatePredictionEngine<ModelInput, ModelOutput>(mlModel);
+            ITransformer mlModel = _mlContext.Model.Load(_modelPath, out var _);
+            return _mlContext.Model.CreatePredictionEngine<ModelInput, ModelOutput>(mlModel);
         }
 
         public async Task<IOrderedEnumerable<KeyValuePair<string, float>>> PredecirEtiquetasYProbabilidades(ModelInput input)
@@ -85,55 +88,6 @@ namespace Infrastructure.ML.Repositories
             var keyNames = new VBuffer<ReadOnlyMemory<char>>();
             labelColumn.Value.GetKeyValues(ref keyNames);
             return keyNames.DenseValues().Select(x => x.ToString());
-        }
-
-
-        /// <summary>
-        /// Train a new model with the provided dataset.
-        /// </summary>
-        /// <param name="outputModelPath">File path for saving the model. Should be similar to "C:\YourPath\ModelName.mlnet"</param>
-        /// <param name="connectionString">Connection string for databases on-premises or in the cloud.</param>
-        /// <param name="commandText">Command string for selecting training data.</param>
-        public static void Train(string outputModelPath, List<TextoPrediccionModel> data)
-        {
-            var mlContext = new MLContext();
-
-            var dataView = mlContext.Data.LoadFromEnumerable(data);
-            var model = RetrainModel(mlContext, dataView);
-            SaveModel(mlContext, model, dataView, outputModelPath);
-        }
-
-        /// <summary>
-        /// Save a model at the specified path.
-        /// </summary>
-        /// <param name="mlContext">The common context for all ML.NET operations.</param>
-        /// <param name="model">Model to save.</param>
-        /// <param name="data">IDataView used to train the model.</param>
-        /// <param name="modelSavePath">File path for saving the model. Should be similar to "C:\YourPath\ModelName.mlnet.</param>
-        public static void SaveModel(MLContext mlContext, ITransformer model, IDataView data, string modelSavePath)
-        {
-            // Pull the data schema from the IDataView used for training the model
-            DataViewSchema dataViewSchema = data.Schema;
-
-            using (var fs = File.Create(modelSavePath))
-            {
-                mlContext.Model.Save(model, dataViewSchema, fs);
-            }
-        }
-
-
-        /// <summary>
-        /// Retrain model using the pipeline generated as part of the training process.
-        /// </summary>
-        /// <param name="mlContext"></param>
-        /// <param name="trainData"></param>
-        /// <returns></returns>
-        public static ITransformer RetrainModel(MLContext mlContext, IDataView trainData)
-        {
-            var pipeline = BuildPipeline(mlContext);
-            var model = pipeline.Fit(trainData);
-
-            return model;
         }
 
         /// <summary>

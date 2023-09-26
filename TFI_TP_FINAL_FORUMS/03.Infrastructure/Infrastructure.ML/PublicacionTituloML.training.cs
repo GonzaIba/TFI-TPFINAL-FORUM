@@ -12,12 +12,13 @@ using Microsoft.ML;
 using System.Data.SqlClient;
 using Microsoft.ML.Data;
 using Microsoft.ML.Transforms.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure_ML
 {
     public partial class PublicacionTituloML
     {
+        public const string RetrainConnectionString = @"Data Source=.;Initial Catalog=TFI_PLOFTEC;Integrated Security=True";
+        public const string RetrainCommandString = @"SELECT Texto, Etiquetas FROM [dbo].[TextoPredicciones]";
 
         /// <summary>
         /// Train a new model with the provided dataset.
@@ -25,13 +26,28 @@ namespace Infrastructure_ML
         /// <param name="outputModelPath">File path for saving the model. Should be similar to "C:\YourPath\ModelName.mlnet"</param>
         /// <param name="connectionString">Connection string for databases on-premises or in the cloud.</param>
         /// <param name="commandText">Command string for selecting training data.</param>
-        public static void Train(string outputModelPath, List<>)
+        public static void Train(string outputModelPath, string connectionString = RetrainConnectionString, string commandText = RetrainCommandString)
         {
             var mlContext = new MLContext();
 
-            var dataView = mlContext.Data.LoadFromEnumerable(data);
-            var model = RetrainModel(mlContext, dataView);
-            SaveModel(mlContext, model, dataView, outputModelPath);
+            var data = LoadIDataViewFromDatabase(mlContext, connectionString, commandText);
+            var model = RetrainModel(mlContext, data);
+            SaveModel(mlContext, model, data, outputModelPath);
+        }
+
+        /// <summary>
+        /// Load an IDataView from a database source.For more information on how to load data, see aka.ms/loaddata.
+        /// </summary>
+        /// <param name="mlContext">The common context for all ML.NET operations.</param>
+        /// <param name="connectionString">Connection string for databases on-premises or in the cloud.</param>
+        /// <param name="commandText">Command string for selecting training data.</param>
+        /// <returns>IDataView with loaded training data.</returns>
+        public static IDataView LoadIDataViewFromDatabase(MLContext mlContext, string connectionString, string commandText)
+        {
+            DatabaseLoader loader = mlContext.Data.CreateDatabaseLoader<ModelInput>();
+            DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, commandText);
+
+            return loader.Load(dbSource);
         }
 
         /// <summary>
@@ -86,3 +102,10 @@ namespace Infrastructure_ML
         }
     }
  }
+
+
+
+
+//var pipeline = mlContext.Transforms.Text.FeaturizeText(inputColumnName: "Pregunta", outputColumnName: "Features")
+//                        .Append(mlContext.Transforms.Text.NormalizeText("Pregunta"))
+//                        .Append(mlContext.Transforms.Text.TokenizeIntoWords("Words", "Pregunta"));

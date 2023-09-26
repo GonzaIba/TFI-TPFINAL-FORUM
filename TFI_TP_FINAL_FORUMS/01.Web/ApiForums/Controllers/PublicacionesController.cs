@@ -67,7 +67,7 @@ namespace ApiForums.Controllers
 
         [HttpGet]
         [Route("PredecirEtiquetasPorTexto")]
-        public async Task<IActionResult> PredecirEtiquetasPorTexto(string texto)
+        public async Task<IActionResult> PredecirEtiquetasPorTexto([FromQuery] string texto)
         {
             try
             {

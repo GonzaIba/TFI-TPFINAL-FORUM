@@ -71,7 +71,7 @@ namespace ApiForums.Controllers
         {
             try
             {
-                var publicaciones = await _publicacionService.PredecirEtiquetas(texto);
+                var publicaciones = await _publicacionService.ObtenerPublicacionesPorFiltro(texto);
                 return Ok(publicaciones);
             }
             catch (ApiForumException ex)

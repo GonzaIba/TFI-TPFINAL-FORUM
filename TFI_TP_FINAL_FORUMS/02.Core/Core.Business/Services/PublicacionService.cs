@@ -69,11 +69,41 @@ namespace Core.Business.Services
             }
         }
 
+        public async Task<IEnumerable<PublicacionModel>> ObtenerPublicacionesPorFiltro(string texto)
+        {
+            try
+            {
+                var etiquetas = ObtenerEtiquetas(texto);
+                var result = await _repository.Get(tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public async Task<IEnumerable<string>> PredecirEtiquetas(string texto)
         {
             ModelInput modelInput = new ModelInput { Texto = texto };
             var etiquetas = await _textoPrediccionRepositoryML.PredecirEtiquetas(modelInput,5);
             return etiquetas;
         }
+
+        #region Metodos Busqueda de textos
+        private string ObtenerEtiquetas(string texto)
+        {
+            var etiquetas = new List<string>();
+            var palabras = texto.Split(' ');
+            foreach (var palabra in palabras)
+            {
+                if (palabra.StartsWith("["))
+                {
+                    etiquetas.Add(palabra);
+                }
+            }
+            return string.Join(',', etiquetas);
+        }
+        #endregion
     }
 }

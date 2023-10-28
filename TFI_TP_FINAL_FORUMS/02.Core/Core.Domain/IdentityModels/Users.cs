@@ -14,8 +14,17 @@ namespace Core.Domain.IdentityModels
             UsuarioMedallas = new HashSet<UsuarioMedallaModel>();
         }
         public bool Active { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+
+        //Para los foros
+        public string ImageEducacional { get; set; }
+
+        //Para los foros
+        public string DescripcionCortaForum { get; set; }
+        public string DescripcionLargaForum { get; set; }
+        public string ImageForum { get; set; }
+        public DateTime UltimaVezConectadoForum { get; set; }
 
         public UsersRoles UserPrivileges { get; set; }
         public virtual ICollection<RefreshToken> UserRefreshTokens { get; set; }

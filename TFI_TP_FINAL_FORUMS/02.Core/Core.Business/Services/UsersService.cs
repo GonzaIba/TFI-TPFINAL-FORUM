@@ -61,8 +61,8 @@ namespace Core.Business.Services
                 var userDb = (await _repository.Get(x => x.Id == user.Id)).FirstOrDefault();
                 userDb.Active = true;
                 userDb.Email = user.Email;
-                userDb.FirstName = user.FirstName;
-                userDb.LastName = user.LastName;
+                userDb.Nombre = user.Nombre;
+                userDb.Apellido = user.Apellido;
                 userDb.PhoneNumber = user.PhoneNumber;
                 userDb.UserName = user.UserName;
                 await _repository.Update(userDb);

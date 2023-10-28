@@ -17,7 +17,27 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             //       .IsRequired();
 
             builder.Ignore(x => x.UserPrivileges);
-            //       .WithMany(x => x.PrivilegesUsers);
+
+
+            builder.Property(x => x.Nombre)
+                   .HasColumnType("varchar(50)");
+
+            builder.Property(x => x.Apellido)
+                   .HasColumnType("varchar(50)");
+
+            //Educational
+            builder.Property(x => x.ImageEducacional)
+                   .HasColumnType("varchar(max)");
+
+            //Forum
+            builder.Property(x => x.DescripcionCortaForum)
+                   .HasColumnType("varchar(50)");
+
+            builder.Property(x => x.DescripcionLargaForum)
+                   .HasColumnType("varchar(500)");
+
+            builder.Property(x => x.ImageForum)
+                   .HasColumnType("varchar(max)");
 
             builder.ToTable("Users");
         }

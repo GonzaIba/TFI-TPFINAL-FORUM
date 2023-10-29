@@ -25,6 +25,8 @@ using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using Core.Domain.Models;
+using System.Linq.Expressions;
 
 namespace Core.Business.Services
 {
@@ -33,7 +35,6 @@ namespace Core.Business.Services
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
 
         public UsersService(
             IUnitOfWork unitOfWork,
@@ -45,8 +46,7 @@ namespace Core.Business.Services
             _emailService = emailService;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
-        }
-        
+        }      
         
         public async Task<List<Users>> GetUsersAsync()
         {
@@ -80,6 +80,45 @@ namespace Core.Business.Services
         public async Task<Users> GetUserByNameAsync(string userName)
         {
             return (await _repository.Get(x => x.UserName == userName, tracking: false)).FirstOrDefault();
+        }
+
+        public async Task<List<Users>> GetTopLastWeek()
+        {
+            try
+            {
+                
+                var r = (await _repository.Get()).ToList();
+
+                //Obtenemos el repositorio de recompensas de usuarios
+                var usuariosRecompensasRepo = _unitOfWork.GetRepository<IRecompensaUsuarioRepository>();
+
+                //Agarramos la fecha de hace 1 semana
+                var oneWeekAgo = DateTime.Now.AddDays(-7);
+
+                //Obtenemos los usuarios con mas recompensas de la ultima semana
+                var groupedUsers = await usuariosRecompensasRepo.GetWithGroupBy(
+                    x => x.FechaObtencion >= oneWeekAgo,
+                    null,
+                    query => query
+                        .GroupBy(x => x.IDUsuario)
+                        .Select(g => new
+                        {
+                            User = g.FirstOrDefault().Usuario,
+                            TotalRecompensa = g.Sum(x => x.CantidadRecompensa)
+                        }),
+                    "Usuario",
+                    tracking: false
+                );
+
+                //Aplicamos un order by
+                var topUsers = groupedUsers.OrderByDescending(x => x.TotalRecompensa).Select(x => x.User).ToList();
+
+                return topUsers;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

@@ -18,7 +18,6 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.Ignore(x => x.UserPrivileges);
 
-
             builder.Property(x => x.Nombre)
                    .HasColumnType("varchar(50)");
 

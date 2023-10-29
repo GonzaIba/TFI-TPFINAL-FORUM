@@ -25,6 +25,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.HasOne(um => um.Medalla)
                 .WithMany(m => m.UsuariosMedallas)
                 .HasForeignKey(um => um.IDMedalla);
+            
             builder.ToTable("UsuariosMedallas");
         }
     }

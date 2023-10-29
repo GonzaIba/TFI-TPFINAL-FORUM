@@ -28,6 +28,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.HasOne(a => a.Respuesta)
                 .WithMany(r => r.Archivos)
                 .HasForeignKey(a => a.IDRespuesta);
+            
             builder.ToTable("Archivos");
         }
     }

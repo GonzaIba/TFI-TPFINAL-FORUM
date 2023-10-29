@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Microsoft.EntityFrameworkCore;
+using MySqlX.XDevAPI.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -125,6 +126,48 @@ namespace Infrastructure.Data.SQL.Repositories
                 await this.Delete(entity);
             }
         }
+
+        public virtual async Task<IEnumerable<TResult>> GetWithGroupBy<TResult>(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            Func<IQueryable<T>, IQueryable<TResult>> selector = null,
+            string includeProperties = "",
+            bool ignoreQueryFilters = false,
+            bool tracking = true)
+        {
+            IQueryable<T> query = tracking ? this.Entities : this.Entities.AsNoTracking();
+
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (string includeProperty in includeProperties.Split
+                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty.Trim());
+            }
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            if (selector != null)
+            {
+                return selector(query).ToList();
+            }
+            else
+            {
+                return query.Cast<TResult>().ToList();
+            }
+        }
+
 
         public virtual async Task<IEnumerable<T>> Get(
                 Expression<Func<T, bool>> filter = null,

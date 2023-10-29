@@ -23,6 +23,11 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.HasOne(ru => ru.Respuesta)
                 .WithMany(r => r.RecompensasUsuario)
                 .HasForeignKey(ru => ru.IDRespuesta);
+
+            builder.HasOne(um => um.Usuario)
+                .WithMany(m => m.RecompensasUsuarios)
+                .HasForeignKey(um => um.IDUsuario);
+
             builder.ToTable("RecompensasUsuario");
         }
     }

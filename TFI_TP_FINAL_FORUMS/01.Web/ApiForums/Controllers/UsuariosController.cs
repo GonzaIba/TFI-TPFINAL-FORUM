@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Contracts.Services;
 using Core.Domain.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiForums.Controllers
@@ -27,11 +28,12 @@ namespace ApiForums.Controllers
 
         [HttpPost]
         [Route("ObtenerTopUsuariosSemana")]
+        [AllowAnonymous]
         public async Task<IActionResult> ObtenerTopUsuariosSemana()
         {
             try
             {
-
+                var result = await _usuarioService.GetTopLastWeek();
                 return Ok<string>();
             }
             catch (ApiForumException ex)

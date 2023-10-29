@@ -12,6 +12,8 @@ namespace Core.Domain.IdentityModels
         {
             PublicacionesGuardadas = new HashSet<PublicacionGuardadaModel>();
             UsuarioMedallas = new HashSet<UsuarioMedallaModel>();
+            UserRefreshTokens = new HashSet<RefreshToken>();
+            RecompensasUsuarios = new HashSet<RecompensaUsuarioModel>();
         }
         public bool Active { get; set; }
         public string Nombre { get; set; }
@@ -30,5 +32,6 @@ namespace Core.Domain.IdentityModels
         public virtual ICollection<RefreshToken> UserRefreshTokens { get; set; }
         public virtual ICollection<PublicacionGuardadaModel> PublicacionesGuardadas { get; set; }
         public virtual ICollection<UsuarioMedallaModel> UsuarioMedallas { get; set; }
+        public virtual ICollection<RecompensaUsuarioModel> RecompensasUsuarios { get; set; }
     }
 }

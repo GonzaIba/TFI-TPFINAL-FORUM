@@ -11,7 +11,16 @@ namespace Infrastructure.Data.SQL.TypeBuilders
     {
         public void Configure(EntityTypeBuilder<UsersRoles> builder)
         {
-            builder.Ignore(x => x.Users);
+            builder.HasKey(ur => new { ur.UserId, ur.RoleId });
+
+            builder.HasOne(ur => ur.User)
+                .WithOne(u => u.UserPrivileges);
+
+            builder.HasOne(ur => ur.Role)
+                .WithMany(r => r.UserRoles)
+                .HasForeignKey(ur => ur.RoleId);
+
+
             builder.ToTable("UsersRoles");
         }
     }

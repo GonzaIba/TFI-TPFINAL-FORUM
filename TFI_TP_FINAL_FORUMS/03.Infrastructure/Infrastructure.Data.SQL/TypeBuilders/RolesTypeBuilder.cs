@@ -13,6 +13,14 @@ namespace Infrastructure.Data.SQL.TypeBuilders
     {
         public void Configure(EntityTypeBuilder<Roles> builder)
         {
+            builder.HasKey(r => r.Id);
+
+            builder.Property(r => r.Name)
+                .HasMaxLength(256);
+
+            builder.Property(r => r.NormalizedName)
+                .HasMaxLength(256);
+
             builder.ToTable("Roles");
         }
     }

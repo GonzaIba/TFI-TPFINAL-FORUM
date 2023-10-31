@@ -81,14 +81,11 @@ namespace Core.Business.Services
         {
             return (await _repository.Get(x => x.UserName == userName, tracking: false)).FirstOrDefault();
         }
-
-        public async Task<List<Users>> GetTopLastWeek()
+        
+        public async Task<Dictionary<Users,int>> GetTopLastWeek()
         {
             try
             {
-                
-                var r = (await _repository.Get()).ToList();
-
                 //Obtenemos el repositorio de recompensas de usuarios
                 var usuariosRecompensasRepo = _unitOfWork.GetRepository<IRecompensaUsuarioRepository>();
 
@@ -110,10 +107,11 @@ namespace Core.Business.Services
                     tracking: false
                 );
 
-                //Aplicamos un order by
-                var topUsers = groupedUsers.OrderByDescending(x => x.TotalRecompensa).Select(x => x.User).ToList();
+                //Ordenamos Descendentemente y tomamos tambien su recompensa
+                var topUsersDict = groupedUsers.OrderByDescending(x => x.TotalRecompensa)
+                                               .ToDictionary(k => k.User, v => v.TotalRecompensa);
 
-                return topUsers;
+                return topUsersDict;
             }
             catch (Exception ex)
             {

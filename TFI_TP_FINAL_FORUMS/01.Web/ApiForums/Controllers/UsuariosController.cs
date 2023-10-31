@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Contracts.Services;
 using Core.Domain.Exceptions;
+using Core.Domain.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +27,7 @@ namespace ApiForums.Controllers
             _mapper = mapper;
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("ObtenerTopUsuariosSemana")]
         [AllowAnonymous]
         public async Task<IActionResult> ObtenerTopUsuariosSemana()
@@ -34,7 +35,20 @@ namespace ApiForums.Controllers
             try
             {
                 var result = await _usuarioService.GetTopLastWeek();
-                return Ok<string>();
+
+                var mappedUsers = result.Select(r => new UsuariosTopResponse
+                {
+                    NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido, // Asumiendo que Users tiene una propiedad llamada Nombre
+                    Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "", // Asumiendo que Users tiene una propiedad llamada Nombre
+                    DescripcionCorta = r.Key.DescripcionCortaForum,
+                    DescripcionLarga = r.Key.DescripcionLargaForum,
+                    Image = r.Key.ImageForum,
+                    FechaDesde = "Desde " + r.Key.FechaCreado.Year.ToString(),
+                    Puntaje = r.Value,
+                    UltimaVezConectado = r.Key.UltimaVezConectadoForum // Asumiendo que Users tiene una propiedad llamada LastConnected
+                });
+
+                return Ok<UsuariosTopResponse>(mappedUsers);
             }
             catch (ApiForumException ex)
             {

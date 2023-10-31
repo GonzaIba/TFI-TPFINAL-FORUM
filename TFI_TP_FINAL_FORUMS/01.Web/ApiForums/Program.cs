@@ -21,6 +21,7 @@ using ApiForums.Middleware;
 using Infrastructure.ML.Repositories;
 using Infrastructure.ML.Contracts;
 using System.Configuration;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 internal class Program
 {
@@ -82,24 +83,6 @@ internal class Program
         builder.Services.AddSingleton(mapper);
         #endregion
 
-        #region Configure Identity
-        //Porque usamos Identity Core? porque tenemos configurado ya por defecto nuestras settings de JWT
-        //Entonces is usamos AddIdentity este ya configura la autorización y nos pisaría nuestros settings. (se puede ver en la definición de Identity)
-        builder.Services.AddIdentityCore<Users>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = true;
-            options.User.RequireUniqueEmail = true;
-            //options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 6;
-        })
-        .AddRoles<Roles>()
-        .AddEntityFrameworkStores<ApplicationDbContext>();
-        #endregion
-
         #region Configure Host Services
         builder.Services.AddHostedService<TasksResolver>();
         builder.Services.AddSingleton<IBackgroundTasksQueue, BackgroundTasksQueue>();
@@ -134,7 +117,8 @@ internal class Program
                 app.UseSwagger();
                 app.UseSwaggerUI();
                 app.UseDeveloperExceptionPage();
-                context.Database.Migrate(); //Cuando se ejecuta la aplicación se ejecuta el metodo update-database de dotnet ef core...
+                context.Database.EnsureCreatedAsync();
+                //context.Database.Migrate(); //Cuando se ejecuta la aplicación se ejecuta el metodo update-database de dotnet ef core...
             }
             #endregion
 

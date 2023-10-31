@@ -11,12 +11,15 @@ namespace Infrastructure.Data.SQL.TypeBuilders
     {
         public void Configure(EntityTypeBuilder<Users> builder)
         {
-            //builder.HasKey(x => x.Id);
+            builder.HasKey(x => x.Id);
 
-            //builder.Property(x => x.Active)
-            //       .IsRequired();
+            builder.Property(x => x.Active)
+                   .IsRequired();
 
             builder.Ignore(x => x.UserPrivileges);
+
+            builder.Property(x => x.FechaCreado)
+                   .HasColumnType("datetime2(7)");
 
             builder.Property(x => x.Nombre)
                    .HasColumnType("varchar(50)");

@@ -33,6 +33,14 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.CodigoEtiqueta, opt => opt.MapFrom(src => src.IDEtiqueta))
                 .ReverseMap()
                 .ForMember(dest => dest.IDEtiqueta, opt => opt.MapFrom(src => src.CodigoEtiqueta));
+
+            CreateMap<Users, UsuariosTopResponse>()
+            .ForMember(dest => dest.NombreCompleto, opt => opt.MapFrom(src => src.Nombre)) // Asumo que Users tiene una propiedad llamada Nombre
+            .ForMember(dest => dest.DescripcionCorta, opt => opt.MapFrom(src => src.DescripcionCortaForum))
+            .ForMember(dest => dest.DescripcionLarga, opt => opt.MapFrom(src => src.DescripcionLargaForum))
+            .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.ImageForum))
+            .ForMember(dest => dest.Puntaje, opt => opt.Ignore()) // Lo configuraremos después
+            .ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
             #endregion
         }
     }

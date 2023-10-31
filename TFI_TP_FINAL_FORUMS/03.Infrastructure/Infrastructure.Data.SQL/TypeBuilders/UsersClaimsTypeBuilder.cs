@@ -13,6 +13,12 @@ namespace Infrastructure.Data.SQL.TypeBuilders
     {
         public void Configure(EntityTypeBuilder<UsersClaims> builder)
         {
+            builder.HasKey(uc => uc.Id);
+            
+            builder.HasOne(uc => uc.User)
+                .WithMany(u => u.UsersClaims)
+                .HasForeignKey(uc => uc.UserId);
+
             builder.ToTable("UsersClaims");
         }
     }

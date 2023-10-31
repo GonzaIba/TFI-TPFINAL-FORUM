@@ -13,6 +13,12 @@ namespace Infrastructure.Data.SQL.TypeBuilders
     {
         public void Configure(EntityTypeBuilder<UsersToken> builder)
         {
+            builder.HasKey(ut => new { ut.UserId, ut.LoginProvider, ut.Name });
+
+            builder.HasOne(ut => ut.User)
+                .WithMany(u => u.UsersTokens)
+                .HasForeignKey(ut => ut.UserId);
+            
             builder.ToTable("UsersToken");
         }
     }

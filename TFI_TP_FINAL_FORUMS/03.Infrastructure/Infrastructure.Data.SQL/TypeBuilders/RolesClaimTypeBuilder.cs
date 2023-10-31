@@ -13,6 +13,12 @@ namespace Infrastructure.Data.SQL.TypeBuilders
     {
         public void Configure(EntityTypeBuilder<RolesClaim> builder)
         {
+            builder.HasKey(rc => rc.Id);
+
+            builder.HasOne(rc => rc.Role)
+                .WithMany(r => r.RoleClaims)
+                .HasForeignKey(rc => rc.RoleId);
+
             builder.ToTable("RolesClaim");
         }
     }

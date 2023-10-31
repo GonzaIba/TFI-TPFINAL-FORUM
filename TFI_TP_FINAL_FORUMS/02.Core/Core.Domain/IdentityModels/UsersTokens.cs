@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.IdentityModels
 {
-    public class UsersToken : IdentityUserToken<string>
+    public class UsersToken
     {
-        
+        public string UserId { get; set; }
+        public string LoginProvider { get; set; }
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public Users User { get; set; }
     }
 }

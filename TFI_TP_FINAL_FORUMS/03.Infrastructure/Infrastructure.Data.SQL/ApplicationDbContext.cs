@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Data.SQL
 {
-    public class ApplicationDbContext : IdentityDbContext<Users, Roles, string, UsersClaims, UsersRoles, UsersLogin, RolesClaim, UsersToken>
+    public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
@@ -28,7 +28,7 @@ namespace Infrastructure.Data.SQL
                 .SetPropertyDefaultValue<bool>("Active", true)
                 .SetPropertyQueryFilter("Active", true)
                 .ConfigureGenericProperties(typeof(GenericEntity));
-            
+
             base.OnModelCreating(modelBuilder);
         }
 

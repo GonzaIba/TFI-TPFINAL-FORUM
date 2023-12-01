@@ -10,7 +10,7 @@ namespace ApiForums.Controllers
     [Produces("application/json")]
     [ApiController]
     [Route("[controller]")]
-    public class UsuariosController : BaseApiController<PublicacionesController>
+    public class UsuariosController : BaseApiController<UsuariosController>
     {
         private readonly IMapper _mapper;
         private readonly IUsersService _usuarioService;
@@ -19,7 +19,7 @@ namespace ApiForums.Controllers
             IUsersService usuarioService,
             IHttpContextAccessor httpContextAccessor,
             IMapper mapper,
-            ILogger<PublicacionesController> logger
+            ILogger<UsuariosController> logger
             )
             : base(httpContextAccessor, logger)
         {

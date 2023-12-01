@@ -73,8 +73,7 @@ namespace Core.Business.Services
             {
                 return false;
                 throw ex;
-            }
-            
+            }     
         }
 
         public async Task<Users> GetUserByNameAsync(string userName)

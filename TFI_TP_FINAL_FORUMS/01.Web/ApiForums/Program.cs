@@ -145,7 +145,7 @@ internal class Program
             #endregion
 
             #region Configure Default Methods .NET
-            app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<RequestMiddleware>();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();

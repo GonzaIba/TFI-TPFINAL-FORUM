@@ -20,6 +20,8 @@ namespace Core.Domain.Enum
         NotAllowed = 9,
         RequiresTwoFactor = 10,
         RequiresMembership = 11,
+
+        Unknown = 98,
         NoHandleException = 99
     }
 }

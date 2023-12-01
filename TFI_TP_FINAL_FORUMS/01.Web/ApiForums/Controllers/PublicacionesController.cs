@@ -4,27 +4,22 @@ using Core.Domain.Exceptions;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
-using CrossCutting.Helpers.ResponseClasses;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections;
 
 namespace ApiForums.Controllers
 {
     [Produces("application/json")]
     [ApiController]
     [Route("[controller]")]
-    public class PublicacionesController : BaseApiController<PublicacionesController>
+    public class PublicacionesController : ControllerBase
     {
         private readonly IMapper _mapper;
         private readonly IPublicacionService _publicacionService;
         public PublicacionesController(
             IPublicacionService publicacionService,
-            IHttpContextAccessor httpContextAccessor,
             IMapper mapper,
             ILogger<PublicacionesController> logger
             )
-            : base(httpContextAccessor, logger)
         {
             _publicacionService = publicacionService;
             _mapper = mapper;
@@ -39,7 +34,7 @@ namespace ApiForums.Controllers
                 var publicacionModel = _mapper.Map<PublicacionModel>(publicacion);
                 await _publicacionService.CrearPublicacion(userId, publicacionModel);
                 
-                return Ok<string>();
+                return Ok();
             }
             catch (ApiForumException ex)
             {

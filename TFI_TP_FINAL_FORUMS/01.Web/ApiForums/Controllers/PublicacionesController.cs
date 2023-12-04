@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Core.Contracts.Services;
-using Core.Domain.Exceptions;
+using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;

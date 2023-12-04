@@ -31,6 +31,11 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
         ILoggerFactory _loggerFactory = LoggerFactory.Create(builder => builder.AddConsole().AddDebug());
 
+        builder.Services.Configure<IISServerOptions>(options =>
+        {
+            options.AllowSynchronousIO = true;
+        });
+
         #region ConfigureServices
 
         #region Configure Basic Services
@@ -49,7 +54,7 @@ internal class Program
         builder.Services.AddSingleton<ITextoPrediccionRepositoryML>(x => new TextoPrediccionRepositoryML(modelPath, new MLContext()));
         builder.Services.ConfigureIoC(builder.Configuration);
         builder.Services.ConfigureLogger(builder?.Configuration);
-        builder.Services.ConfigureSwagger(builder?.Configuration);
+        builder.Services.ConfigureSwagger(builder.Environment);
         builder.Services.AddHttpContextAccessor();
         #endregion
 
@@ -114,9 +119,6 @@ internal class Program
             #region Configure Development Environment
             if (env.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-                app.UseDeveloperExceptionPage();
                 context.Database.EnsureCreatedAsync();
                 //context.Database.Migrate(); //Cuando se ejecuta la aplicación se ejecuta el metodo update-database de dotnet ef core...
             }
@@ -126,8 +128,9 @@ internal class Program
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.RoutePrefix = String.Empty;
+                //c.RoutePrefix = String.Empty;
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "UAI TFI-TP-FINAL API V1");
+                c.InjectStylesheet("/swagger-ui/SwaggerDark.css");
             });
             #endregion
 
@@ -161,10 +164,8 @@ internal class Program
         #endregion
 
         #region Run App
-        //RUN APP
         app.Run();
         #endregion
-
         #endregion
 
 

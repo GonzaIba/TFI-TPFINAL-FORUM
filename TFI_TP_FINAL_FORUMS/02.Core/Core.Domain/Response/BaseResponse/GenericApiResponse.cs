@@ -24,7 +24,6 @@ namespace Core.Domain.Response.BaseResponse
         public string Method { get; set; }
         public string Service { get; set; }
         public string ResponseCode { get; set; }
-        public string ResponseMessage { get; set; }
     }
 
     public class Errors

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Domain.Exceptions
+namespace Core.Domain.Exceptions.BaseException
 {
     [Serializable]
     public class ApiForumException : Exception

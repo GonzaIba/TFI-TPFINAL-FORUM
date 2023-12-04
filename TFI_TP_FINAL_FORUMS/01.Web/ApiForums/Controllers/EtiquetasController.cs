@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Contracts.Services;
-using Core.Domain.Exceptions;
+using Core.Domain.Exceptions.BaseException;
+using Core.Domain.Exceptions.BusinessExceptions.Auth;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
@@ -11,7 +12,7 @@ namespace ApiForums.Controllers
     [Produces("application/json")]
     [ApiController]
     [Route("[controller]")]
-    public class EtiquetasController : BaseApiController<EtiquetasController>
+    public class EtiquetasController : ControllerBase
     {
         private readonly IMapper _mapper;
         private readonly IPublicacionService _publicacionService;
@@ -20,11 +21,9 @@ namespace ApiForums.Controllers
         public EtiquetasController(
             IPublicacionService publicacionService,
             IEtiquetaService etiquetaService,
-            IHttpContextAccessor httpContextAccessor,
             IMapper mapper,
             ILogger<EtiquetasController> logger
             )
-            : base(httpContextAccessor, logger)
         {
             _publicacionService = publicacionService;
             _etiquetaService = etiquetaService;
@@ -39,8 +38,8 @@ namespace ApiForums.Controllers
             {
                 //var publicacionModel = _mapper.Map<PublicacionModel>(publicacion);
                 //await _publicacionService.CrearPublicacion(userId, publicacionModel);
-
-                return Ok<string>();
+                throw new Exception("Error");
+                return Ok();
             }
             catch (ApiForumException ex)
             {

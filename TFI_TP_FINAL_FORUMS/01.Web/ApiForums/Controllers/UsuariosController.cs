@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Core.Contracts.Services;
-using Core.Domain.Exceptions;
+using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,18 +10,16 @@ namespace ApiForums.Controllers
     [Produces("application/json")]
     [ApiController]
     [Route("[controller]")]
-    public class UsuariosController : BaseApiController<UsuariosController>
+    public class UsuariosController : ControllerBase
     {
         private readonly IMapper _mapper;
         private readonly IUsersService _usuarioService;
         
         public UsuariosController(
             IUsersService usuarioService,
-            IHttpContextAccessor httpContextAccessor,
             IMapper mapper,
             ILogger<UsuariosController> logger
             )
-            : base(httpContextAccessor, logger)
         {
             _usuarioService = usuarioService;
             _mapper = mapper;
@@ -48,7 +46,7 @@ namespace ApiForums.Controllers
                     UltimaVezConectado = r.Key.UltimaVezConectadoForum // Asumiendo que Users tiene una propiedad llamada LastConnected
                 });
 
-                return Ok<UsuariosTopResponse>(mappedUsers);
+                return Ok(mappedUsers);
             }
             catch (ApiForumException ex)
             {

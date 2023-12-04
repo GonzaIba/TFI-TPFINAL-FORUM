@@ -1,17 +1,9 @@
-﻿using AutoMapper;
-using Core.Contracts.Repositories;
+﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
-using Core.Domain.Exceptions;
+using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Models;
 using Infrastructure.ML.Contracts;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Core.Business.Services

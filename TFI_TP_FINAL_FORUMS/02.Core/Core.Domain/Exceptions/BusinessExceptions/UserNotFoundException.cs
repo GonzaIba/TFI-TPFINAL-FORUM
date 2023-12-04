@@ -13,12 +13,12 @@ namespace Core.Domain.Exceptions.BusinessExceptions.Auth
         private static string Description = "El usuario no se encuentra en la base de datos.";
         private static string Title = "Usuario no encontrado";
         private static string Image = "https://i.imgur.com/9iy2M2p.png";
-
-        public UserNotFoundException() : base(Code, Description, Title, Image)
+        
+        public UserNotFoundException() : base(Code, Description, Title, Image, nameof(UserNotFoundException))
         {
         }
 
-        public UserNotFoundException(string description, string title) : base(Code, description, title, Image)
+        public UserNotFoundException(string description, string title) : base(Code, description, title, Image, nameof(UserNotFoundException)
         {
         }
     }

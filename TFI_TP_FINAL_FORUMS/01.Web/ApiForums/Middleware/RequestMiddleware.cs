@@ -114,7 +114,7 @@ namespace ApiForums.Middleware
                                 {
                                     Code = "500",
                                     Title = "Internal Server Error",
-                                    Description = ex.Message
+                                    Message = ex.Message
                                 }
                             }
                         }

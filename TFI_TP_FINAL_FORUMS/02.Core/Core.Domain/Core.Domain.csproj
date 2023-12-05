@@ -13,4 +13,8 @@
     <PackageReference Include="Microsoft.ML" Version="3.0.0-preview.23266.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Exceptions\BusinessExceptions\" />
+  </ItemGroup>
+
 </Project>

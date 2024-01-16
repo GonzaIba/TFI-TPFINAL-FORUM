@@ -15,7 +15,10 @@ namespace Infrastructure.Data.SQL.TypeBuilders
         {
             builder.HasKey(e => e.IDEtiqueta);
 
-            builder.Property(e => e.IDEtiqueta).IsRequired();
+            builder.Property(e => e.IDEtiqueta)
+                .IsRequired()
+                .ValueGeneratedOnAdd();
+            //builder.Property(e => e.IDEtiqueta).UseHiLo();
 
             builder.Property(e => e.NombreEtiqueta).IsRequired().HasMaxLength(100);
             builder.ToTable("Etiquetas");

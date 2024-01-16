@@ -22,6 +22,16 @@ namespace Core.Business.Services
             _usersService = usersService;
         }
 
+        public async Task<bool> CrearEtiqueta(string nombreEtiqueta)
+        {
+            EtiquetaModel etiquetaModel = new();
+            etiquetaModel.NombreEtiqueta = nombreEtiqueta;
+            etiquetaModel.CreateDate = DateTime.Now;
+            await _repository.Insert(etiquetaModel);
+            var r = etiquetaModel.IDEtiqueta;
+            return etiquetaModel.IDEtiqueta > 0;
+        }
+
         public async Task<IEnumerable<EtiquetaModel>> ObtenerEtiquetasDetalle()
         {
             try

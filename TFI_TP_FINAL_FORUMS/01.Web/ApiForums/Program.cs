@@ -22,6 +22,7 @@ using Infrastructure.ML.Repositories;
 using Infrastructure.ML.Contracts;
 using System.Configuration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Hangfire;
 
 internal class Program
 {
@@ -56,6 +57,11 @@ internal class Program
         builder.Services.ConfigureLogger(builder?.Configuration);
         builder.Services.ConfigureSwagger(builder.Environment);
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddHangfire(x => x.UseSqlServerStorage(GetGatewayConnectionString()));
+        builder.Services.AddHangfireServer();
+        builder.Services.AddControllers(o => {
+            o.UseRoutePrefix("api");
+        });
         #endregion
 
         #region Configure DbContext
@@ -160,6 +166,8 @@ internal class Program
                 endpoints.MapControllers();
             });
             #endregion
+
+            app.UseHangfireDashboard();
         }
         #endregion
 
@@ -197,6 +205,11 @@ internal class Program
         string GetConnectionString()
         {
             var connectionString = builder.Configuration.GetConnectionString("SqlConnection");
+            return connectionString;
+        }
+        string GetGatewayConnectionString()
+        {
+            var connectionString = builder.Configuration.GetConnectionString("SqlConnectionGateway");
             return connectionString;
         }
         string GetMySQLConnectionString()

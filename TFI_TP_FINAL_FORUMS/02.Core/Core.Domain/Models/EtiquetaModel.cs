@@ -1,6 +1,7 @@
 ﻿using Core.Domain.GenericEntityClass;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace Core.Domain.Models
         {
             EtiquetasPublicaciones = new HashSet<EtiquetaPublicacionModel>();
         }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IDEtiqueta { get; set; }
         public string NombreEtiqueta { get; set; }
 

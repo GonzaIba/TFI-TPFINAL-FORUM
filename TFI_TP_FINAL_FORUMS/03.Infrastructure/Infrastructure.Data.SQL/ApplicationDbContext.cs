@@ -4,6 +4,7 @@ using CrossCutting.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using MySql.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 using System;
@@ -51,6 +52,63 @@ namespace Infrastructure.Data.SQL
             return base.SaveChangesAsync(cancellationToken);
         }
 
+
+        private IDbContextTransaction _currentTransaction;
+        public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+        public bool HasActiveTransaction => _currentTransaction != null;
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            if (_currentTransaction != null) return null!;
+
+            _currentTransaction = await Database.BeginTransactionAsync();
+
+            return _currentTransaction;
+        }
+
+        public async Task CommitAsync(IDbContextTransaction transaction)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+
+            try
+            {
+                await SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch
+            {
+                RollbackTransaction();
+                throw;
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null!;
+                }
+            }
+        }
+
+        private void RollbackTransaction()
+        {
+            try
+            {
+                _currentTransaction?.Rollback();
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null!;
+                }
+            }
+        }
+
+
+        #region Entries
         private void SetUpdateDateOnModifiedEntries()
         {
             var modifiedEntries = ChangeTracker
@@ -90,5 +148,6 @@ namespace Infrastructure.Data.SQL
                 throw ex;
             }
         }
+        #endregion
     }
 }

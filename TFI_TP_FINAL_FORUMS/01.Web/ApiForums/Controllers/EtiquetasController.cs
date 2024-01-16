@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
 using Core.Contracts.Services;
 using Core.Domain.Exceptions.BaseException;
-using Core.Domain.Exceptions.BusinessExceptions.Auth;
-using Core.Domain.Models;
-using Core.Domain.Request;
 using Core.Domain.Response;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +8,7 @@ namespace ApiForums.Controllers
 {
     [Produces("application/json")]
     [ApiController]
-    [Route("[controller]")]
+    [Route("v1/[controller]")]
     public class EtiquetasController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -21,8 +18,7 @@ namespace ApiForums.Controllers
         public EtiquetasController(
             IPublicacionService publicacionService,
             IEtiquetaService etiquetaService,
-            IMapper mapper,
-            ILogger<EtiquetasController> logger
+            IMapper mapper
             )
         {
             _publicacionService = publicacionService;
@@ -34,35 +30,20 @@ namespace ApiForums.Controllers
         [Route("CrearEtiqueta")]
         public async Task<IActionResult> CrearEtiqueta(List<string> Etiquetas)
         {
-            try
-            {
-                //var publicacionModel = _mapper.Map<PublicacionModel>(publicacion);
-                //await _publicacionService.CrearPublicacion(userId, publicacionModel);
-                throw new Exception("Error");
-                return Ok();
-            }
-            catch (ApiForumException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            //var publicacionModel = _mapper.Map<PublicacionModel>(publicacion);
+            await _etiquetaService.CrearEtiqueta(Etiquetas.FirstOrDefault());
+            return Ok();
         }
 
         [HttpGet]
         [Route("ObtenerEtiquetas")]
         public async Task<IActionResult> ObtenerEtiquetas()
         {
-            try
-            {
-                var etiquetas = await _etiquetaService.ObtenerEtiquetasDetalle();
-                var etiquetasResponse = _mapper.Map<IEnumerable<EtiquetasResponse>>(etiquetas);
-                etiquetasResponse.ToList().ForEach(x => x.EtiquetasPublicaciones.ToList().ForEach(y => y.Etiqueta = null));
+            var etiquetas = await _etiquetaService.ObtenerEtiquetasDetalle();
+            var etiquetasResponse = _mapper.Map<IEnumerable<EtiquetasResponse>>(etiquetas);
+            etiquetasResponse.ToList().ForEach(x => x.EtiquetasPublicaciones.ToList().ForEach(y => y.Etiqueta = null));
                     
-                return Ok(etiquetasResponse);
-            }
-            catch (ApiForumException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(etiquetasResponse);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace ApiForums.Controllers
 {
     [Produces("application/json")]
     [ApiController]
-    [Route("[controller]")]
+    [Route("v1/[controller]")]
     public class PublicacionesController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -29,17 +29,10 @@ namespace ApiForums.Controllers
         [Route("CrearPublicacion")]
         public async Task<IActionResult> CrearPublicacion([FromQuery] string userId, CrearPublicacionRequest publicacion)
         {
-            try
-            {
-                var publicacionModel = _mapper.Map<PublicacionModel>(publicacion);
-                await _publicacionService.CrearPublicacion(userId, publicacionModel);
+            var publicacionModel = _mapper.Map<PublicacionModel>(publicacion);
+            await _publicacionService.CrearPublicacion(userId, publicacionModel);
                 
-                return Ok();
-            }
-            catch (ApiForumException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok();
         }
 
 
@@ -47,32 +40,18 @@ namespace ApiForums.Controllers
         [Route("ObtenerPublicaciones")]
         public async Task<IActionResult> ObtenerPublicaciones()
         {
-            try
-            {
-                var publicaciones = await _publicacionService.ObtenerPublicaciones();
-                var publicacionesResponse = _mapper.Map<IEnumerable<PublicacionesResponse>>(publicaciones);
+            var publicaciones = await _publicacionService.ObtenerPublicaciones();
+            var publicacionesResponse = _mapper.Map<IEnumerable<PublicacionesResponse>>(publicaciones);
                 
-                return Ok(publicacionesResponse);
-            }
-            catch (ApiForumException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(publicacionesResponse);
         }
 
         [HttpGet]
         [Route("PredecirEtiquetasPorTexto")]
         public async Task<IActionResult> PredecirEtiquetasPorTexto([FromQuery] string texto)
         {
-            try
-            {
-                var publicaciones = await _publicacionService.ObtenerPublicacionesPorFiltro(texto);
-                return Ok(publicaciones);
-            }
-            catch (ApiForumException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var publicaciones = await _publicacionService.ObtenerPublicacionesPorFiltro(texto);
+            return Ok(publicaciones);
         }
     }
 }

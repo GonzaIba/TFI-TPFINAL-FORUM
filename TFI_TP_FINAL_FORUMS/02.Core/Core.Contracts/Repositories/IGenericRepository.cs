@@ -53,6 +53,14 @@ namespace Core.Contracts.Repositories
             bool ignoreQueryFilters = false,
             bool tracking = true);
 
+        public Task<IEnumerable<TResult>> GetWithGroupByDos<TResult>(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            Expression<Func<T, IGrouping<T, TResult>>> groupBy = null,
+            string includeProperties = "",
+            bool ignoreQueryFilters = false,
+            bool tracking = true);
+
         /// <summary>
         /// Busca un registro acorde al filtro y orden especificados.
         /// </summary>

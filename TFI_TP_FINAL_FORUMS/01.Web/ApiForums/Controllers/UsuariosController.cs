@@ -9,7 +9,7 @@ namespace ApiForums.Controllers
 {
     [Produces("application/json")]
     [ApiController]
-    [Route("[controller]")]
+    [Route("v1/[controller]")]
     public class UsuariosController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -30,28 +30,21 @@ namespace ApiForums.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ObtenerTopUsuariosSemana()
         {
-            try
-            {
-                var result = await _usuarioService.GetTopLastWeek();
+            var result = await _usuarioService.GetTopLastWeek();
 
-                var mappedUsers = result.Select(r => new UsuariosTopResponse
-                {
-                    NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido, // Asumiendo que Users tiene una propiedad llamada Nombre
-                    Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "", // Asumiendo que Users tiene una propiedad llamada Nombre
-                    DescripcionCorta = r.Key.DescripcionCortaForum,
-                    DescripcionLarga = r.Key.DescripcionLargaForum,
-                    Image = r.Key.ImageForum,
-                    FechaDesde = "Desde " + r.Key.FechaCreado.Year.ToString(),
-                    Puntaje = r.Value,
-                    UltimaVezConectado = r.Key.UltimaVezConectadoForum // Asumiendo que Users tiene una propiedad llamada LastConnected
-                });
-
-                return Ok(mappedUsers);
-            }
-            catch (ApiForumException ex)
+            var mappedUsers = result.Select(r => new UsuariosTopResponse
             {
-                return BadRequest(ex.Message);
-            }
+                NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido,
+                Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
+                DescripcionCorta = r.Key.DescripcionCortaForum,
+                DescripcionLarga = r.Key.DescripcionLargaForum,
+                Image = r.Key.ImageForum,
+                FechaDesde = "Desde " + r.Key.FechaCreado.Year.ToString(),
+                Puntaje = r.Value,
+                UltimaVezConectado = r.Key.UltimaVezConectadoForum
+            });
+
+            return Ok(mappedUsers);
         }
     }
 }

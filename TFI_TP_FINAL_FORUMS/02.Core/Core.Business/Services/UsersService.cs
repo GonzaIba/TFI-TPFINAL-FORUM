@@ -106,6 +106,14 @@ namespace Core.Business.Services
                     tracking: false
                 );
 
+                //var groupedUsers2 = await usuariosRecompensasRepo.GetWithGroupByDos(
+                //    x => x.FechaObtencion >= oneWeekAgo,
+                //    null,
+                //    query => query.CantidadRecompensa,
+                //    "Usuario",
+                //    tracking: false
+                //);
+
                 //Ordenamos Descendentemente y tomamos tambien su recompensa
                 var topUsersDict = groupedUsers.OrderByDescending(x => x.TotalRecompensa)
                                                .ToDictionary(k => k.User, v => v.TotalRecompensa);

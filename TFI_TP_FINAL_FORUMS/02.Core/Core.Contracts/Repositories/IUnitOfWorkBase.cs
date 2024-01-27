@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,12 +12,15 @@ namespace Core.Contracts.Repositories
     {
         DbContext Context { get; }
 
-        int SaveChanges();
-
         Task<int> SaveChangesAsync();
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
         Task<bool> Complete();
+
+
+        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task CommitAsync();
+        Task RollbackTransactionAsync();
     }
 }

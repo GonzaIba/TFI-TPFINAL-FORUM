@@ -1,18 +1,12 @@
-using Core.Domain.IdentityModels;
-using CrossCutting.Helpers;
 using CrossCutting.Extensions;
 using Infrastructure.Data.SQL;
 using IoC.Resolver;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Core.Contracts.Configurations;
 using AutoMapper;
 using Microsoft.IdentityModel.Logging;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using ApiForums.Background;
-using Core.Business.Services;
 using Microsoft.ML;
 using ApiForums.Mapping;
 using ApiForums.StartupConfiguration;
@@ -20,8 +14,6 @@ using Api.StartupConfiguration;
 using ApiForums.Middleware;
 using Infrastructure.ML.Repositories;
 using Infrastructure.ML.Contracts;
-using System.Configuration;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Hangfire;
 
 internal class Program
@@ -41,7 +33,6 @@ internal class Program
 
         #region Configure Basic Services
         IdentityModelEventSource.ShowPII = true;
-        builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddHttpClient();
         builder.Services.AddOutputCache(opciones => {
@@ -53,13 +44,14 @@ internal class Program
         // Obtén el valor de modelPath de tu configuración de la aplicación
         var modelPath = builder.Configuration["ML_Config:TextoPrediccionesPath"];
         builder.Services.AddSingleton<ITextoPrediccionRepositoryML>(x => new TextoPrediccionRepositoryML(modelPath, new MLContext()));
+        builder.Services.ConfigureSwagger(builder.Environment);
         builder.Services.ConfigureIoC(builder.Configuration);
         builder.Services.ConfigureLogger(builder?.Configuration);
-        builder.Services.ConfigureSwagger(builder.Environment);
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHangfire(x => x.UseSqlServerStorage(GetGatewayConnectionString()));
         builder.Services.AddHangfireServer();
-        builder.Services.AddControllers(o => {
+        builder.Services.AddControllers(o =>
+        {
             o.UseRoutePrefix("api");
         });
         #endregion
@@ -68,8 +60,7 @@ internal class Program
         builder.Services.AddDbContext<ApplicationDbContext>
         (
             options => options
-            .UseSqlServer(GetConnectionString(), builder =>
-                 builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null)) //Al contexto le agrego la conexion de la base de datos
+            .UseSqlServer(GetConnectionString())
 
             //.UseMySQL(GetMySQLConnectionString(), builder =>
             //     builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null)) //Al contexto le agrego la conexion de la base de datos
@@ -125,19 +116,18 @@ internal class Program
             #region Configure Development Environment
             if (env.IsDevelopment())
             {
-                context.Database.EnsureCreatedAsync();
                 //context.Database.Migrate(); //Cuando se ejecuta la aplicación se ejecuta el metodo update-database de dotnet ef core...
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    //c.RoutePrefix = String.Empty;
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "UAI TFI-TP-FINAL API V1");
+                    c.InjectStylesheet("/swagger-ui/SwaggerDark.css");
+                    c.EnableValidator(null);
+                    c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { { "audience", "" } });
+                });
+                context.Database.Migrate(); //Cuando se ejecuta la aplicación se ejecuta el metodo update-database de dotnet ef core...
             }
-            #endregion
-
-            #region Configure Swagger
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                //c.RoutePrefix = String.Empty;
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UAI TFI-TP-FINAL API V1");
-                c.InjectStylesheet("/swagger-ui/SwaggerDark.css");
-            });
             #endregion
 
             #region Configure CORS
@@ -154,13 +144,11 @@ internal class Program
             #endregion
 
             #region Configure Default Methods .NET
-            app.UseMiddleware<RequestMiddleware>();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseAuthentication();
-            app.UseAuthorization();
+            app.UseMiddleware<RequestMiddleware>();
             app.UseOutputCache();
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

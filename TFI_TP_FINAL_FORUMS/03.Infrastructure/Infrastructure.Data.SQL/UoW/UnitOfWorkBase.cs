@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,18 +21,22 @@ namespace Infrastructure.Data.SQL.UoW
 
         public DbContext Context => _context;
 
-        public int SaveChanges()
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
-            try
-            {
-                return _context.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                ex.Entries.Single().Reload();
-                return _context.SaveChanges();
-            }
+            return await _context.Database.BeginTransactionAsync();
         }
+        public async Task CommitAsync()
+        {
+            await _context.Database.CommitTransactionAsync();
+            await Task.CompletedTask;
+        }
+        public async Task RollbackTransactionAsync()
+        {
+            await _context.Database.RollbackTransactionAsync();
+            await Task.CompletedTask;
+        }
+
 
         public async Task<int> SaveChangesAsync()
         {

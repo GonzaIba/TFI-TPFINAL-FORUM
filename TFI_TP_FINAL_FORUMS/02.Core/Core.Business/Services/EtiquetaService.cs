@@ -24,11 +24,14 @@ namespace Core.Business.Services
 
         public async Task<bool> CrearEtiqueta(string nombreEtiqueta)
         {
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
             EtiquetaModel etiquetaModel = new();
             etiquetaModel.NombreEtiqueta = nombreEtiqueta;
             etiquetaModel.CreateDate = DateTime.Now;
             await _repository.Insert(etiquetaModel);
+            await _unitOfWork.SaveChangesAsync();
             var r = etiquetaModel.IDEtiqueta;
+            await transaction.CommitAsync();
             return etiquetaModel.IDEtiqueta > 0;
         }
 

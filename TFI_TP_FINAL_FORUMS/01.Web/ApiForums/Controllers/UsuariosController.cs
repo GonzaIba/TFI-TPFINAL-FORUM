@@ -17,8 +17,7 @@ namespace ApiForums.Controllers
         
         public UsuariosController(
             IUsersService usuarioService,
-            IMapper mapper,
-            ILogger<UsuariosController> logger
+            IMapper mapper
             )
         {
             _usuarioService = usuarioService;

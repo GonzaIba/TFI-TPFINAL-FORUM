@@ -45,5 +45,27 @@ namespace ApiForums.Controllers
 
             return Ok(mappedUsers);
         }
+
+        [HttpGet]
+        [Route("ObtenerUsuariosBuscador")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ObtenerUsuariosBuscador()
+        {
+            var result = await _usuarioService.GetTopLastWeek();
+
+            var mappedUsers = result.Select(r => new UsuariosTopResponse
+            {
+                NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido,
+                Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
+                DescripcionCorta = r.Key.DescripcionCortaForum,
+                DescripcionLarga = r.Key.DescripcionLargaForum,
+                Image = r.Key.ImageForum,
+                FechaDesde = "Desde " + r.Key.FechaCreado.Year.ToString(),
+                Puntaje = r.Value,
+                UltimaVezConectado = r.Key.UltimaVezConectadoForum
+            });
+
+            return Ok(mappedUsers);
+        }
     }
 }

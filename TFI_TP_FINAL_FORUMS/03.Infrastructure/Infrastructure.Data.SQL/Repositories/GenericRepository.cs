@@ -15,14 +15,14 @@ namespace Infrastructure.Data.SQL.Repositories
     {
         #region Fields
 
-        internal ApplicationDbContext _context;
+        internal DbContext _context;
         internal DbSet<T> _entities;
 
         #endregion Fields
 
         #region Constructor
 
-        public GenericRepository(ApplicationDbContext context)
+        public GenericRepository(DbContext context)
         {
             this._context = context;
         }

@@ -15,6 +15,8 @@ using CrossCutting.StorageService.Configurations;
 using CrossCutting.StorageService.Contracts;
 using CrossCutting.StorageService.Factory;
 using CrossCutting.StorageService.Services;
+using Microsoft.EntityFrameworkCore;
+using Infrastructure.Data.SQL;
 
 namespace IoC.Resolver
 {
@@ -22,6 +24,9 @@ namespace IoC.Resolver
     {
         public static IServiceCollection ConfigureIoC(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddScoped<DbContext, ApplicationGatewayDbContext>();
+            services.AddScoped<DbContext, ApplicationDbContext>();
+
             services.RegisterDataLayer(configuration);
             services.RegisterUnitOfWork();
             services.RegisterBusinessLayer();

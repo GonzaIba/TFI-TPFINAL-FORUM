@@ -12,6 +12,11 @@ namespace Core.Domain.Response.BaseResponse
         public Meta Meta { get; set; } = new();
         public T Data { get; set; }
         public Errors Errors { get; set; } = new();
+
+        public bool HasErrors()
+        {
+            return this.Errors.ErrorsList.Any();
+        }
     }
 
     public class Meta

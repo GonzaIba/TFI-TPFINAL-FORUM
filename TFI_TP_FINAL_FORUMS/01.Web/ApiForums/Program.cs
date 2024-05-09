@@ -69,6 +69,14 @@ internal class Program
             .EnableSensitiveDataLogging()
             .UseLoggerFactory(_loggerFactory)
         );
+
+        builder.Services.AddDbContext<ApplicationGatewayDbContext>
+        (
+            options => options
+            .UseSqlServer(GetGatewayConnectionString())
+            .EnableSensitiveDataLogging()
+            .UseLoggerFactory(_loggerFactory)
+        );
         #endregion
 
         #region Configure AppSettings Inyection

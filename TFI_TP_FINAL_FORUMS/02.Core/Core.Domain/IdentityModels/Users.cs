@@ -42,7 +42,7 @@ namespace Core.Domain.IdentityModels
         public string? Apellido { get; set; }
 
 
-        //Para los foros
+        //Para educacional
         public string? ImageEducacional { get; set; }
 
         

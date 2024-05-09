@@ -1,5 +1,4 @@
-﻿using Core.Contracts.DbContext;
-using Core.Domain.GenericEntityClass;
+﻿using Core.Domain.GenericEntityClass;
 using Core.Domain.IdentityModels;
 using CrossCutting.Extensions;
 using Microsoft.AspNetCore.Identity;
@@ -14,12 +13,11 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace Infrastructure.Data.SQL
 {
-    public class ApplicationDbContext : DbContext, IApplicationDbContext
+    public class ApplicationGatewayDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        public ApplicationGatewayDbContext(DbContextOptions<ApplicationGatewayDbContext> options) : base(options)
         {
         }
 

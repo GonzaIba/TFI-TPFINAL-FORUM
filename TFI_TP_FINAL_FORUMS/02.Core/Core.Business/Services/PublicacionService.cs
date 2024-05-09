@@ -17,7 +17,7 @@ namespace Core.Business.Services
             IUsersService usersService,
             ITextoPrediccionRepositoryML textoPrediccionRepositoryML
             )
-        : base(unitOfWork, unitOfWork.GetRepository<IPublicacionRepository>())
+        : base(unitOfWork, unitOfWork.GetRepositoryForum<IPublicacionRepository>())
         {
             _usersService = usersService;
             _textoPrediccionRepositoryML = textoPrediccionRepositoryML;

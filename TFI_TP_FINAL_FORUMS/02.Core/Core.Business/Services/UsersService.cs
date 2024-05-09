@@ -41,7 +41,7 @@ namespace Core.Business.Services
             IMapper mapper,
             IEmailService emailService,
             IHttpContextAccessor httpContextAccessor)
-            : base(unitOfWork, unitOfWork.GetRepository<IUsersRepository>())
+            : base(unitOfWork, unitOfWork.GetRepositoryGateway<IUsersRepository>())
         {
             _emailService = emailService;
             _mapper = mapper;
@@ -86,7 +86,7 @@ namespace Core.Business.Services
             try
             {
                 //Obtenemos el repositorio de recompensas de usuarios
-                var usuariosRecompensasRepo = _unitOfWork.GetRepository<IRecompensaUsuarioRepository>();
+                var usuariosRecompensasRepo = _unitOfWork.GetRepositoryForum<IRecompensaUsuarioRepository>();
 
                 //Agarramos la fecha de hace 1 semana
                 var oneWeekAgo = DateTime.Now.AddDays(-7);

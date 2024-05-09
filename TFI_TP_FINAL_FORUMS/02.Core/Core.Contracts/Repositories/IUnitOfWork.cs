@@ -6,6 +6,7 @@ namespace Core.Contracts.Repositories
 {
     public interface IUnitOfWork : IUnitOfWorkBase
     {
-        public I GetRepository<I>();
+        public I GetRepositoryForum<I>();
+        public I GetRepositoryGateway<I>();
     }
 }

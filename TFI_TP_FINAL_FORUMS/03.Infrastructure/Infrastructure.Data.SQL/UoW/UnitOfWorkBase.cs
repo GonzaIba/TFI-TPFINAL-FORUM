@@ -12,28 +12,30 @@ namespace Infrastructure.Data.SQL.UoW
 {
     public class UnitOfWorkBase : IUnitOfWorkBase
     {
-        public readonly ApplicationDbContext _context;
+        public readonly ApplicationDbContext _appDbcontext;
+        public readonly ApplicationGatewayDbContext _gatewayDbContext;
 
-        public UnitOfWorkBase(ApplicationDbContext context)
+        public UnitOfWorkBase(ApplicationDbContext appDContext, ApplicationGatewayDbContext gatewayDbContext)
         {
-            _context = context;
+            _appDbcontext = appDContext;
+            _gatewayDbContext = gatewayDbContext;
         }
 
-        public DbContext Context => _context;
+        public DbContext Context => _appDbcontext;
 
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
-            return await _context.Database.BeginTransactionAsync();
+            return await _appDbcontext.Database.BeginTransactionAsync();
         }
         public async Task CommitAsync()
         {
-            await _context.Database.CommitTransactionAsync();
+            await _appDbcontext.Database.CommitTransactionAsync();
             await Task.CompletedTask;
         }
         public async Task RollbackTransactionAsync()
         {
-            await _context.Database.RollbackTransactionAsync();
+            await _appDbcontext.Database.RollbackTransactionAsync();
             await Task.CompletedTask;
         }
 
@@ -42,12 +44,12 @@ namespace Infrastructure.Data.SQL.UoW
         {
             try
             {
-                return await _context.SaveChangesAsync();
+                return await _appDbcontext.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
                 ex.Entries.Single().Reload();
-                return _context.SaveChanges();
+                return _appDbcontext.SaveChanges();
             }
             catch (DbUpdateException ex)
             {
@@ -61,12 +63,12 @@ namespace Infrastructure.Data.SQL.UoW
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
-            return await _context.SaveChangesAsync(cancellationToken);
+            return await _appDbcontext.SaveChangesAsync(cancellationToken);
         }
         
         public async Task<bool> Complete()
         {
-            return await _context.SaveChangesAsync() > 0;
+            return await _appDbcontext.SaveChangesAsync() > 0;
         }
 
         private bool disposed = false;
@@ -77,7 +79,7 @@ namespace Infrastructure.Data.SQL.UoW
             {
                 if (disposing)
                 {
-                    _context.Dispose();
+                    _appDbcontext.Dispose();
                 }
             }
             disposed = true;

@@ -11,7 +11,7 @@ namespace Core.Contracts.Repositories
     public interface IUnitOfWorkBase : IDisposable
     {
         DbContext Context { get; }
-
+        
         Task<int> SaveChangesAsync();
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);

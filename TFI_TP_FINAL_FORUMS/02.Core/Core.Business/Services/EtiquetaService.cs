@@ -17,7 +17,7 @@ namespace Core.Business.Services
             IUnitOfWork unitOfWork,
             IUsersService usersService
             )
-        : base(unitOfWork, unitOfWork.GetRepository<IEtiquetaRepository>())
+        : base(unitOfWork, unitOfWork.GetRepositoryForum<IEtiquetaRepository>())
         {
             _usersService = usersService;
         }

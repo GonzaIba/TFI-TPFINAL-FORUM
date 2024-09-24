@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Response
 {
-    public class UsuariosTopResponse
+    public class UsersTopResponse
     {
         public string NombreCompleto { get; set; }
         public string Iniciales { get; set; }

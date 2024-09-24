@@ -134,7 +134,7 @@ internal class Program
                     c.EnableValidator(null);
                     c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { { "audience", "" } });
                 });
-                context.Database.Migrate(); //Cuando se ejecuta la aplicación se ejecuta el metodo update-database de dotnet ef core...
+                //context.Database.Migrate(); //Cuando se ejecuta la aplicación se ejecuta el metodo update-database de dotnet ef core...
             }
             #endregion
 

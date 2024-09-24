@@ -17,7 +17,7 @@ namespace Infrastructure_ML
 {
     public partial class PublicacionTituloML
     {
-        public const string RetrainConnectionString = @"Data Source=.;Initial Catalog=TFI_PLOFTEC;Integrated Security=True";
+        public const string RetrainConnectionString = @"Data Source=.;Initial Catalog=TFI_PLOFTEC_FORUM;Integrated Security=True";
         public const string RetrainCommandString = @"SELECT Texto, Etiquetas FROM [dbo].[TextoPredicciones]";
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
+using Core.Contracts.UoW;
 using Core.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,10 @@ namespace Core.Business.Services
     {
         private readonly IUsersService _usersService;
         public TextoPrediccionService(
-            IUnitOfWork unitOfWork,
+            IUnitOfWorkForum unitOfWork,
             IUsersService usersService
             )
-        : base(unitOfWork, unitOfWork.GetRepositoryForum<ITextoPrediccionRepository>())
+        : base(unitOfWork, unitOfWork.GetRepository<ITextoPrediccionRepository>())
         {
             _usersService = usersService;
         }

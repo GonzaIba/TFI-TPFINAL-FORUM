@@ -17,6 +17,7 @@ namespace Core.Domain.Models
         public string NombreMedalla { get; set; }
         public string Descripcion { get; set; }
         public int CantidadEntregada { get; set; }
+        public string ImagenMedalla { get; set; }
         public bool Active { get; set; }
 
         // Propiedades de navegación

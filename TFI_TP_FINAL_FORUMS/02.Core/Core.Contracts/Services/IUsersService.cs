@@ -15,6 +15,8 @@ namespace Core.Contracts.Services
         public Task<Users> GetUserByNameAsync(string userName);
         public Task<bool> UpdateUserAsync(Users users);
 
-        public Task<Dictionary<Users, int>> GetTopLastWeek();
+        public Task<Dictionary<Users, int>> GetTopLastWeekAsync();
+        public Task<IEnumerable<Users>> GetUsersForumAsync();
+        public Task<Users> GetDetailUserAsync(string userEmail);
     }
 }

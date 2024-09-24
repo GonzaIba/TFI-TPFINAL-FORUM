@@ -24,7 +24,9 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.HasOne(r => r.Publicacion)
                 .WithMany(p => p.Respuestas)
-                .HasForeignKey(r => r.IDPublicacion);
+                .HasForeignKey(r => r.IDPublicacion)
+                .OnDelete(DeleteBehavior.NoAction); // Evitar cascada
+
             builder.ToTable("Respuestas");
         }
     }

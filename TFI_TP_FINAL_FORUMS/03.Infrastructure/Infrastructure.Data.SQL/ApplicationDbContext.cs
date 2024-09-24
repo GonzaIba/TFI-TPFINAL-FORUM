@@ -1,6 +1,6 @@
-﻿using Core.Contracts.DbContext;
-using Core.Domain.GenericEntityClass;
+﻿using Core.Domain.GenericEntityClass;
 using Core.Domain.IdentityModels;
+using Core.Domain.Models;
 using CrossCutting.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Data.SQL
 {
-    public class ApplicationDbContext : DbContext, IApplicationDbContext
+    public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -30,6 +30,16 @@ namespace Infrastructure.Data.SQL
                 .SetPropertyDefaultValue<bool>("Active", true)
                 .SetPropertyQueryFilter("Active", true)
                 .ConfigureGenericProperties(typeof(GenericEntity));
+
+            modelBuilder.Ignore<Users>();
+            modelBuilder.Ignore<UsersClaims>();
+            modelBuilder.Ignore<UsersLogin>();
+            modelBuilder.Ignore<UsersRoles>();
+            modelBuilder.Ignore<UsersForumModel>();
+            modelBuilder.Ignore<UsersToken>();
+            modelBuilder.Ignore<Roles>();
+            modelBuilder.Ignore<RolesClaim>();
+            modelBuilder.Ignore<RefreshToken>();
 
             base.OnModelCreating(modelBuilder);
         }

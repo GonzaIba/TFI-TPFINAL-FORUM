@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
+using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Models;
 using Infrastructure.ML.Contracts;
@@ -13,11 +14,11 @@ namespace Core.Business.Services
         private readonly IUsersService _usersService;
         private readonly ITextoPrediccionRepositoryML _textoPrediccionRepositoryML;
         public PublicacionService(
-            IUnitOfWork unitOfWork,
+            IUnitOfWorkForum unitOfWork,
             IUsersService usersService,
             ITextoPrediccionRepositoryML textoPrediccionRepositoryML
             )
-        : base(unitOfWork, unitOfWork.GetRepositoryForum<IPublicacionRepository>())
+        : base(unitOfWork, unitOfWork.GetRepository<IPublicacionRepository>())
         {
             _usersService = usersService;
             _textoPrediccionRepositoryML = textoPrediccionRepositoryML;

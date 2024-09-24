@@ -17,4 +17,8 @@
     <Folder Include="Exceptions\BusinessExceptions\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Helpers\CrossCutting.Helpers.csproj" />
+  </ItemGroup>
+
 </Project>

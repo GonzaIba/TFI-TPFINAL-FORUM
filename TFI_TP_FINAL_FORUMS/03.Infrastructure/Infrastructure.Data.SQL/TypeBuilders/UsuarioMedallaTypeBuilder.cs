@@ -17,6 +17,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(um => um.IDUsuarioMedalla).IsRequired();
             builder.Property(um => um.IDUsuario).IsRequired().HasMaxLength(450);
             builder.Property(um => um.IDMedalla).IsRequired();
+            builder.Property(um => um.FechaObtenido).IsRequired();
 
             builder.HasOne(um => um.Usuario)
                 .WithMany(u => u.UsuarioMedallas)

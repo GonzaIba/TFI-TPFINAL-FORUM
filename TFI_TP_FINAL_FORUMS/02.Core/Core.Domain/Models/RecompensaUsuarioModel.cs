@@ -18,6 +18,6 @@ namespace Core.Domain.Models
 
         // Propiedades de navegación
         public RespuestaModel Respuesta { get; set; }
-        public Users Usuario { get; set; }
+        //public Users Usuario { get; set; }
     }
 }

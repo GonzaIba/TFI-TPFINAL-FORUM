@@ -12,7 +12,8 @@ namespace Core.Domain.Models
         public int IDUsuarioMedalla { get; set; }
         public string IDUsuario { get; set; }
         public int IDMedalla { get; set; }
-        
+        public DateTime FechaObtenido { get; set; }
+
         // Propiedades de navegación
         public Users Usuario { get; set; }
         public MedallaModel Medalla { get; set; }

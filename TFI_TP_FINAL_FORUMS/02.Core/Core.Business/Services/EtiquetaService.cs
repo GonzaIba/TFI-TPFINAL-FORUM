@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
+using Core.Contracts.UoW;
 using Core.Domain.Exceptions;
 using Core.Domain.Models;
 using System;
@@ -14,10 +15,10 @@ namespace Core.Business.Services
     {
         private readonly IUsersService _usersService;
         public EtiquetaService(
-            IUnitOfWork unitOfWork,
+            IUnitOfWorkForum unitOfWork,
             IUsersService usersService
             )
-        : base(unitOfWork, unitOfWork.GetRepositoryForum<IEtiquetaRepository>())
+        : base(unitOfWork, unitOfWork.GetRepository<IEtiquetaRepository>())
         {
             _usersService = usersService;
         }

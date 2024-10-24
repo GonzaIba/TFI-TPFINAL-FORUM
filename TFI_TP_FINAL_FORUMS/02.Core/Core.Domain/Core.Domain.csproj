@@ -15,9 +15,11 @@
 
   <ItemGroup>
     <Folder Include="Exceptions\BusinessExceptions\" />
+    <Folder Include="Specification\Business\" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Extensions\CrossCutting.Extensions.csproj" />
     <ProjectReference Include="..\..\05.CrossCutting\CrossCutting.Helpers\CrossCutting.Helpers.csproj" />
   </ItemGroup>
 

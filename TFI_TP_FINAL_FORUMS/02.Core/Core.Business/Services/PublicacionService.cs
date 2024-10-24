@@ -13,15 +13,18 @@ namespace Core.Business.Services
     {
         private readonly IUsersService _usersService;
         private readonly ITextoPrediccionRepositoryML _textoPrediccionRepositoryML;
+        private readonly IUnitOfWorkGateway _unitOfWorkGateway;
         public PublicacionService(
-            IUnitOfWorkForum unitOfWork,
+            IUnitOfWorkForum unitOfWorkForum,
+            IUnitOfWorkGateway unitOfWorkGateway,
             IUsersService usersService,
             ITextoPrediccionRepositoryML textoPrediccionRepositoryML
             )
-        : base(unitOfWork, unitOfWork.GetRepository<IPublicacionRepository>())
+        : base(unitOfWorkForum, unitOfWorkForum.GetRepository<IPublicacionRepository>())
         {
             _usersService = usersService;
             _textoPrediccionRepositoryML = textoPrediccionRepositoryML;
+            _unitOfWorkGateway = unitOfWorkGateway;
         }
 
         public async Task<bool> CrearPublicacion(string userId, PublicacionModel publicacion)
@@ -57,8 +60,7 @@ namespace Core.Business.Services
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw;
             }
         }
 

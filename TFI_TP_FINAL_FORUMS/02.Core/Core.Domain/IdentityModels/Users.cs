@@ -66,6 +66,6 @@ namespace Core.Domain.IdentityModels
         public virtual ICollection<RecompensaUsuarioModel> RecompensasUsuarios { get; set; }
         public virtual ICollection<RespuestaModel> Respuestas { get; set; }
         public virtual ICollection<PublicacionModel> Publicaciones { get; set; }
-
+        public virtual ICollection<UserFiltersModel> UserFilters { get; set; }
     }
 }

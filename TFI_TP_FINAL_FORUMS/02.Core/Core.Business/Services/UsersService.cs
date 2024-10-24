@@ -28,6 +28,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Core.Domain.Models;
 using System.Linq.Expressions;
 using Core.Contracts.UoW;
+using Core.Domain.Specification;
+using CrossCutting.Extensions.Linq;
 
 namespace Core.Business.Services
 {
@@ -37,6 +39,7 @@ namespace Core.Business.Services
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWorkForum _unitOfWorkForum;
+        private readonly IUnitOfWorkGateway _unitOfWorkGateway;
 
         public UsersService(
             IUnitOfWorkGateway unitOfWorkGateway,
@@ -50,6 +53,7 @@ namespace Core.Business.Services
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
             _unitOfWorkForum = unitOfWorkForum;
+            _unitOfWorkGateway = unitOfWorkGateway;
         }      
         
         public async Task<List<Users>> GetUsersAsync()
@@ -146,18 +150,28 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<IEnumerable<Users>> GetUsersForumAsync()
+        public async Task<IEnumerable<Users>> GetUsersForumAsync(string userId)
         {
             try
             {
-                var usersForum = (await _repository.Get(includeProperties: "UsersForum")).ToList();
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                var userFiltersRepository = _unitOfWorkGateway.GetRepository<IUserFiltersRepository>();
+                var userFilters = (await userFiltersRepository.Get(x => x.UserId == userId, includeProperties: "Filter")).ToList();
 
-                foreach (var user in usersForum)
+                Specification<Users> combinedSpecification = new AdHocSpecification<Users>(user => true);
+
+                foreach (var userFilter in userFilters)
                 {
-                    user.RecompensasUsuarios = (await _unitOfWorkForum.GetRepository<IRecompensaUsuarioRepository>().Get(x => x.IDUsuario == user.Id)).ToList();
+                    var newSpec = new AdHocSpecification<Users>(ExpressionExtensions.CreateContainsExpression<Users>(userFilter.Filter.Description, userFilter.Value));
+                    combinedSpecification &= newSpec;
                 }
 
-                return usersForum;
+                var filteredUsers = (await _repository.Get(
+                    filter: combinedSpecification,
+                    includeProperties: "UsersForum"
+                )).ToList();
+
+                return filteredUsers;
             }
             catch (Exception ex)
             {
@@ -187,6 +201,40 @@ namespace Core.Business.Services
 
                 throw;
             }
+        }
+    }
+    public static class HOLA
+    {
+        public static Expression<Func<T, bool>> Combine<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
+        {
+            var parameter = Expression.Parameter(typeof(T));
+
+            var leftVisitor = new ReplaceExpressionVisitor(first.Parameters[0], parameter);
+            var left = leftVisitor.Visit(first.Body);
+
+            var rightVisitor = new ReplaceExpressionVisitor(second.Parameters[0], parameter);
+            var right = rightVisitor.Visit(second.Body);
+
+            return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(left, right), parameter);
+        }
+    }
+
+    class ReplaceExpressionVisitor : ExpressionVisitor
+    {
+        private readonly Expression _oldValue;
+        private readonly Expression _newValue;
+
+        public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
+        {
+            _oldValue = oldValue;
+            _newValue = newValue;
+        }
+
+        public override Expression Visit(Expression node)
+        {
+            if (node == _oldValue)
+                return _newValue;
+            return base.Visit(node);
         }
     }
 }

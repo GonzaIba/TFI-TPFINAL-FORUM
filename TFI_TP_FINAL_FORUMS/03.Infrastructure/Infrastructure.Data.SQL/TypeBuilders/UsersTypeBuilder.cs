@@ -11,15 +11,12 @@ namespace Infrastructure.Data.SQL.TypeBuilders
     {
         public void Configure(EntityTypeBuilder<Users> builder)
         {
-            builder.HasKey(x => x.Id);
-
-            builder.Property(x => x.Active)
-                   .IsRequired();
 
             builder.Ignore(x => x.UserPrivileges);
 
             builder.Property(x => x.FechaCreado)
-                   .HasColumnType("datetime2(7)");
+                   .HasColumnType("datetime2(7)")
+                   .HasDefaultValueSql("GETDATE()");
 
             builder.Property(x => x.Nombre)
                    .HasColumnType("varchar(50)");
@@ -27,19 +24,12 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(x => x.Apellido)
                    .HasColumnType("varchar(50)");
 
-            //Educational
-            builder.Property(x => x.ImageEducacional)
-                   .HasColumnType("varchar(max)");
+            //builder.HasOne(x => x.Country)
+            //       .WithMany(z => z.Users)
+            //       .HasForeignKey(y => y.IDCountry);
 
-            //Forum
-            builder.Property(x => x.DescripcionCortaForum)
-                   .HasColumnType("varchar(50)");
-
-            builder.Property(x => x.DescripcionLargaForum)
-                   .HasColumnType("varchar(500)");
-
-            builder.Property(x => x.ImageForum)
-                   .HasColumnType("varchar(max)");
+            builder.HasOne(x => x.UsersForum)
+                   .WithOne(z => z.User);
 
             builder.ToTable("Users");
         }

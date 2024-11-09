@@ -15,6 +15,7 @@ namespace Core.Domain.IdentityModels
             UsuarioMedallas = new HashSet<UsuarioMedallaModel>();
             UserRefreshTokens = new HashSet<RefreshToken>();
             RecompensasUsuarios = new HashSet<RecompensaUsuarioModel>();
+            PublicacionesVotos = new HashSet<PublicacionVotoModel>();
         }
 
         // Propiedades básicas de IdentityUser
@@ -36,31 +37,38 @@ namespace Core.Domain.IdentityModels
 
 
         //Propiedades Genéricas
+        public string? LenguajePreferencia { get; set; }
         public DateTime FechaCreado { get; set; }
         public bool Active { get; set; }
         public string Nombre { get; set; }
         public string? Apellido { get; set; }
 
 
-        //Para los foros
-        public string? ImageEducacional { get; set; }
+        //Para educacional
+        //public string? ImageEducacional { get; set; }
 
         
         //Para los foros
-        public string? DescripcionCortaForum { get; set; }
-        public string? DescripcionLargaForum { get; set; }
-        public string? ImageForum { get; set; }
-        public DateTime UltimaVezConectadoForum { get; set; }
+        //public string? DescripcionCortaForum { get; set; }
+        //public string? DescripcionLargaForum { get; set; }
+        //public string? ImageForum { get; set; }
+        //public DateTime UltimaVezConectadoForum { get; set; }
 
         
         //Propiedades para EF Core
         public UsersRoles UserPrivileges { get; set; }
+        public UsersForumModel UsersForum { get; set; }
         public virtual ICollection<UsersClaims> UsersClaims { get; set; }
         public virtual ICollection<UsersLogin> UsersLogin { get; set; }
         public virtual ICollection<UsersToken> UsersTokens { get; set; }
         public virtual ICollection<RefreshToken> UserRefreshTokens { get; set; }
+        public virtual ICollection<UserFiltersModel> UserFilters { get; set; }
         public virtual ICollection<PublicacionGuardadaModel> PublicacionesGuardadas { get; set; }
         public virtual ICollection<UsuarioMedallaModel> UsuarioMedallas { get; set; }
         public virtual ICollection<RecompensaUsuarioModel> RecompensasUsuarios { get; set; }
+        public virtual ICollection<RespuestaModel> Respuestas { get; set; }
+        public virtual ICollection<PublicacionModel> Publicaciones { get; set; }
+        public virtual ICollection<PublicacionVotoModel> PublicacionesVotos { get; set; }
+        public virtual ICollection<RespuestaVotoModel> RespuestasVotos { get; set; }
     }
 }

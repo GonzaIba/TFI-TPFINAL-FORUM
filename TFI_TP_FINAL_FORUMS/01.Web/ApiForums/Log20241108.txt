@@ -1,0 +1,244 @@
+2024-11-08 20:31:42.392 -03:00 [INF] Start installing Hangfire SQL objects...
+2024-11-08 20:31:43.424 -03:00 [INF] Hangfire SQL objects installed.
+2024-11-08 20:31:43.502 -03:00 [INF] BackgroundService Running
+2024-11-08 20:31:43.733 -03:00 [INF] Starting Hangfire Server using job storage: 'SQL Server: localhost@TFI_PLOFTEC_GATEWAY'
+2024-11-08 20:31:43.735 -03:00 [INF] Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+2024-11-08 20:31:43.738 -03:00 [INF] Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+2024-11-08 20:31:43.787 -03:00 [DBG] Execution loop BackgroundServerProcess:d66a8ed0 has started in 39,6777 ms
+2024-11-08 20:31:44.280 -03:00 [INF] Server desktop-8f2p6hh:31836:da447146 successfully announced in 470,6752 ms
+2024-11-08 20:31:44.306 -03:00 [DBG] Execution loop ServerHeartbeatProcess:61b89fb9 has started in 24,1261 ms
+2024-11-08 20:31:44.306 -03:00 [INF] Server desktop-8f2p6hh:31836:da447146 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, SqlServerHeartbeatProcess, Worker, DelayedJobScheduler, RecurringJobScheduler...
+2024-11-08 20:31:44.314 -03:00 [DBG] Execution loop ServerWatchdog:2b9ae7e0 has started in 7,6945 ms
+2024-11-08 20:31:44.321 -03:00 [DBG] Execution loop ServerJobCancellationWatcher:b5e6d3fc has started in 9,3211 ms
+2024-11-08 20:31:44.399 -03:00 [DBG] Execution loop ExpirationManager:e08918e2 has started in 80,9965 ms
+2024-11-08 20:31:44.409 -03:00 [DBG] Removing outdated records from the 'AggregatedCounter' table...
+2024-11-08 20:31:44.423 -03:00 [DBG] Execution loop CountersAggregator:bf566779 has started in 71,0073 ms
+2024-11-08 20:31:44.434 -03:00 [DBG] Execution loop SqlServerHeartbeatProcess:08d36b0d has started in 17,6599 ms
+2024-11-08 20:31:44.434 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 20:31:44.436 -03:00 [INF] 3 servers were removed due to timeout
+2024-11-08 20:31:44.442 -03:00 [DBG] Execution loop Worker:1ffefc8e has started in 19,0648 ms
+2024-11-08 20:31:44.450 -03:00 [DBG] Execution loop Worker:ed6f3d88 has started in 27,4989 ms
+2024-11-08 20:31:44.460 -03:00 [DBG] Execution loop Worker:07e21983 has started in 37,5409 ms
+2024-11-08 20:31:44.474 -03:00 [DBG] Execution loop Worker:5e022655 has started in 50,9653 ms
+2024-11-08 20:31:44.497 -03:00 [DBG] Execution loop Worker:e35b5455 has started in 74,2532 ms
+2024-11-08 20:31:44.543 -03:00 [DBG] Execution loop Worker:f268e838 has started in 113,107 ms
+2024-11-08 20:31:44.547 -03:00 [DBG] Removing outdated records from the 'Job' table...
+2024-11-08 20:31:44.556 -03:00 [DBG] Execution loop Worker:acc61d5f has started in 132,4527 ms
+2024-11-08 20:31:44.561 -03:00 [DBG] Execution loop Worker:450334c5 has started in 137,988 ms
+2024-11-08 20:31:44.566 -03:00 [DBG] Execution loop Worker:b8aa03a5 has started in 142,6846 ms
+2024-11-08 20:31:44.603 -03:00 [DBG] Execution loop Worker:daa03485 has started in 178,746 ms
+2024-11-08 20:31:44.603 -03:00 [DBG] Execution loop Worker:53229647 has started in 180,1139 ms
+2024-11-08 20:31:44.603 -03:00 [DBG] Execution loop Worker:abf9191d has started in 180,3258 ms
+2024-11-08 20:31:44.608 -03:00 [DBG] Execution loop Worker:d1c2379c has started in 185,1882 ms
+2024-11-08 20:31:44.613 -03:00 [DBG] Execution loop Worker:c9b87f99 has started in 190,4525 ms
+2024-11-08 20:31:44.617 -03:00 [DBG] Execution loop Worker:aa59560d has started in 194,4858 ms
+2024-11-08 20:31:44.622 -03:00 [DBG] Execution loop Worker:13a677d1 has started in 198,8256 ms
+2024-11-08 20:31:44.625 -03:00 [DBG] Execution loop Worker:169c403d has started in 202,472 ms
+2024-11-08 20:31:44.628 -03:00 [DBG] Execution loop Worker:cb027362 has started in 205,2675 ms
+2024-11-08 20:31:44.633 -03:00 [DBG] Execution loop Worker:3857bba6 has started in 210,0385 ms
+2024-11-08 20:31:44.635 -03:00 [DBG] Execution loop Worker:30628c1a has started in 212,3222 ms
+2024-11-08 20:31:44.639 -03:00 [DBG] Execution loop DelayedJobScheduler:13e5c3a8 has started in 6,5044 ms
+2024-11-08 20:31:44.643 -03:00 [DBG] Execution loop RecurringJobScheduler:e652ab65 has started in 7,0557 ms
+2024-11-08 20:31:44.644 -03:00 [INF] Server desktop-8f2p6hh:31836:da447146 all the dispatchers started
+2024-11-08 20:31:44.954 -03:00 [DBG] Removing outdated records from the 'List' table...
+2024-11-08 20:31:44.983 -03:00 [DBG] Removing outdated records from the 'Set' table...
+2024-11-08 20:31:44.987 -03:00 [DBG] Removing outdated records from the 'Hash' table...
+2024-11-08 20:32:14.328 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:32:46.378 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:33:16.409 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:33:46.419 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:34:16.425 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:34:46.431 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:35:16.444 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:35:46.451 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:36:16.467 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:36:44.889 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 20:36:46.480 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:37:16.491 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:37:46.587 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:38:16.614 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:38:46.625 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:39:16.633 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:39:46.650 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:40:29.771 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:40:59.778 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:41:29.794 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:41:44.922 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 20:41:59.800 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:42:29.812 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:42:59.827 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:43:29.838 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:43:59.844 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:44:29.852 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:44:59.854 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:45:29.868 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:45:59.880 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:46:29.894 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:46:44.950 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 20:46:59.899 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:47:29.909 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:47:59.919 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:48:29.929 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:48:59.936 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:49:29.944 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:49:59.959 -03:00 [DBG] Server desktop-8f2p6hh:31836:da447146 heartbeat successfully sent
+2024-11-08 20:59:39.041 -03:00 [INF] Start installing Hangfire SQL objects...
+2024-11-08 20:59:39.329 -03:00 [INF] Hangfire SQL objects installed.
+2024-11-08 20:59:39.387 -03:00 [INF] BackgroundService Running
+2024-11-08 20:59:39.545 -03:00 [INF] Starting Hangfire Server using job storage: 'SQL Server: localhost@TFI_PLOFTEC_GATEWAY'
+2024-11-08 20:59:39.547 -03:00 [INF] Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+2024-11-08 20:59:39.551 -03:00 [INF] Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+2024-11-08 20:59:39.577 -03:00 [DBG] Execution loop BackgroundServerProcess:f4ada9f6 has started in 8,4387 ms
+2024-11-08 20:59:40.135 -03:00 [INF] Server desktop-8f2p6hh:25196:a15ff22c successfully announced in 546,6208 ms
+2024-11-08 20:59:40.142 -03:00 [DBG] Execution loop ServerHeartbeatProcess:bc0c5d76 has started in 5,8498 ms
+2024-11-08 20:59:40.170 -03:00 [INF] Server desktop-8f2p6hh:25196:a15ff22c is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, SqlServerHeartbeatProcess, Worker, DelayedJobScheduler, RecurringJobScheduler...
+2024-11-08 20:59:40.197 -03:00 [DBG] Execution loop ServerWatchdog:2e606fd4 has started in 27,1379 ms
+2024-11-08 20:59:40.208 -03:00 [DBG] Execution loop ServerJobCancellationWatcher:e994fec5 has started in 15,1563 ms
+2024-11-08 20:59:40.237 -03:00 [INF] 3 servers were removed due to timeout
+2024-11-08 20:59:40.237 -03:00 [DBG] Execution loop ExpirationManager:dcf6e589 has started in 32,2624 ms
+2024-11-08 20:59:40.238 -03:00 [DBG] Removing outdated records from the 'AggregatedCounter' table...
+2024-11-08 20:59:40.261 -03:00 [DBG] Execution loop CountersAggregator:8af10e06 has started in 50,9343 ms
+2024-11-08 20:59:40.262 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 20:59:40.280 -03:00 [DBG] Execution loop SqlServerHeartbeatProcess:4e992920 has started in 28,9458 ms
+2024-11-08 20:59:40.293 -03:00 [DBG] Execution loop Worker:5a7f486c has started in 16,9136 ms
+2024-11-08 20:59:40.294 -03:00 [DBG] Removing outdated records from the 'Job' table...
+2024-11-08 20:59:40.319 -03:00 [DBG] Execution loop Worker:e6edb453 has started in 43,1878 ms
+2024-11-08 20:59:40.319 -03:00 [DBG] Execution loop Worker:4055d50e has started in 43,1859 ms
+2024-11-08 20:59:40.349 -03:00 [DBG] Removing outdated records from the 'List' table...
+2024-11-08 20:59:40.385 -03:00 [DBG] Removing outdated records from the 'Set' table...
+2024-11-08 20:59:40.388 -03:00 [DBG] Execution loop Worker:84529154 has started in 112,2727 ms
+2024-11-08 20:59:40.388 -03:00 [DBG] Removing outdated records from the 'Hash' table...
+2024-11-08 20:59:40.391 -03:00 [DBG] Execution loop Worker:f34f1522 has started in 115,7499 ms
+2024-11-08 20:59:40.401 -03:00 [DBG] Execution loop Worker:6eaf0409 has started in 125,7224 ms
+2024-11-08 20:59:40.434 -03:00 [DBG] Execution loop Worker:d1104c32 has started in 158,6062 ms
+2024-11-08 20:59:40.443 -03:00 [DBG] Execution loop Worker:ff523df9 has started in 167,0234 ms
+2024-11-08 20:59:40.458 -03:00 [DBG] Execution loop Worker:6f1c4078 has started in 181,1846 ms
+2024-11-08 20:59:40.508 -03:00 [DBG] Execution loop Worker:8596968f has started in 232,3208 ms
+2024-11-08 20:59:40.513 -03:00 [DBG] Execution loop Worker:480785a6 has started in 237,4779 ms
+2024-11-08 20:59:40.530 -03:00 [DBG] Execution loop Worker:b9a5fcbd has started in 254,6693 ms
+2024-11-08 20:59:40.536 -03:00 [DBG] Execution loop Worker:3991196e has started in 260,0965 ms
+2024-11-08 20:59:40.560 -03:00 [DBG] Execution loop Worker:825c3039 has started in 284,5852 ms
+2024-11-08 20:59:40.571 -03:00 [DBG] Execution loop Worker:ecf384ed has started in 295,3544 ms
+2024-11-08 20:59:40.593 -03:00 [DBG] Execution loop Worker:2c300ffa has started in 317,6072 ms
+2024-11-08 20:59:40.600 -03:00 [DBG] Execution loop Worker:9034b7a4 has started in 324,3486 ms
+2024-11-08 20:59:40.605 -03:00 [DBG] Execution loop Worker:53cec747 has started in 329,1095 ms
+2024-11-08 20:59:40.611 -03:00 [DBG] Execution loop Worker:e3769e38 has started in 335,1202 ms
+2024-11-08 20:59:40.615 -03:00 [DBG] Execution loop Worker:372e8ece has started in 339,3303 ms
+2024-11-08 20:59:40.637 -03:00 [DBG] Execution loop DelayedJobScheduler:865f1308 has started in 25,8815 ms
+2024-11-08 20:59:40.645 -03:00 [INF] Server desktop-8f2p6hh:25196:a15ff22c all the dispatchers started
+2024-11-08 20:59:40.651 -03:00 [DBG] Execution loop RecurringJobScheduler:697ba628 has started in 19,1657 ms
+2024-11-08 21:00:10.187 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:00:40.200 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:01:10.217 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:01:40.231 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:02:10.232 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:02:40.245 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:03:10.254 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:03:40.260 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:04:10.272 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:04:40.288 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:04:40.332 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:05:10.290 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:05:40.303 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:06:10.305 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:06:40.317 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:07:10.328 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:07:40.333 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:08:10.350 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:08:40.361 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:09:10.372 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:09:40.367 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:09:40.385 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:10:10.387 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:10:40.403 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:11:10.415 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:11:40.462 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:12:10.481 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:12:40.494 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:13:10.503 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:13:40.512 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:14:10.524 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:14:40.394 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:14:40.535 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:15:10.548 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:15:40.557 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:16:10.568 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:16:40.584 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:17:10.600 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:17:40.616 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:18:10.621 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:18:40.629 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:19:10.646 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:19:40.414 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:19:40.660 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:20:10.704 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:20:40.719 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:21:10.737 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:21:40.751 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:22:10.754 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:22:40.757 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:23:10.781 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:23:40.782 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:24:10.789 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:24:40.428 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:24:40.793 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:25:10.796 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:25:40.799 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:26:10.807 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:26:40.811 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:27:10.825 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:27:40.829 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:28:10.843 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:28:40.859 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:29:10.862 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:29:40.445 -03:00 [DBG] Removing outdated records from the 'AggregatedCounter' table...
+2024-11-08 21:29:40.445 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:29:40.448 -03:00 [DBG] Removing outdated records from the 'Job' table...
+2024-11-08 21:29:40.452 -03:00 [DBG] Removing outdated records from the 'List' table...
+2024-11-08 21:29:40.454 -03:00 [DBG] Removing outdated records from the 'Set' table...
+2024-11-08 21:29:40.455 -03:00 [DBG] Removing outdated records from the 'Hash' table...
+2024-11-08 21:29:40.873 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:30:10.880 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:30:40.884 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:31:10.897 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:31:40.908 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:32:10.920 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:32:40.924 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:33:10.941 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:33:40.954 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:34:10.960 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:34:40.460 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:34:40.972 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:35:10.982 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:35:40.997 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:36:11.017 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:36:41.025 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:37:11.030 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:37:41.039 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:38:11.050 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:38:41.064 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:39:11.074 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:39:40.491 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:39:41.089 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:40:11.098 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:40:41.114 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:41:11.128 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:41:41.138 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:42:11.141 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:42:41.159 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:43:11.172 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:43:41.181 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:44:11.187 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:44:40.510 -03:00 [DBG] Aggregating records in 'Counter' table...
+2024-11-08 21:44:41.203 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:45:11.209 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:45:41.219 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent
+2024-11-08 21:46:11.224 -03:00 [DBG] Server desktop-8f2p6hh:25196:a15ff22c heartbeat successfully sent

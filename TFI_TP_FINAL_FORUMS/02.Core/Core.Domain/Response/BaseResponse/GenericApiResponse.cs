@@ -12,6 +12,11 @@ namespace Core.Domain.Response.BaseResponse
         public Meta Meta { get; set; } = new();
         public T Data { get; set; }
         public Errors Errors { get; set; } = new();
+
+        public bool HasErrors()
+        {
+            return this.Errors.ErrorsList.Any();
+        }
     }
 
     public class Meta
@@ -24,7 +29,6 @@ namespace Core.Domain.Response.BaseResponse
         public string Method { get; set; }
         public string Service { get; set; }
         public string ResponseCode { get; set; }
-        public string ResponseMessage { get; set; }
     }
 
     public class Errors

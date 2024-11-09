@@ -1,17 +1,11 @@
-﻿using AutoMapper;
-using Core.Contracts.Repositories;
+﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
-using Core.Domain.Exceptions;
+using Core.Contracts.UoW;
+using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Models;
+using Core.Domain.Response;
 using Infrastructure.ML.Contracts;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Core.Business.Services
@@ -20,18 +14,25 @@ namespace Core.Business.Services
     {
         private readonly IUsersService _usersService;
         private readonly ITextoPrediccionRepositoryML _textoPrediccionRepositoryML;
+        private readonly IUnitOfWorkGateway _unitOfWorkGateway;
+        private readonly IPublicacionGuardadaRepository _publicacionGuardadaRepository;
+        private readonly IUsersRepository _usersRepository;
         public PublicacionService(
-            IUnitOfWork unitOfWork,
+            IUnitOfWorkForum unitOfWorkForum,
+            IUnitOfWorkGateway unitOfWorkGateway,
             IUsersService usersService,
             ITextoPrediccionRepositoryML textoPrediccionRepositoryML
             )
-        : base(unitOfWork, unitOfWork.GetRepository<IPublicacionRepository>())
+        : base(unitOfWorkForum, unitOfWorkForum.GetRepository<IPublicacionRepository>())
         {
             _usersService = usersService;
             _textoPrediccionRepositoryML = textoPrediccionRepositoryML;
+            _unitOfWorkGateway = unitOfWorkGateway;
+            _publicacionGuardadaRepository = _unitOfWork.GetRepository<IPublicacionGuardadaRepository>();
+            _usersRepository = _unitOfWorkGateway.GetRepository<IUsersRepository>();
         }
 
-        public async Task<bool> CrearPublicacion(string userId, PublicacionModel publicacion)
+        public async Task<bool> CreatePublication(string userId, PublicacionModel publication)
         {
             try
             {
@@ -39,11 +40,11 @@ namespace Core.Business.Services
                 if (user == null)
                     throw new ApiForumException("No existe el usuario.");
 
-                publicacion.IDUsuario = user.Id;
-                publicacion.CreateDate = DateTime.Now;
-                publicacion.FechaCreacion = DateTime.Now;
-                publicacion.FechaCierre = null;
-                await _repository.Insert(publicacion);
+                publication.IDUsuario = user.Id;
+                publication.CreateDate = DateTime.Now;
+                publication.FechaCreacion = DateTime.Now;
+                publication.FechaCierre = null;
+                await _repository.Insert(publication);
                 if (await _unitOfWork.Complete())
                     return true;
                 else
@@ -55,7 +56,46 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<IEnumerable<PublicacionModel>> ObtenerPublicaciones()
+        public async Task<bool> SavePublication(string userId, int codePublication)
+        {
+            try
+            {
+                if(!(await _publicacionGuardadaRepository.Get(x=> x.IDUsuario == userId && x.IDPublicacion == codePublication)).Any())
+                {
+                    await _publicacionGuardadaRepository.Insert(new PublicacionGuardadaModel() { IDPublicacion = codePublication, IDUsuario = userId });
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteSavedPublication(string userId, int codePublication)
+        {
+            try
+            {
+                var row = (await _publicacionGuardadaRepository.Get(x => x.IDUsuario == userId && x.IDPublicacion == codePublication)).FirstOrDefault();
+                if (row != null)
+                {
+                    await _publicacionGuardadaRepository.Delete(row);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<PublicacionModel>> GetPublications()
         {
             try
             {
@@ -64,26 +104,59 @@ namespace Core.Business.Services
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw;
             }
         }
 
-        public async Task<IEnumerable<PublicacionModel>> ObtenerPublicacionesPorFiltro(string texto)
+        public async Task<PublicacionModel> GetDetailPublication(int codePublication)
         {
             try
             {
-                var etiquetas = ObtenerEtiquetas(texto);
+                var result = (await _repository.Get(x=> x.IDPublicacion == codePublication, tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesVotos")).FirstOrDefault();
+                if(result != null)
+                {
+                    result.Usuario = (await _usersRepository.Get(x => x.Id == result.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
+                    foreach (var respuesta in result.Respuestas)
+                    {
+                        respuesta.Usuario = (await _usersRepository.Get(x => x.Id == respuesta.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
+                    }
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<PublicacionModel>> GetSavedPublications(string userId)
+        {
+            try
+            {
+                var result = await _publicacionGuardadaRepository.Get(x=> x.IDUsuario == userId, tracking: false, ignoreQueryFilters: true, includeProperties: "Publicacion,Publicacion.EtiquetasPublicacion,Publicacion.EtiquetasPublicacion.Etiqueta,Publicacion.Respuestas");
+                return result.Select(x=> x.Publicacion);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<PublicacionModel>> GetPublicationByFilter(string texto)
+        {
+            try
+            {
+                var etiquetas = GetLabels(texto);
                 var result = await _repository.Get(tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
                 return result;
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
-        public async Task<IEnumerable<string>> PredecirEtiquetas(string texto)
+        public async Task<IEnumerable<string>> PredictLabel(string texto)
         {
             ModelInput modelInput = new ModelInput { Texto = texto };
             var etiquetas = await _textoPrediccionRepositoryML.PredecirEtiquetas(modelInput,5);
@@ -91,7 +164,7 @@ namespace Core.Business.Services
         }
 
         #region Metodos Busqueda de textos
-        private string ObtenerEtiquetas(string texto)
+        private string GetLabels(string texto)
         {
             var etiquetas = new List<string>();
             var palabras = texto.Split(' ');

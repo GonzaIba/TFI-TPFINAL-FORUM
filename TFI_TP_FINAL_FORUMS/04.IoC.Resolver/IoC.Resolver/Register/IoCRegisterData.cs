@@ -1,4 +1,4 @@
-﻿using Core.Contracts.Repositories;
+﻿using Core.Contracts.UoW;
 using Infrastructure.Data.SQL.UoW;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -11,7 +11,8 @@ namespace IoC.Resolver.Register
     {
         internal static IServiceCollection RegisterUnitOfWork(this IServiceCollection services)
         {
-            return services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IUnitOfWorkForum, UnitOfWorkForum>();
+            return services.AddTransient<IUnitOfWorkGateway, UnitOfWorkGateway>();
         }
     }
 }

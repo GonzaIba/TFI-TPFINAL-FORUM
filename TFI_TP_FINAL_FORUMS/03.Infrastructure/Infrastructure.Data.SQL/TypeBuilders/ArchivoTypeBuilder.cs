@@ -23,12 +23,14 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.HasOne(a => a.Publicacion)
                 .WithMany(p => p.Archivos)
-                .HasForeignKey(a => a.IDPublicacion);
+                .HasForeignKey(a => a.IDPublicacion)
+                .OnDelete(DeleteBehavior.NoAction); // Evitar cascada
 
             builder.HasOne(a => a.Respuesta)
                 .WithMany(r => r.Archivos)
-                .HasForeignKey(a => a.IDRespuesta);
-            
+                .HasForeignKey(a => a.IDRespuesta)
+                .OnDelete(DeleteBehavior.NoAction); // Evitar cascada
+
             builder.ToTable("Archivos");
         }
     }

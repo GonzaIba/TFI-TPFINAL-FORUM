@@ -1,9 +1,11 @@
 ﻿using Core.Domain.GenericEntityClass;
 using Core.Domain.IdentityModels;
+using Core.Domain.Models;
 using CrossCutting.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using MySql.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 using System;
@@ -17,7 +19,7 @@ namespace Infrastructure.Data.SQL
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions options) : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
 
@@ -28,6 +30,16 @@ namespace Infrastructure.Data.SQL
                 .SetPropertyDefaultValue<bool>("Active", true)
                 .SetPropertyQueryFilter("Active", true)
                 .ConfigureGenericProperties(typeof(GenericEntity));
+
+            modelBuilder.Ignore<Users>();
+            modelBuilder.Ignore<UsersClaims>();
+            modelBuilder.Ignore<UsersLogin>();
+            modelBuilder.Ignore<UsersRoles>();
+            modelBuilder.Ignore<UsersForumModel>();
+            modelBuilder.Ignore<UsersToken>();
+            modelBuilder.Ignore<Roles>();
+            modelBuilder.Ignore<RolesClaim>();
+            modelBuilder.Ignore<RefreshToken>();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -51,6 +63,63 @@ namespace Infrastructure.Data.SQL
             return base.SaveChangesAsync(cancellationToken);
         }
 
+
+        private IDbContextTransaction _currentTransaction;
+        public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+        public bool HasActiveTransaction => _currentTransaction != null;
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            if (_currentTransaction != null) return null!;
+
+            _currentTransaction = await Database.BeginTransactionAsync();
+
+            return _currentTransaction;
+        }
+
+        public async Task CommitAsync(IDbContextTransaction transaction)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+
+            try
+            {
+                await SaveChangesAsync();
+                transaction.Commit();
+            }
+            catch
+            {
+                RollbackTransaction();
+                throw;
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null!;
+                }
+            }
+        }
+
+        private void RollbackTransaction()
+        {
+            try
+            {
+                _currentTransaction?.Rollback();
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null!;
+                }
+            }
+        }
+
+
+        #region Entries
         private void SetUpdateDateOnModifiedEntries()
         {
             var modifiedEntries = ChangeTracker
@@ -90,5 +159,6 @@ namespace Infrastructure.Data.SQL
                 throw ex;
             }
         }
+        #endregion
     }
 }

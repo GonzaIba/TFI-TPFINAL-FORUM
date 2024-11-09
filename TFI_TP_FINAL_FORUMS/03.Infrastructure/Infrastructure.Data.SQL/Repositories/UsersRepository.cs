@@ -8,7 +8,7 @@ namespace Infrastructure.Data.SQL.Repositories
 {
     public class UsersRepository:GenericRepository<Users>,IUsersRepository
     {
-        public UsersRepository(ApplicationDbContext applicationDbContext) 
+        public UsersRepository(ApplicationGatewayDbContext applicationDbContext) 
             : base(applicationDbContext)
         {
             

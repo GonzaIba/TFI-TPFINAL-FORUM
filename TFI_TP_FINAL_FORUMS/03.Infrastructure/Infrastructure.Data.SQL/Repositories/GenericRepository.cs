@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 using MySqlX.XDevAPI.Common;
 using System;
 using System.Collections.Generic;
@@ -14,14 +15,14 @@ namespace Infrastructure.Data.SQL.Repositories
     {
         #region Fields
 
-        internal ApplicationDbContext _context;
+        internal DbContext _context;
         internal DbSet<T> _entities;
 
         #endregion Fields
 
         #region Constructor
 
-        public GenericRepository(ApplicationDbContext context)
+        public GenericRepository(DbContext context)
         {
             this._context = context;
         }
@@ -61,7 +62,7 @@ namespace Infrastructure.Data.SQL.Repositories
                 throw new ArgumentNullException(nameof(entity));
             }
 
-            this.Entities.Add(entity);
+            await this.Entities.AddAsync(entity);
             await Task.CompletedTask;
         }
 
@@ -160,21 +161,59 @@ namespace Infrastructure.Data.SQL.Repositories
 
             if (selector != null)
             {
-                return selector(query).ToList();
+                return await selector(query).ToListAsync();
             }
             else
             {
-                return query.Cast<TResult>().ToList();
+                return await query.Cast<TResult>().ToListAsync();
             }
         }
 
+        public virtual async Task<IEnumerable<TResult>> GetWithGroupByDos<TResult>(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            Expression<Func<T, IGrouping<T, TResult>>> groupBy = null,
+            string includeProperties = "",
+            bool ignoreQueryFilters = false,
+            bool tracking = true)
+        {
+            IQueryable<T> query = tracking ? this.Entities : this.Entities.AsNoTracking();
+
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (string includeProperty in includeProperties.Split
+                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty.Trim());
+            }
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            if(groupBy != null)
+            {
+                query = query.GroupBy(groupBy).SelectMany(x => x);
+            }
+
+            return await query.Cast<TResult>().ToListAsync();
+        }
 
         public virtual async Task<IEnumerable<T>> Get(
-                Expression<Func<T, bool>> filter = null,
-                Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-                string includeProperties = "",
-                bool ignoreQueryFilters = false,
-                bool tracking = true)
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = "",
+            bool ignoreQueryFilters = false,
+            bool tracking = true)
         {
             IQueryable<T> query = tracking ? this.Entities : this.Entities.AsNoTracking();
 

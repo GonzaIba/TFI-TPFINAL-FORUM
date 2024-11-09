@@ -10,5 +10,6 @@ namespace Core.Contracts.Services
     public interface IEtiquetaService : IGenericService<EtiquetaModel>
     {
         Task<IEnumerable<EtiquetaModel>> ObtenerEtiquetasDetalle();
+        Task<bool> CrearEtiqueta(string nombreEtiqueta);
     }
 }

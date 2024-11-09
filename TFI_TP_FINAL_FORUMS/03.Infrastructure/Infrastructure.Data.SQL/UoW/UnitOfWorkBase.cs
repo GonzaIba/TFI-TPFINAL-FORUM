@@ -1,5 +1,6 @@
-﻿using Core.Contracts.Repositories;
+﻿using Core.Contracts.UoW;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,38 +12,42 @@ namespace Infrastructure.Data.SQL.UoW
 {
     public class UnitOfWorkBase : IUnitOfWorkBase
     {
-        public readonly ApplicationDbContext _context;
+        public readonly DbContext _dbContext;
 
-        public UnitOfWorkBase(ApplicationDbContext context)
+        public UnitOfWorkBase(DbContext dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
-        public DbContext Context => _context;
+        public DbContext Context => _dbContext;
 
-        public int SaveChanges()
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
-            try
-            {
-                return _context.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                ex.Entries.Single().Reload();
-                return _context.SaveChanges();
-            }
+            return await _dbContext.Database.BeginTransactionAsync();
         }
+        public async Task CommitAsync()
+        {
+            await _dbContext.Database.CommitTransactionAsync();
+            await Task.CompletedTask;
+        }
+        public async Task RollbackTransactionAsync()
+        {
+            await _dbContext.Database.RollbackTransactionAsync();
+            await Task.CompletedTask;
+        }
+
 
         public async Task<int> SaveChangesAsync()
         {
             try
             {
-                return await _context.SaveChangesAsync();
+                return await _dbContext.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
                 ex.Entries.Single().Reload();
-                return _context.SaveChanges();
+                return _dbContext.SaveChanges();
             }
             catch (DbUpdateException ex)
             {
@@ -56,12 +61,12 @@ namespace Infrastructure.Data.SQL.UoW
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
-            return await _context.SaveChangesAsync(cancellationToken);
+            return await _dbContext.SaveChangesAsync(cancellationToken);
         }
         
         public async Task<bool> Complete()
         {
-            return await _context.SaveChangesAsync() > 0;
+            return await _dbContext.SaveChangesAsync() > 0;
         }
 
         private bool disposed = false;
@@ -72,7 +77,7 @@ namespace Infrastructure.Data.SQL.UoW
             {
                 if (disposing)
                 {
-                    _context.Dispose();
+                    _dbContext.Dispose();
                 }
             }
             disposed = true;
@@ -82,6 +87,11 @@ namespace Infrastructure.Data.SQL.UoW
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public I GetRepository<I>()
+        {
+            throw new NotImplementedException();
         }
     }
 }

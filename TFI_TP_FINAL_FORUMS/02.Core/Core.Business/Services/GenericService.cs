@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
+using Core.Contracts.UoW;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,10 @@ namespace Core.Business.Services
 {
     public abstract class GenericService<T> : IGenericService<T> where T : class
     {
-        protected readonly IUnitOfWork _unitOfWork;
+        protected readonly IUnitOfWorkBase _unitOfWork;
         protected readonly IGenericRepository<T> _repository;
 
-        public GenericService(IUnitOfWork unitOfWork,
+        public GenericService(IUnitOfWorkBase unitOfWork,
             IGenericRepository<T> repository)
         {
             this._unitOfWork = unitOfWork;

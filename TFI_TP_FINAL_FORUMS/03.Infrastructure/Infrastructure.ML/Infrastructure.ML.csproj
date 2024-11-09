@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="3.0.0-preview.23266.6" />
     <PackageReference Include="Microsoft.ML.FastTree" Version="3.0.0-preview.23266.6" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
   <ItemGroup>
     <None Update="questionModelsJoined.csv">

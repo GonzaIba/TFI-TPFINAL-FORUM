@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
+using Core.Contracts.UoW;
 using Core.Domain.Exceptions;
 using Core.Domain.Models;
 using System;
@@ -14,12 +15,25 @@ namespace Core.Business.Services
     {
         private readonly IUsersService _usersService;
         public EtiquetaService(
-            IUnitOfWork unitOfWork,
+            IUnitOfWorkForum unitOfWork,
             IUsersService usersService
             )
         : base(unitOfWork, unitOfWork.GetRepository<IEtiquetaRepository>())
         {
             _usersService = usersService;
+        }
+
+        public async Task<bool> CrearEtiqueta(string nombreEtiqueta)
+        {
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
+            EtiquetaModel etiquetaModel = new();
+            etiquetaModel.NombreEtiqueta = nombreEtiqueta;
+            etiquetaModel.CreateDate = DateTime.Now;
+            await _repository.Insert(etiquetaModel);
+            await _unitOfWork.SaveChangesAsync();
+            var r = etiquetaModel.IDEtiqueta;
+            await transaction.CommitAsync();
+            return etiquetaModel.IDEtiqueta > 0;
         }
 
         public async Task<IEnumerable<EtiquetaModel>> ObtenerEtiquetasDetalle()

@@ -20,11 +20,12 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(r => r.TextoRespuesta).IsRequired();
             builder.Property(r => r.FechaCreacion).IsRequired().HasDefaultValueSql("GETDATE()");
             builder.Property(r => r.RespuestaCorrecta).IsRequired();
-            builder.Property(r => r.Votos).IsRequired();
 
             builder.HasOne(r => r.Publicacion)
                 .WithMany(p => p.Respuestas)
-                .HasForeignKey(r => r.IDPublicacion);
+                .HasForeignKey(r => r.IDPublicacion)
+                .OnDelete(DeleteBehavior.NoAction); // Evitar cascada
+
             builder.ToTable("Respuestas");
         }
     }

@@ -1,6 +1,8 @@
 ﻿using Core.Domain.GenericEntityClass;
+using Core.Domain.IdentityModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +17,7 @@ namespace Core.Domain.Models
             Respuestas = new HashSet<RespuestaModel>();
             Archivos = new HashSet<ArchivoModel>();
             PublicacionesGuardadas = new HashSet<PublicacionGuardadaModel>();
+            PublicacionesVotos = new HashSet<PublicacionVotoModel>();
         }
         public int IDPublicacion { get; set; }
         public string IDUsuario { get; set; }
@@ -26,11 +29,15 @@ namespace Core.Domain.Models
         public bool Cerrada { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaCierre { get; set; }
-        
+
+        [NotMapped]
+        public Users Usuario { get; set; }
+
         // Propiedades de navegación
         public ICollection<EtiquetaPublicacionModel> EtiquetasPublicacion { get; set; }
         public ICollection<RespuestaModel> Respuestas { get; set; }
         public ICollection<ArchivoModel> Archivos { get; set; }
         public ICollection<PublicacionGuardadaModel> PublicacionesGuardadas { get; set; }
+        public ICollection<PublicacionVotoModel> PublicacionesVotos { get; set; }
     }
 }

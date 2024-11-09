@@ -15,6 +15,7 @@ namespace ApiForums.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IPublicacionService _publicacionService;
+        private readonly ILogger<PublicacionesController> _logger;
         public PublicacionesController(
             IPublicacionService publicacionService,
             IMapper mapper,
@@ -23,34 +24,66 @@ namespace ApiForums.Controllers
         {
             _publicacionService = publicacionService;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpPost]
         [Route("CrearPublicacion")]
-        public async Task<IActionResult> CrearPublicacion([FromQuery] string userId, CrearPublicacionRequest publicacion)
+        public async Task<IActionResult> CreatePublication([FromQuery] string userId, CreatePublicationRequest publication)
         {
-            var publicacionModel = _mapper.Map<PublicacionModel>(publicacion);
-            await _publicacionService.CrearPublicacion(userId, publicacionModel);
-                
-            return Ok();
+            var publicacionModel = _mapper.Map<PublicacionModel>(publication);
+            var result = await _publicacionService.CreatePublication(userId, publicacionModel);            
+            return Ok(result);
         }
 
+        [HttpPost]
+        [Route("GuardarPublicacion")]
+        public async Task<IActionResult> SavePublication([FromBody] SavePublicationRequest publicationRequest)
+        {
+            var result = await _publicacionService.SavePublication(publicationRequest.UserId, publicationRequest.CodigoPublicacion);
+            return Ok(result);
+        }
+
+        [HttpDelete]
+        [Route("EliminarPublicacionGuardada")]
+        public async Task<IActionResult> DeleteSavedPublication([FromQuery] string userId, int codePublication)
+        {
+            var result = await _publicacionService.DeleteSavedPublication(userId, codePublication);
+            return Ok(result);
+        }
 
         [HttpGet]
         [Route("ObtenerPublicaciones")]
-        public async Task<IActionResult> ObtenerPublicaciones()
+        public async Task<IActionResult> GetPublications()
         {
-            var publicaciones = await _publicacionService.ObtenerPublicaciones();
-            var publicacionesResponse = _mapper.Map<IEnumerable<PublicacionesResponse>>(publicaciones);
-                
+            var publicaciones = await _publicacionService.GetPublications();
+            var publicacionesResponse = _mapper.Map<IEnumerable<PublicationResponse>>(publicaciones);               
             return Ok(publicacionesResponse);
         }
 
         [HttpGet]
-        [Route("PredecirEtiquetasPorTexto")]
-        public async Task<IActionResult> PredecirEtiquetasPorTexto([FromQuery] string texto)
+        [Route("ObtenerDetallePublicacion")]
+        public async Task<IActionResult> GetDetailPublication([FromQuery] int codePublication)
         {
-            var publicaciones = await _publicacionService.ObtenerPublicacionesPorFiltro(texto);
+            var publication = await _publicacionService.GetDetailPublication(codePublication);
+            var publicationsResponse = _mapper.Map<PublicationDetailResponse>(publication);
+            return Ok(publicationsResponse);
+        }
+
+        [HttpGet]
+        [Route("ObtenerPublicacionesGuardadas")]
+        public async Task<IActionResult> GetSavedPublications([FromQuery] string userId)
+        {
+            var publications = await _publicacionService.GetSavedPublications(userId); //////////////////////////////////////////////////////
+            var publicationsResponse = _mapper.Map<IEnumerable<PublicationResponse>>(publications);
+            return Ok(publicationsResponse);
+        }      
+
+        [HttpGet]
+        [Route("PredecirEtiquetasPorTexto")]
+        public async Task<IActionResult> GetPublicationByFilter([FromQuery] string texto)
+        {
+            var publicaciones = await _publicacionService.GetPublicationByFilter(texto);
             return Ok(publicaciones);
         }
     }

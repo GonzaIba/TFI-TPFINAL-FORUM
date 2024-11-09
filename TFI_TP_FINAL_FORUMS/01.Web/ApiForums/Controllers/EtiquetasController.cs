@@ -40,7 +40,7 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> ObtenerEtiquetas()
         {
             var etiquetas = await _etiquetaService.ObtenerEtiquetasDetalle();
-            var etiquetasResponse = _mapper.Map<IEnumerable<EtiquetasResponse>>(etiquetas);
+            var etiquetasResponse = _mapper.Map<IEnumerable<LabelResponse>>(etiquetas);
             etiquetasResponse.ToList().ForEach(x => x.EtiquetasPublicaciones.ToList().ForEach(y => y.Etiqueta = null));
                     
             return Ok(etiquetasResponse);

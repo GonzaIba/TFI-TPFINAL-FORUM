@@ -15,6 +15,7 @@ namespace Core.Domain.IdentityModels
             UsuarioMedallas = new HashSet<UsuarioMedallaModel>();
             UserRefreshTokens = new HashSet<RefreshToken>();
             RecompensasUsuarios = new HashSet<RecompensaUsuarioModel>();
+            PublicacionesVotos = new HashSet<PublicacionVotoModel>();
         }
 
         // Propiedades básicas de IdentityUser
@@ -61,11 +62,13 @@ namespace Core.Domain.IdentityModels
         public virtual ICollection<UsersLogin> UsersLogin { get; set; }
         public virtual ICollection<UsersToken> UsersTokens { get; set; }
         public virtual ICollection<RefreshToken> UserRefreshTokens { get; set; }
+        public virtual ICollection<UserFiltersModel> UserFilters { get; set; }
         public virtual ICollection<PublicacionGuardadaModel> PublicacionesGuardadas { get; set; }
         public virtual ICollection<UsuarioMedallaModel> UsuarioMedallas { get; set; }
         public virtual ICollection<RecompensaUsuarioModel> RecompensasUsuarios { get; set; }
         public virtual ICollection<RespuestaModel> Respuestas { get; set; }
         public virtual ICollection<PublicacionModel> Publicaciones { get; set; }
-        public virtual ICollection<UserFiltersModel> UserFilters { get; set; }
+        public virtual ICollection<PublicacionVotoModel> PublicacionesVotos { get; set; }
+        public virtual ICollection<RespuestaVotoModel> RespuestasVotos { get; set; }
     }
 }

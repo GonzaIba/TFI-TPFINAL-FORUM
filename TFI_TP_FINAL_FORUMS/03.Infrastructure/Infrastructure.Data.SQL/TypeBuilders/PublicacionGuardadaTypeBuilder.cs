@@ -25,6 +25,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.HasOne(pg => pg.Publicacion)
                 .WithMany(p => p.PublicacionesGuardadas)
                 .HasForeignKey(pg => pg.IDPublicacion);
+
             builder.ToTable("PublicacionesGuardadas");
         }
     }

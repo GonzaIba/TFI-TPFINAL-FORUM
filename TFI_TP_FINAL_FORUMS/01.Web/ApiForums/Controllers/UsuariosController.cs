@@ -33,7 +33,7 @@ namespace ApiForums.Controllers
         {
             var result = await _usuarioService.GetTopLastWeekAsync();
 
-            var mappedUsers = result.Select(r => new UsersTopResponse
+            var mappedUsers = result.Select(r => new UsersForumPreviewResponse
             {
                 NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido,
                 Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
@@ -56,7 +56,7 @@ namespace ApiForums.Controllers
         {
             var result = await _usuarioService.GetTopLastWeekAsync();
 
-            var mappedUsers = result.Select(r => new UsersTopResponse
+            var mappedUsers = result.Select(r => new UsersForumPreviewResponse
             {
                 NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido,
                 Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",

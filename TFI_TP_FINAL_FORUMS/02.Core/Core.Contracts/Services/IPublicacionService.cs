@@ -1,4 +1,5 @@
 ﻿using Core.Domain.Models;
+using Core.Domain.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,13 @@ namespace Core.Contracts.Services
 {
     public interface IPublicacionService : IGenericService<PublicacionModel>
     {
-        Task<bool> CrearPublicacion(string userId,PublicacionModel publicacion);
-        Task<IEnumerable<PublicacionModel>> ObtenerPublicaciones();
-        Task<IEnumerable<string>> PredecirEtiquetas(string texto);
-        Task<IEnumerable<PublicacionModel>> ObtenerPublicacionesPorFiltro(string texto);
+        Task<bool> CreatePublication(string userId, PublicacionModel publication);
+        Task<bool> SavePublication(string userId, int codePublication);
+        Task<bool> DeleteSavedPublication(string userId, int codePublication); 
+        Task<IEnumerable<PublicacionModel>> GetPublications();
+        Task<PublicacionModel> GetDetailPublication(int codePublication); 
+        Task<IEnumerable<PublicacionModel>> GetSavedPublications(string userId);
+        Task<IEnumerable<string>> PredictLabel(string texto);
+        Task<IEnumerable<PublicacionModel>> GetPublicationByFilter(string texto);
     }
 }

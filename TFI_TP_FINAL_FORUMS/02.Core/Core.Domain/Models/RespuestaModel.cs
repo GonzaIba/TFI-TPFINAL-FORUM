@@ -1,6 +1,8 @@
 ﻿using Core.Domain.GenericEntityClass;
+using Core.Domain.IdentityModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,18 +15,23 @@ namespace Core.Domain.Models
         {
             RecompensasUsuario = new HashSet<RecompensaUsuarioModel>();
             Archivos = new HashSet<ArchivoModel>();
+            RespuestasVotos = new HashSet<RespuestaVotoModel>();
         }
+
         public int IDRespuesta { get; set; }
         public int IDPublicacion { get; set; }
         public string IDUsuario { get; set; }
         public string TextoRespuesta { get; set; }
         public DateTime FechaCreacion { get; set; }
         public bool RespuestaCorrecta { get; set; }
-        public int Votos { get; set; }
+
+        [NotMapped]
+        public Users Usuario { get; set; }
 
         // Propiedades de navegación
         public PublicacionModel Publicacion { get; set; }
         public ICollection<RecompensaUsuarioModel> RecompensasUsuario { get; set; }
         public ICollection<ArchivoModel> Archivos { get; set; }
+        public ICollection<RespuestaVotoModel> RespuestasVotos { get; set; }
     }
 }

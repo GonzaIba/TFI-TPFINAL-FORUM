@@ -7,6 +7,7 @@ using Core.Domain.Response;
 using CrossCutting.Helpers.ResultClasses;
 using Microsoft.AspNetCore.Identity;
 using System.Linq;
+using System.Text;
 
 namespace ApiForums.Mapping
 {
@@ -36,6 +37,7 @@ namespace ApiForums.Mapping
 
             CreateMap<Users, UsersForumPreviewResponse>()
                 .ForMember(dest => dest.NombreCompleto, opt => opt.MapFrom(src => src.Nombre + " " + src.Apellido)) // Asumo que Users tiene una propiedad llamada Nombre
+                .ForMember(dest => dest.Iniciales, opt => opt.MapFrom(src => ObtenerIniciales(src.Nombre + " " + src.Apellido)))
                 .ForMember(dest => dest.DescripcionCorta, opt => opt.MapFrom(src => src.UsersForum.ShortDescriptionForum))
                 .ForMember(dest => dest.DescripcionLarga, opt => opt.MapFrom(src => src.UsersForum.LongDescriptionForum))
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.UsersForum.ImageForum))
@@ -91,7 +93,7 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.CodigoRespuesta, opt => opt.MapFrom(src => src.IDRespuesta))
                 .ForMember(dest => dest.TextoRespuesta, opt => opt.MapFrom(src => src.TextoRespuesta))
                 .ForMember(dest => dest.RespuestaCorrecta, opt => opt.MapFrom(src => src.RespuestaCorrecta))
-                .ForMember(dest => dest.Votos, opt => opt.MapFrom(src => ContadorVotosPublicaciones(src.RespuestasVotos)))
+                .ForMember(dest => dest.Votos, opt => opt.MapFrom(src => ContadorVotos(src.RespuestasVotos)))
                 .ForMember(dest => dest.VotadoPositivo, opt => opt.MapFrom(src => src.RespuestasVotos.Any(x => x.IDUsuario == src.IDUsuario)))
                 .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => src.FechaCreacion));
 
@@ -105,6 +107,7 @@ namespace ApiForums.Mapping
             #endregion
         }
 
+        #region Helpers
         public int ContadorVotosPublicaciones(ICollection<PublicacionVotoModel> votos)
         {
             int contador = 0;
@@ -118,7 +121,7 @@ namespace ApiForums.Mapping
             return contador;
         }
 
-        public int ContadorVotosPublicaciones(ICollection<RespuestaVotoModel> votos)
+        public int ContadorVotos(ICollection<RespuestaVotoModel> votos)
         {
             int contador = 0;
             foreach (var voto in votos)
@@ -130,5 +133,22 @@ namespace ApiForums.Mapping
             }
             return contador;
         }
+
+        public static string ObtenerIniciales(string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                return string.Empty;
+
+            var palabras = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var iniciales = new StringBuilder();
+
+            foreach (var palabra in palabras)
+            {
+                iniciales.Append(char.ToUpper(palabra[0]));
+            }
+
+            return iniciales.ToString();
+        }
+        #endregion
     }
 }

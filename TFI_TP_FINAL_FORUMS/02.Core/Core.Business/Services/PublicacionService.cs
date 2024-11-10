@@ -112,7 +112,7 @@ namespace Core.Business.Services
         {
             try
             {
-                var result = (await _repository.Get(x=> x.IDPublicacion == codePublication, tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesVotos")).FirstOrDefault();
+                var result = (await _repository.Get(x=> x.IDPublicacion == codePublication, tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,Respuestas.RespuestasVotos,PublicacionesVotos")).FirstOrDefault();
                 if(result != null)
                 {
                     result.Usuario = (await _usersRepository.Get(x => x.Id == result.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();

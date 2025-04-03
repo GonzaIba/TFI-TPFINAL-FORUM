@@ -33,7 +33,7 @@ namespace ApiForums.Controllers
         {
             var publicacionModel = _mapper.Map<PublicacionModel>(publication);
             var result = await _publicacionService.CreatePublication(userId, publicacionModel);            
-            return Ok(result);
+            return Ok(new SuccessfulResponse(result));
         }
 
         [HttpPost]
@@ -41,7 +41,7 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> SavePublication([FromBody] SavePublicationRequest publicationRequest)
         {
             var result = await _publicacionService.SavePublication(publicationRequest.UserId, publicationRequest.CodigoPublicacion);
-            return Ok(result);
+            return Ok(new SuccessfulResponse(result));
         }
 
         [HttpDelete]
@@ -49,7 +49,7 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> DeleteSavedPublication([FromQuery] string userId, int codePublication)
         {
             var result = await _publicacionService.DeleteSavedPublication(userId, codePublication);
-            return Ok(result);
+            return Ok(new SuccessfulResponse(result));
         }
 
         [HttpGet]

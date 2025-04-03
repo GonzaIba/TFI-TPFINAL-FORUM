@@ -19,6 +19,7 @@ namespace Core.Domain.Response
         public bool Cerrada { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaCierre { get; set; }
+        public bool EstaGuardado { get; set; }
 
         public List<string> Etiquetas { get; set; }
     }

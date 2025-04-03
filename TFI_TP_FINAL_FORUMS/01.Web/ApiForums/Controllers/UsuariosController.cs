@@ -60,12 +60,8 @@ namespace ApiForums.Controllers
             {
                 NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido,
                 Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
-                //DescripcionCorta = r.Key.DescripcionCortaForum,
-                //DescripcionLarga = r.Key.DescripcionLargaForum,
-                //Image = r.Key.ImageForum,
                 FechaDesde = "Desde " + r.Key.FechaCreado.Year.ToString(),
                 Puntaje = r.Value,
-                //UltimaVezConectado = r.Key.UltimaVezConectadoForum
             });
 
             return Ok(mappedUsers);

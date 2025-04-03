@@ -52,7 +52,7 @@ namespace Core.Business.Services
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -99,7 +99,7 @@ namespace Core.Business.Services
         {
             try
             {
-                var result = await _repository.Get(tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
+                var result = await _repository.Get(tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas");
                 return result;
             }
             catch (Exception ex)

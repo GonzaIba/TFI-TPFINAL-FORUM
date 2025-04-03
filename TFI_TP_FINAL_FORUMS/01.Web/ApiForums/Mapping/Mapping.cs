@@ -28,6 +28,7 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.CodigoUsuario, opt => opt.MapFrom(src => src.IDUsuario))
                 .ForMember(dest => dest.Etiquetas, opt => opt.MapFrom(src => src.EtiquetasPublicacion.Select(x=>x.Etiqueta.NombreEtiqueta)))
                 .ForMember(dest => dest.Respuestas, opt => opt.MapFrom(src => src.Respuestas.Count))
+                .ForMember(dest => dest.EstaGuardado, opt => opt.MapFrom(src => src.PublicacionesGuardadas.Any()))
                 .ReverseMap();
 
             CreateMap<EtiquetaModel, LabelResponse>()

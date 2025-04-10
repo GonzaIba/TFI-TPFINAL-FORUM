@@ -54,10 +54,14 @@ namespace ApiForums.Controllers
 
         [HttpGet]
         [Route("ObtenerPublicaciones")]
-        public async Task<IActionResult> GetPublications()
+        public async Task<IActionResult> GetPublications([FromQuery] string? userId)
         {
             var publicaciones = await _publicacionService.GetPublications();
-            var publicacionesResponse = _mapper.Map<IEnumerable<PublicationResponse>>(publicaciones);               
+            var publicacionesList = publicaciones.ToList(); // <-- importantísimo
+            var publicacionesResponse = _mapper.Map<IEnumerable<PublicationResponse>>(
+                publicacionesList,
+                opt => opt.Items["UserId"] = userId
+            );
             return Ok(publicacionesResponse);
         }
 
@@ -75,7 +79,10 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> GetSavedPublications([FromQuery] string userId)
         {
             var publications = await _publicacionService.GetSavedPublications(userId); //////////////////////////////////////////////////////
-            var publicationsResponse = _mapper.Map<IEnumerable<PublicationResponse>>(publications);
+            var publicationsResponse = _mapper.Map<IEnumerable<PublicationResponse>>(
+                publications.ToList(),
+                opt => opt.Items["UserId"] = userId
+            );
             return Ok(publicationsResponse);
         }      
 

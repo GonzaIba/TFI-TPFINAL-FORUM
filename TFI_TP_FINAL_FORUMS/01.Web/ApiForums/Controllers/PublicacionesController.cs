@@ -75,6 +75,18 @@ namespace ApiForums.Controllers
         }
 
         [HttpGet]
+        [Route("ObtenerPublicacionesCreadasPorUsuario")]
+        public async Task<IActionResult> GetCreatedPublicationsByUser([FromQuery] string userId)
+        {
+            var publications = await _publicacionService.GetCreatedPublicationByUser(userId); //////////////////////////////////////////////////////
+            var publicationsResponse = _mapper.Map<IEnumerable<PublicationResponse>>(
+                publications.ToList(),
+                opt => opt.Items["UserId"] = userId
+            );
+            return Ok(publicationsResponse);
+        }
+
+        [HttpGet]
         [Route("ObtenerPublicacionesGuardadas")]
         public async Task<IActionResult> GetSavedPublications([FromQuery] string userId)
         {

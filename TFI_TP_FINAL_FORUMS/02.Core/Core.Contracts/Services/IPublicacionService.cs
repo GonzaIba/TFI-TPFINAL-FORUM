@@ -14,7 +14,8 @@ namespace Core.Contracts.Services
         Task<bool> SavePublication(string userId, int codePublication);
         Task<bool> DeleteSavedPublication(string userId, int codePublication); 
         Task<IEnumerable<PublicacionModel>> GetPublications();
-        Task<PublicacionModel> GetDetailPublication(int codePublication); 
+        Task<PublicacionModel> GetDetailPublication(int codePublication);
+        Task<IEnumerable<PublicacionModel>> GetCreatedPublicationByUser(string userId);
         Task<IEnumerable<PublicacionModel>> GetSavedPublications(string userId);
         Task<IEnumerable<string>> PredictLabel(string texto);
         Task<IEnumerable<PublicacionModel>> GetPublicationByFilter(string texto);

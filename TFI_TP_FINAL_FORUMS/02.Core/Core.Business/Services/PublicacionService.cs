@@ -129,6 +129,19 @@ namespace Core.Business.Services
             }
         }
 
+        public async Task<IEnumerable<PublicacionModel>> GetCreatedPublicationByUser(string userId)
+        {
+            try
+            {
+                var result = await _repository.Get(x => x.IDUsuario == userId, tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
+                return result;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<PublicacionModel>> GetSavedPublications(string userId)
         {
             try

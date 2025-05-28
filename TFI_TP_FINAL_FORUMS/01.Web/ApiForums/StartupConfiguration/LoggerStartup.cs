@@ -8,7 +8,6 @@ namespace ApiForums.StartupConfiguration
 {
     public static class LoggerStartup
     {
-        [System.Obsolete]
         public static IServiceCollection ConfigureLogger(this IServiceCollection services, IConfiguration configuration)
         {
             var loggerConfig = new LoggerConfiguration()

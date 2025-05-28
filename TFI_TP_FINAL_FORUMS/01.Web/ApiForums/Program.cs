@@ -15,6 +15,7 @@ using ApiForums.Middleware;
 using Infrastructure.ML.Repositories;
 using Infrastructure.ML.Contracts;
 using Hangfire;
+using StackExchange.Redis;
 
 internal class Program
 {

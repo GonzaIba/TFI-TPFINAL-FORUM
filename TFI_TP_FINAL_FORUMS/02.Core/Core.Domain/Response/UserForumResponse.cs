@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Response
 {
-    public class UsersForumResponse
+    public class UserForumResponse
     {
-        public string Nombre { get; set; }
-        public decimal Puntaje { get; set; }
-        public DateTime FechaCreado { get; set; }
+        public string Name { get; set; }
+        public decimal Score { get; set; }
+        public DateTime CreatedDate { get; set; }
         public string Email { get; set; }
     }
 }

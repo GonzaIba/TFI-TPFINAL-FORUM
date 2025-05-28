@@ -1,6 +1,7 @@
-﻿using Core.Domain.GenericEntityClass;
-using Core.Domain.IdentityModels;
+﻿using Core.Domain.IdentityModels;
 using Core.Domain.Models;
+using Core.Domain.Models.GenericEntityClass;
+using Core.Domain.Views;
 using CrossCutting.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -41,13 +42,12 @@ namespace Infrastructure.Data.SQL
             modelBuilder.Ignore<RolesClaim>();
             modelBuilder.Ignore<RefreshToken>();
 
+            modelBuilder.Entity<TopThreeUsersLastWeekView>()
+                .HasNoKey()
+                .ToView("vw_topThreeUsersLastWeek");
+
             base.OnModelCreating(modelBuilder);
         }
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    //optionsBuilder.UseMySQL("server=localhost;database=library;user=testUser;password=1234");
-        //}
 
         public override int SaveChanges()
         {

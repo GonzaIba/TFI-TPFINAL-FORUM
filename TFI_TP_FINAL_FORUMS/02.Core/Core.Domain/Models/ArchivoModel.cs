@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core.Domain.GenericEntityClass;
+using Core.Domain.Models.GenericEntityClass;
 
 namespace Core.Domain.Models
 {

@@ -1,5 +1,5 @@
-﻿using Core.Domain.GenericEntityClass;
-using Core.Domain.IdentityModels;
+﻿using Core.Domain.IdentityModels;
+using Core.Domain.Models.GenericEntityClass;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,7 +13,6 @@ namespace Core.Domain.Models
     {
         public RespuestaModel()
         {
-            RecompensasUsuario = new HashSet<RecompensaUsuarioModel>();
             Archivos = new HashSet<ArchivoModel>();
             RespuestasVotos = new HashSet<RespuestaVotoModel>();
         }
@@ -30,7 +29,6 @@ namespace Core.Domain.Models
 
         // Propiedades de navegación
         public PublicacionModel Publicacion { get; set; }
-        public ICollection<RecompensaUsuarioModel> RecompensasUsuario { get; set; }
         public ICollection<ArchivoModel> Archivos { get; set; }
         public ICollection<RespuestaVotoModel> RespuestasVotos { get; set; }
     }

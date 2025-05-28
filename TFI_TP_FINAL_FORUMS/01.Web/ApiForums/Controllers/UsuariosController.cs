@@ -35,14 +35,14 @@ namespace ApiForums.Controllers
 
             var mappedUsers = result.Select(r => new UsersForumPreviewResponse
             {
-                NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido,
-                Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
-                DescripcionCorta = r.Key.UsersForum?.ShortDescriptionForum,
-                DescripcionLarga = r.Key.UsersForum?.LongDescriptionForum,
+                CompleteName = r.Key.Nombre + " " + r.Key.Apellido,
+                Initials = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
+                ShortDescription = r.Key.UsersForum?.ShortDescriptionForum,
+                LongDescription = r.Key.UsersForum?.LongDescriptionForum,
                 Image = r.Key.UsersForum?.ImageForum,
-                FechaDesde = "Desde " + r.Key.FechaCreado.Year.ToString(),
-                Puntaje = r.Value,
-                UltimaVezConectado = r.Key.UsersForum?.LastTimeConnectedForum ?? r.Key.FechaCreado
+                DateFrom = "Desde " + r.Key.FechaCreado.Year.ToString(),
+                Score = r.Value,
+                LastTimeOnline = r.Key.UsersForum?.LastTimeConnectedForum ?? r.Key.FechaCreado
             });
 
             return Ok(mappedUsers);
@@ -58,10 +58,10 @@ namespace ApiForums.Controllers
 
             var mappedUsers = result.Select(r => new UsersForumPreviewResponse
             {
-                NombreCompleto = r.Key.Nombre + " " + r.Key.Apellido,
-                Iniciales = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
-                FechaDesde = "Desde " + r.Key.FechaCreado.Year.ToString(),
-                Puntaje = r.Value,
+                CompleteName = r.Key.Nombre + " " + r.Key.Apellido,
+                Initials = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
+                DateFrom = "Desde " + r.Key.FechaCreado.Year.ToString(),
+                Score = r.Value,
             });
 
             return Ok(mappedUsers);
@@ -74,7 +74,7 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> ObtenerUsuariosForos([FromQuery] string userId)
         {
             var result = await _usuarioService.GetUsersForumAsync(userId);
-            var usersForum = _mapper.Map<IEnumerable<UsersForumResponse>>(result);
+            var usersForum = _mapper.Map<IEnumerable<UserForumResponse>>(result);
             return Ok(usersForum);
         }
 

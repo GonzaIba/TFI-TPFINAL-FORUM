@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Domain.GenericEntityClass
+namespace Core.Domain.Models.GenericEntityClass
 {
     public abstract class GenericEntity : IGenericEntity
     {       
@@ -23,7 +23,7 @@ namespace Core.Domain.GenericEntityClass
     public interface IGenericEntity
     {
         DateTime CreateDate { get; set; }
-        Nullable<DateTime> UpdateDate { get; set; }
+        DateTime? UpdateDate { get; set; }
         bool Active { get; set; }
     }
 }

@@ -17,6 +17,9 @@ using CrossCutting.StorageService.Factory;
 using CrossCutting.StorageService.Services;
 using Microsoft.EntityFrameworkCore;
 using Infrastructure.Data.SQL;
+using Core.Contracts.Publishers;
+using Infrastructure.Data.SQL.Publishers;
+using StackExchange.Redis;
 
 namespace IoC.Resolver
 {
@@ -32,6 +35,7 @@ namespace IoC.Resolver
             services.RegisterBusinessLayer();
             services.RegisterEmails(configuration);
             services.RegisterStorages(configuration);
+            services.RegisterPublishers(configuration);
             return services;
         }
 
@@ -64,6 +68,14 @@ namespace IoC.Resolver
             services.AddConfig<GoogleCloudStorageConfiguration>(configuration, nameof(GenericStorageConfiguration) + "." + nameof(GoogleCloudStorageConfiguration));
             services.AddConfig<AzureBlobStorageConfiguration>(configuration, nameof(GenericStorageConfiguration) + "." + nameof(AzureBlobStorageConfiguration));
 
+            return services;
+        }
+
+        private static IServiceCollection RegisterPublishers(this IServiceCollection services, IConfiguration configuration)
+        {
+            var redisConnectionString = configuration.GetConnectionString("Redis");
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+            services.AddTransient<IPublicationVotePublisher, PublicationVotePublisher>();
             return services;
         }
 

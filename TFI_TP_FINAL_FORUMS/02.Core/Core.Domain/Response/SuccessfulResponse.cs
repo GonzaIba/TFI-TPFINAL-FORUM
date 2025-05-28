@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Response
 {
-    public class SuccessfulResponse
+    public partial class SuccessfulResponse
     {
         public SuccessfulResponse(bool success)
         {
-            Success = success;
+            this.Success = success;
         }
 
         public bool Success { get; set; }

@@ -37,6 +37,14 @@ namespace ApiForums.Controllers
         }
 
         [HttpPost]
+        [Route("AgregarRespuesta")]
+        public async Task<IActionResult> AddAnswer([FromBody] AddAnswerRequest answerRequest)
+        {
+            var result = await _publicacionService.AddAnswer(answerRequest);
+            return Ok(new SuccessfulResponse(result));
+        }
+
+        [HttpPost]
         [Route("GuardarPublicacion")]
         public async Task<IActionResult> SavePublication([FromBody] SavePublicationRequest publicationRequest)
         {
@@ -67,11 +75,14 @@ namespace ApiForums.Controllers
 
         [HttpGet]
         [Route("ObtenerDetallePublicacion")]
-        public async Task<IActionResult> GetDetailPublication([FromQuery] int codePublication)
+        public async Task<IActionResult> GetDetailPublication([FromQuery] int codePublication, [FromQuery] string? userId)
         {
             var publication = await _publicacionService.GetDetailPublication(codePublication);
-            var publicationsResponse = _mapper.Map<PublicationDetailResponse>(publication);
-            return Ok(publicationsResponse);
+            var publicationResponse = _mapper.Map<PublicationDetailResponse>(
+                publication,
+                opt => opt.Items["UserId"] = userId
+            );
+            return Ok(publicationResponse);
         }
 
         [HttpGet]
@@ -96,7 +107,23 @@ namespace ApiForums.Controllers
                 opt => opt.Items["UserId"] = userId
             );
             return Ok(publicationsResponse);
-        }      
+        }
+
+        [HttpPost]
+        [Route("VotarPublicacion")]
+        public async Task<IActionResult> PublicationVote([FromBody] PublicationVoteRequest request)
+        {
+            var result = await _publicacionService.UserPublicationVote(request);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("VotarRespuesta")]
+        public async Task<IActionResult> AnswerVote([FromBody] AnswerVoteRequest request)
+        {
+            var result = await _publicacionService.UserAnswerVote(request);
+            return Ok(result);
+        }
 
         [HttpGet]
         [Route("PredecirEtiquetasPorTexto")]

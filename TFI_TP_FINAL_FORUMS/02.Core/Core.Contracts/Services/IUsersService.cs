@@ -1,11 +1,4 @@
-﻿using Core.Domain.DTOs;
-using Core.Domain.IdentityModels;
-using CrossCutting.Helpers.ResultClasses;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Domain.IdentityModels;
 
 namespace Core.Contracts.Services
 {

@@ -20,14 +20,14 @@ namespace Infrastructure.ML.Repositories
             _pipeline = pipeline;
             _mlContext = mlContext;
         }
-        public async Task Entrenar(string outputModelPath, List<T> data)
+        public void Entrenar(string outputModelPath, List<T> data)
         {
             var dataView = _mlContext.Data.LoadFromEnumerable(data);
-            var model = await ReentrenarModelo(dataView);
-            await GuardarModelo(_mlContext, model, dataView, outputModelPath);
+            var model = ReentrenarModelo(dataView);
+            GuardarModelo(_mlContext, model, dataView, outputModelPath);
         }
 
-        public async Task GuardarModelo(MLContext mlContext, ITransformer model, IDataView data, string modelSavePath)
+        public void GuardarModelo(MLContext mlContext, ITransformer model, IDataView data, string modelSavePath)
         {
             // Pull the data schema from the IDataView used for training the model
             DataViewSchema dataViewSchema = data.Schema;
@@ -36,7 +36,7 @@ namespace Infrastructure.ML.Repositories
                 _mlContext.Model.Save(model, dataViewSchema, fs);
         }
         
-        public async Task<ITransformer> ReentrenarModelo(IDataView trainData)
+        public ITransformer ReentrenarModelo(IDataView trainData)
         {
             var model = _pipeline.Fit(trainData);
             return model;

@@ -1,5 +1,4 @@
 ﻿using Core.Domain.Models;
-using Core.Domain.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Contracts.Repositories
 {
-    public interface IRecompensaUsuarioRepository : IGenericRepository<RecompensaUsuarioModel>
+    public interface IPublicacionVotoRepository : IGenericRepository<PublicacionVotoModel>
     {
-        Task<List<TopThreeUsersLastWeekView>> GetTopThreeUsersLastWeek();
     }
 }

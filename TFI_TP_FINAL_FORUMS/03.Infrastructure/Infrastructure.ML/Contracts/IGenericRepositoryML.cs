@@ -14,7 +14,7 @@ namespace Infrastructure.ML.Contracts
         /// </summary>
         /// <param name="outputModelPath">Ubicacion del archivo modelo donde se obtiene la información. Debe ser algo parecido como: "C:\YourPath\ModelName.mlnet"</param>
         /// <param name="data">Lista de información donde va a entrenar el modelo.</param>
-        public Task Entrenar(string outputModelPath, List<T> data);
+        void Entrenar(string outputModelPath, List<T> data);
 
         /// <summary>
         /// Guarda el modelo en la ubicación especificada.
@@ -23,7 +23,7 @@ namespace Infrastructure.ML.Contracts
         /// <param name="model">Model to save.</param>
         /// <param name="data">IDataView used to train the model.</param>
         /// <param name="modelSavePath">File path for saving the model. Should be similar to "C:\YourPath\ModelName.mlnet.</param>
-        public Task GuardarModelo(MLContext mlContext, ITransformer model, IDataView data, string modelSavePath);
+        void GuardarModelo(MLContext mlContext, ITransformer model, IDataView data, string modelSavePath);
 
         /// <summary>
         /// Retrain model using the pipeline generated as part of the training process.
@@ -31,6 +31,6 @@ namespace Infrastructure.ML.Contracts
         /// <param name="mlContext"></param>
         /// <param name="trainData"></param>
         /// <returns></returns>
-        public Task<ITransformer> ReentrenarModelo(IDataView trainData);
+        ITransformer ReentrenarModelo(IDataView trainData);
     }
 }

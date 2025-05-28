@@ -1,12 +1,8 @@
 ﻿using AutoMapper;
-using Core.Domain.DTOs;
 using Core.Domain.IdentityModels;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
-using CrossCutting.Helpers.ResultClasses;
-using Microsoft.AspNetCore.Identity;
-using System.Linq;
 using System.Text;
 
 namespace ApiForums.Mapping
@@ -24,88 +20,100 @@ namespace ApiForums.Mapping
             CreateMap<LabelResponse, LabelsPublicationsResponse>();
 
             CreateMap<PublicacionModel, PublicationResponse>()
-                .ForMember(dest => dest.CodigoPublicacion, opt => opt.MapFrom(src => src.IDPublicacion))
-                .ForMember(dest => dest.CodigoUsuario, opt => opt.MapFrom(src => src.IDUsuario))
-                .ForMember(dest => dest.Etiquetas, opt => opt.MapFrom(src => src.EtiquetasPublicacion.Select(x => x.Etiqueta.NombreEtiqueta)))
-                .ForMember(dest => dest.Respuestas, opt => opt.MapFrom(src => src.Respuestas.Count))
-                .ForMember(dest => dest.EstaGuardado, opt => opt.MapFrom((src, dest, destMember, context) =>
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreacion))
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Titulo))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Contenido))
+                .ForMember(dest => dest.Reward, opt => opt.MapFrom(src => src.Recompensa))
+                .ForMember(dest => dest.Visits, opt => opt.MapFrom(src => src.Visitas))
+                .ForMember(dest => dest.Answered, opt => opt.MapFrom(src => src.Respuestas.Any()))
+                .ForMember(dest => dest.Closed, opt => opt.MapFrom(src => src.Cerrada))
+                .ForMember(dest => dest.CodePublication, opt => opt.MapFrom(src => src.IDPublicacion))
+                .ForMember(dest => dest.CodeUser, opt => opt.MapFrom(src => src.IDUsuario))
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.EtiquetasPublicacion.Select(x => x.Etiqueta.NombreEtiqueta)))
+                .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.Respuestas.Count))
+                .ForMember(dest => dest.IsSaved, opt => opt.MapFrom((src, dest, destMember, context) =>
                     src.PublicacionesGuardadas?.Any(pg => pg.IDUsuario == (string)context.Items["UserId"]) == true
                 ))
                 .ReverseMap();
 
-
-
             CreateMap<EtiquetaModel, LabelResponse>()
                 .ForMember(dest => dest.CodigoEtiqueta, opt => opt.MapFrom(src => src.IDEtiqueta))
-                .ReverseMap()
-                .ForMember(dest => dest.IDEtiqueta, opt => opt.MapFrom(src => src.CodigoEtiqueta));
+                .ReverseMap();
 
             CreateMap<Users, UsersForumPreviewResponse>()
-                .ForMember(dest => dest.NombreCompleto, opt => opt.MapFrom(src => src.Nombre + " " + src.Apellido)) // Asumo que Users tiene una propiedad llamada Nombre
-                .ForMember(dest => dest.Iniciales, opt => opt.MapFrom(src => ObtenerIniciales(src.Nombre + " " + src.Apellido)))
-                .ForMember(dest => dest.DescripcionCorta, opt => opt.MapFrom(src => src.UsersForum.ShortDescriptionForum))
-                .ForMember(dest => dest.DescripcionLarga, opt => opt.MapFrom(src => src.UsersForum.LongDescriptionForum))
+                .ForMember(dest => dest.CompleteName, opt => opt.MapFrom(src => src.Nombre + " " + src.Apellido)) // Asumo que Users tiene una propiedad llamada Nombre
+                .ForMember(dest => dest.Initials, opt => opt.MapFrom(src => ObtenerIniciales(src.Nombre + " " + src.Apellido)))
+                .ForMember(dest => dest.ShortDescription, opt => opt.MapFrom(src => src.UsersForum.ShortDescriptionForum))
+                .ForMember(dest => dest.LongDescription, opt => opt.MapFrom(src => src.UsersForum.LongDescriptionForum))
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.UsersForum.ImageForum))
-                .ForMember(dest => dest.Puntaje, opt => opt.Ignore()); // Lo configuraremos después
-                //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
+                .ForMember(dest => dest.DateFrom, opt => opt.MapFrom(src => src.FechaCreado))
+                .ForMember(dest => dest.LastTimeOnline, opt => opt.MapFrom(src => src.UsersForum.LastTimeConnectedForum))
+                .ForMember(dest => dest.Score, opt => opt.Ignore()); // Lo configuraremos después
+                                                                     //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
 
-            CreateMap<Users, UsersForumResponse>()
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
+            CreateMap<Users, UserForumResponse>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Nombre))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.FechaCreado, opt => opt.MapFrom(src => src.FechaCreado))
-                .ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)));
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreado));
+                //.ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)));
 
             CreateMap<Users, DetailsUserForumResponse>()
-                .ForMember(dest => dest.Nombre, opt => opt.MapFrom(src => src.Nombre))
-                .ForMember(dest => dest.Apellido, opt => opt.MapFrom(src => src.Apellido))
-                .ForMember(dest => dest.LenguajePreferencia, opt => opt.MapFrom(src => src.LenguajePreferencia))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Apellido))
+                .ForMember(dest => dest.LanguagePreference, opt => opt.MapFrom(src => src.LenguajePreferencia))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.FechaCreado, opt => opt.MapFrom(src => src.FechaCreado))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreado))
                 .ForMember(dest => dest.ShortDescriptionForum, opt => opt.MapFrom(src => src.UsersForum.ShortDescriptionForum))
                 .ForMember(dest => dest.LongDescriptionForum, opt => opt.MapFrom(src => src.UsersForum.LongDescriptionForum))
                 .ForMember(dest => dest.ImageForum, opt => opt.MapFrom(src => src.UsersForum.ImageForum))
                 .ForMember(dest => dest.LastTimeConnectedForum, opt => opt.MapFrom(src => src.UsersForum.LastTimeConnectedForum))
-                .ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)))
-                .ForMember(dest => dest.CantidadRespuestas, opt => opt.MapFrom(src => src.Respuestas.Count()))
-                .ForMember(dest => dest.CantidadPublicacionesCreadas, opt => opt.MapFrom(src => src.Publicaciones.Count()))
-                .ForMember(dest => dest.Medallas, opt => opt.MapFrom(src => src.UsuarioMedallas.Select(x => new Medalla { NombreMedalla = x.Medalla.NombreMedalla, FechaObtenido = x.FechaObtenido, Descripcion = x.Medalla.Descripcion, ImagenMedalla = x.Medalla.ImagenMedalla })));
+                .ForMember(dest => dest.QuantityResponses, opt => opt.MapFrom(src => src.Respuestas.Count()))
+                .ForMember(dest => dest.NumberPostsCreated, opt => opt.MapFrom(src => src.Publicaciones.Count()))
+                .ForMember(dest => dest.Medals, opt => opt.MapFrom(src => src.UsuarioMedallas.Select(x => new Medalla { NameMedal = x.Medalla.NombreMedalla, DateObtained = x.FechaObtenido, Description = x.Medalla.Descripcion, ImageMedal = x.Medalla.ImagenMedalla })));
+                //.ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)))
 
             CreateMap<PublicacionModel, PublicationDetailResponse>()
-                .ForMember(dest => dest.CodigoPublicacion, opt => opt.MapFrom(src => src.IDPublicacion))
-                //.ForMember(dest => dest.UsuarioCreador, opt => opt.MapFrom(src => src.IDUsuario))
-                .ForMember(dest => dest.Titulo, opt => opt.MapFrom(src => src.Titulo))
-                .ForMember(dest => dest.Contenido, opt => opt.MapFrom(src => src.Contenido))
-                .ForMember(dest => dest.Recompensa, opt => opt.MapFrom(src => src.Recompensa))
-                .ForMember(dest => dest.Visitas, opt => opt.MapFrom(src => src.Visitas))
-                .ForMember(dest => dest.Votos, opt => opt.MapFrom(src => ContadorVotosPublicaciones(src.PublicacionesVotos)))
-                .ForMember(dest => dest.VotadoPositivo, opt => opt.MapFrom(src => src.PublicacionesVotos.Any(x => x.IDUsuario == src.IDUsuario)))
-                .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => src.FechaCreacion))
-                .ForMember(dest => dest.FechaCierre, opt => opt.MapFrom(src => src.FechaCierre));
-
-            CreateMap<PublicacionModel, PublicationDetailResponse>()
-                .ForMember(dest => dest.CodigoPublicacion, opt => opt.MapFrom(src => src.IDPublicacion))
-                //.ForMember(dest => dest.UsuarioCreador, opt => opt.MapFrom(src => src.IDUsuario))
-                .ForMember(dest => dest.Titulo, opt => opt.MapFrom(src => src.Titulo))
-                .ForMember(dest => dest.Contenido, opt => opt.MapFrom(src => src.Contenido))
-                .ForMember(dest => dest.Recompensa, opt => opt.MapFrom(src => src.Recompensa))
-                .ForMember(dest => dest.Visitas, opt => opt.MapFrom(src => src.Visitas))
-                .ForMember(dest => dest.Votos, opt => opt.MapFrom(src => ContadorVotosPublicaciones(src.PublicacionesVotos)))
-                .ForMember(dest => dest.VotadoPositivo, opt => opt.MapFrom(src => src.PublicacionesVotos.Any(x => x.IDUsuario == src.IDUsuario)))
-                .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => src.FechaCreacion))
-                .ForMember(dest => dest.FechaCierre, opt => opt.MapFrom(src => src.FechaCierre));
+                .ForMember(dest => dest.CodePublication, opt => opt.MapFrom(src => src.IDPublicacion))
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Usuario))
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Titulo))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Contenido))
+                .ForMember(dest => dest.Reward, opt => opt.MapFrom(src => src.Recompensa))
+                .ForMember(dest => dest.Visits, opt => opt.MapFrom(src => src.Visitas))
+                .ForMember(dest => dest.Votes, opt => opt.MapFrom(src => ContadorVotosPublicaciones(src.PublicacionesVotos)))
+                .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.Respuestas))
+                .ForMember(dest => dest.VotedPositive, opt => opt.MapFrom((src, dest, destMember, context) =>
+                {
+                    var userId = context.Items["UserId"] as string;
+                    if (string.IsNullOrEmpty(userId))
+                        return (bool?)null;
+                    var voto = src.PublicacionesVotos?.FirstOrDefault(v => v.IDUsuario == userId);
+                    return voto?.Positivo;
+                }))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreacion))
+                .ForMember(dest => dest.ClosedDate, opt => opt.MapFrom(src => src.FechaCierre));
+                ///............
 
             CreateMap<RespuestaModel, AnswerResponse>()
-                .ForMember(dest => dest.CodigoRespuesta, opt => opt.MapFrom(src => src.IDRespuesta))
-                .ForMember(dest => dest.TextoRespuesta, opt => opt.MapFrom(src => src.TextoRespuesta))
-                .ForMember(dest => dest.RespuestaCorrecta, opt => opt.MapFrom(src => src.RespuestaCorrecta))
-                .ForMember(dest => dest.Votos, opt => opt.MapFrom(src => ContadorVotos(src.RespuestasVotos)))
-                .ForMember(dest => dest.VotadoPositivo, opt => opt.MapFrom(src => src.RespuestasVotos.Any(x => x.IDUsuario == src.IDUsuario)))
-                .ForMember(dest => dest.FechaCreacion, opt => opt.MapFrom(src => src.FechaCreacion));
+                .ForMember(dest => dest.CodeAnswer, opt => opt.MapFrom(src => src.IDRespuesta))
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.Usuario))
+                .ForMember(dest => dest.TextResponse, opt => opt.MapFrom(src => src.TextoRespuesta))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreacion))
+                .ForMember(dest => dest.CorrectAnswer, opt => opt.MapFrom(src => src.RespuestaCorrecta))
+                .ForMember(dest => dest.Votes, opt => opt.MapFrom(src => ContadorVotos(src.RespuestasVotos)))
+                //////files...
+                .ForMember(dest => dest.VotedPositive, opt => opt.MapFrom((src, dest, destMember, context) =>
+                {
+                    var userId = context.Items["UserId"] as string;
+                    if (string.IsNullOrEmpty(userId))
+                        return (bool?)null;
+                    var voto = src.RespuestasVotos?.FirstOrDefault(v => v.IDUsuario == userId);
+                    return voto?.Positivo;
+                }));
 
             CreateMap<ArchivoModel, FilesResponse>()
-                .ForMember(dest => dest.NombreArchivo, opt => opt.MapFrom(src => src.NombreArchivo))
-                .ForMember(dest => dest.TipoArchivo, opt => opt.MapFrom(src => src.TipoArchivo))
-                .ForMember(dest => dest.Archivo, opt => opt.MapFrom(src => src.Archivo));
+                .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.NombreArchivo))
+                .ForMember(dest => dest.TypeFile, opt => opt.MapFrom(src => src.TipoArchivo))
+                .ForMember(dest => dest.File, opt => opt.MapFrom(src => src.Archivo));
 
             CreateMap<PublicationDetailResponse, UsersForumPreviewResponse>();
             CreateMap<UsersForumPreviewResponse, PublicationDetailResponse>();

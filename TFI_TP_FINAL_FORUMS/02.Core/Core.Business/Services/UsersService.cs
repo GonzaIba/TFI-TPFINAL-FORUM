@@ -1,31 +1,8 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using CrossCutting.Helpers.ResultClasses;
-using Core.Domain.Enum;
 using Core.Domain.IdentityModels;
-using Core.Domain.DTOs;
 using AutoMapper;
-using CrossCutting.Extensions;
-using System.Security.Claims;
-using System.Collections;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.YouTube.v3;
-using Google.Apis.Services;
-using Google.Apis.Util.Store;
-using Google.Apis.Auth.OAuth2.Flows;
-using Google.Apis.Auth.OAuth2.Responses;
-using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.DependencyInjection;
-using Core.Domain.Models;
 using System.Linq.Expressions;
 using Core.Contracts.UoW;
 using Core.Domain.Specification;
@@ -98,46 +75,11 @@ namespace Core.Business.Services
                 //Obtenemos el repositorio de recompensas de usuarios
                 var usuariosRecompensasRepo = _unitOfWorkForum.GetRepository<IRecompensaUsuarioRepository>();
 
-                //Agarramos la fecha de hace 1 semana
-                var oneWeekAgo = DateTime.Now.AddDays(-7);
+                var topUsers = await usuariosRecompensasRepo.GetTopThreeUsersLastWeek();
 
-                //Obtenemos los usuarios con mas recompensas de la ultima semana
-                //var groupedUsers = await usuariosRecompensasRepo.GetWithGroupBy(
-                //    x => x.FechaObtencion >= oneWeekAgo,
-                //    null,
-                //    query => query
-                //        .GroupBy(x => x.IDUsuario)
-                //        .Select(g => new
-                //        {
-                //            User = g.FirstOrDefault().Usuario,
-                //            TotalRecompensa = g.Sum(x => x.CantidadRecompensa)
-                //        }),
-                //    "Usuario",
-                //    tracking: false
-                //);
-
-                ////Ordenamos Descendentemente y tomamos tambien su recompensa
-                //var topUsersDict = groupedUsers.OrderByDescending(x => x.TotalRecompensa)
-                //                               .ToDictionary(k => k.User, v => v.TotalRecompensa);
-
-                //return topUsersDict;
-
-                var groupedUsers = await usuariosRecompensasRepo.GetWithGroupBy(
-                    x => x.FechaObtencion >= oneWeekAgo,
-                    null,
-                    query => query
-                        .GroupBy(x => x.IDUsuario)
-                        .Select(g => new
-                        {
-                            IdUser = g.FirstOrDefault().IDUsuario,
-                            TotalRecompensa = g.Sum(x => x.CantidadRecompensa)
-                        }),
-                    tracking: false
-                );
-
-                foreach (var a in groupedUsers.OrderByDescending(x => x.TotalRecompensa))
+                foreach (var a in topUsers)
                 {
-                    var user = (await _repository.Get(x => x.Id == a.IdUser, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
+                    var user = (await _repository.Get(x => x.Id == a.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
                     if (user is not null)
                         DictTopUsersLastWeek.Add(user, a.TotalRecompensa);
                 }

@@ -1,5 +1,5 @@
-﻿using Core.Domain.GenericEntityClass;
-using Core.Domain.IdentityModels;
+﻿using Core.Domain.IdentityModels;
+using Core.Domain.Models.GenericEntityClass;
 using CrossCutting.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

@@ -8,19 +8,19 @@ namespace Core.Domain.Response
 {
     public class PublicationResponse
     {
-        public int CodigoPublicacion { get; set; }
-        public string CodigoUsuario { get; set; }
-        public string Titulo { get; set; }
-        public string Contenido { get; set; }
-        public int Recompensa { get; set; }
-        public int Visitas { get; set; }
-        public int Respuestas { get; set; }
-        public bool Respondida { get; set; }
-        public bool Cerrada { get; set; }
-        public DateTime FechaCreacion { get; set; }
-        public DateTime? FechaCierre { get; set; }
-        public bool EstaGuardado { get; set; }
+        public int CodePublication { get; set; }
+        public string CodeUser { get; set; }
+        public string Title { get; set; }
+        public string Content { get; set; }
+        public int Reward { get; set; }
+        public int Visits { get; set; }
+        public int Answers { get; set; }
+        public bool Answered { get; set; }
+        public bool Closed { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ClosedDate { get; set; }
+        public bool IsSaved { get; set; }
 
-        public List<string> Etiquetas { get; set; }
+        public List<string> Tags { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Core.Domain.GenericEntityClass;
+﻿using Core.Domain.Models.GenericEntityClass;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;

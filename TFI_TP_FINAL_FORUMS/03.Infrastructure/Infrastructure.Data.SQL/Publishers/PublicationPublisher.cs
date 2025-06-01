@@ -1,51 +1,24 @@
 ﻿using Core.Contracts.Publishers;
 using Core.Domain.Events;
-using Newtonsoft.Json;
 using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Data.SQL.Publishers
 {
-    public class PublicationVotePublisher : IPublicationVotePublisher
+    public class PublicationVotePublisher(IConnectionMultiplexer redis) : PublisherBase(redis), IPublicationVotePublisher
     {
-        private readonly IConnectionMultiplexer _redis;
-
-        public PublicationVotePublisher(IConnectionMultiplexer redis)
+        public Task PublishVotePublicationChangedAsync(PublicationVoteEvent message)
         {
-            _redis = redis;
+            return PublishAsync("forum:votePublicationChanged", message);
         }
 
-        public async Task PublishVotePublicationChangedAsync(int publicationId, int newVoteCount)
+        public Task PublishVoteAnswerChangedAsync(AnswerVoteEvent message)
         {
-            var db = _redis.GetSubscriber();
-            var message = new PublicationVoteEvent()
-            {
-                PublicationId = publicationId,
-                NewVoteCount = newVoteCount
-            };
-
-            var serializedMessage = JsonConvert.SerializeObject(message);
-            var channel = new RedisChannel("forum:votePublicationChanged", RedisChannel.PatternMode.Literal);
-            await db.PublishAsync(channel, serializedMessage);
+            return PublishAsync("forum:voteAnswerChanged", message);
         }
 
-        public async Task PublishVoteAnswerChangedAsync(int publicationId, int answerId, int newVoteCount)
+        public Task PublishAddAnswerChangedAsync(AddAnswerEvent message)
         {
-            var db = _redis.GetSubscriber();
-            var message = new AnswerVoteEvent()
-            {
-                PublicationId = publicationId,
-                AnswerId = answerId,
-                NewVoteCount = newVoteCount,
-            };
-
-            var serializedMessage = JsonConvert.SerializeObject(message);
-            var channel = new RedisChannel("forum:voteAnswerChanged", RedisChannel.PatternMode.Literal);
-            await db.PublishAsync(channel, serializedMessage);
+            return PublishAsync("forum:addAnswerChanged", message);
         }
     }
 }

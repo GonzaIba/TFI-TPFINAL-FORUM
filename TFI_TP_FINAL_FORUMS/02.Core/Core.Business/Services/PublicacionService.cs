@@ -3,12 +3,10 @@ using Core.Contracts.Repositories;
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
-using Core.Domain.IdentityModels;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
 using Infrastructure.ML.Contracts;
-
 using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Core.Business.Services
@@ -23,13 +21,13 @@ namespace Core.Business.Services
         private readonly IRespuestaVotoRepository _respuestaVotoRepository;
         private readonly IRespuestaRepository _respuestaRepository;
         private readonly IUsersRepository _usersRepository;
-        private readonly IPublicationVotePublisher _publicationVotePublisher;
+        private readonly IPublisherService _publicationPublisher;
         public PublicacionService(
             IUnitOfWorkForum unitOfWorkForum,
             IUnitOfWorkGateway unitOfWorkGateway,
             IUsersService usersService,
             ITextoPrediccionRepositoryML textoPrediccionRepositoryML,
-            IPublicationVotePublisher publicationVotePublisher
+            IPublisherService publicationPublisher
         )
         : base(unitOfWorkForum, unitOfWorkForum.GetRepository<IPublicacionRepository>())
         {
@@ -41,7 +39,7 @@ namespace Core.Business.Services
             _publicacionVotoRepository = _unitOfWork.GetRepository<IPublicacionVotoRepository>();
             _respuestaVotoRepository = _unitOfWork.GetRepository<IRespuestaVotoRepository>();
             _respuestaRepository = _unitOfWork.GetRepository<IRespuestaRepository>();
-            _publicationVotePublisher = publicationVotePublisher;
+            _publicationPublisher = publicationPublisher;
         }
 
         public async Task<bool> CreatePublication(string userId, PublicacionModel publication)
@@ -65,7 +63,7 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<bool> AddAnswer(AddAnswerRequest request)
+        public async Task<RespuestaModel> AddAnswer(AddAnswerRequest request)
         {
             try
             {
@@ -75,7 +73,12 @@ namespace Core.Business.Services
 
                 var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication)).FirstOrDefault();
                 if (publication == null)
-                    throw new ApiForumException("No existe la publicación.");
+                    throw new ApiForumException("No existe la publicación o esta inactiva.");
+
+                if(publication.Cerrada)
+                    throw new ApiForumException("La publicación ya se encuentra cerrada.");
+
+                //publication.Usuario = (await _usersRepository.Get(x => x.Id == publication.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
 
                 var respuesta = new RespuestaModel
                 {
@@ -83,18 +86,24 @@ namespace Core.Business.Services
                     IDUsuario = user.Id,
                     TextoRespuesta = request.TextResponse,
                     FechaCreacion = DateTime.Now,
-                    RespuestaCorrecta = false
+                    RespuestaCorrecta = false,
+                    Active = true
                 };
                 await _respuestaRepository.Insert(respuesta);
-                publication.Respondida = true;
-                //publication.FechaCierre = DateTime.Now.AddDays(7); // Asignar fecha de cierre 7 días después de la respuesta
-                await _repository.Update(publication);
+                if (!publication.Respondida)
+                {
+                    publication.Respondida = true;
+                    //publication.FechaCierre = DateTime.Now.AddDays(7); // Asignar fecha de cierre 7 días después de la respuesta
+                    await _repository.Update(publication);
+                }
                 await _unitOfWork.SaveChangesAsync();
-                return true;
+                respuesta.Usuario = user; // Asignar el usuario a la respuesta
+                //await _publicationVotePublisher.PublishAddAnswerChangedAsync(publication);
+                return respuesta;
             }
             catch (Exception)
             {
-                return false;
+                throw new ApiForumException("Error al agregar la respuesta a la publicación.");
             }
         }
 
@@ -222,26 +231,25 @@ namespace Core.Business.Services
         {
             try
             {
-                var publication = (await _repository.Get(x => x.IDPublicacion == request.publicationCode, includeProperties: "PublicacionesVotos")).FirstOrDefault();
+                var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, includeProperties: "PublicacionesVotos")).FirstOrDefault();
                 if (publication == null)
                     return new AnswerPublicationVoteResponse(false, false);
 
-                var vote = (await _publicacionVotoRepository.Get(
-                    x => x.IDPublicacion == request.publicationCode && x.IDUsuario == request.userId)).FirstOrDefault();
+                var vote = (await _publicacionVotoRepository.Get(x => x.IDPublicacion == request.CodePublication && x.IDUsuario == request.UserId)).FirstOrDefault();
 
                 // Crear nuevo voto si no existe
                 if (vote == null)
                 {
                     var newVote = new PublicacionVotoModel
                     {
-                        IDPublicacion = request.publicationCode,
-                        IDUsuario = request.userId,
-                        Positivo = request.isPositive,
+                        IDPublicacion = request.CodePublication,
+                        IDUsuario = request.UserId,
+                        Positivo = request.IsPositive,
                         CreateDate = DateTime.UtcNow
                     };
 
                     await _publicacionVotoRepository.Insert(newVote);
-                    publication.Recompensa += request.isPositive ? 10 : -10;
+                    publication.Recompensa += request.IsPositive ? 10 : -10;
                 }
                 else
                 {
@@ -250,17 +258,17 @@ namespace Core.Business.Services
                         return new AnswerPublicationVoteResponse(false, true);
 
                     // Si quiere deshacer el voto (mismo valor)
-                    if (vote.Positivo == request.isPositive)
+                    if (vote.Positivo == request.IsPositive)
                     {
                         await _publicacionVotoRepository.Delete(vote);
-                        publication.Recompensa -= request.isPositive ? 10 : -10;
+                        publication.Recompensa -= request.IsPositive ? 10 : -10;
                     }
                     else
                     {
                         // Cambió de positivo a negativo o viceversa
-                        vote.Positivo = request.isPositive;
+                        vote.Positivo = request.IsPositive;
                         vote.CreateDate = DateTime.UtcNow;
-                        publication.Recompensa += request.isPositive ? 20 : -20;
+                        publication.Recompensa += request.IsPositive ? 20 : -20;
                     }
                 }
 
@@ -270,7 +278,7 @@ namespace Core.Business.Services
                 var votosPositivos = publication.PublicacionesVotos.Count(x=> x.Positivo);
                 var votosNegativos = publication.PublicacionesVotos.Count(x => !x.Positivo);
                 int votos = votosPositivos - votosNegativos;
-                await _publicationVotePublisher.PublishVotePublicationChangedAsync(publication.IDPublicacion, votos);
+                await _publicationPublisher.PublishVotePublicationChangedAsync(publication.IDPublicacion, votos);
                 return new AnswerPublicationVoteResponse(true, false);
             }
             catch (Exception)
@@ -284,24 +292,24 @@ namespace Core.Business.Services
         {
             try
             {
-                var publication = (await _repository.Get(x => x.IDPublicacion == request.publicationCode)).FirstOrDefault();
+                var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication)).FirstOrDefault();
                 if (publication == null)
                     return new AnswerPublicationVoteResponse(false, false);
 
-                var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.answerCode)).FirstOrDefault();
+                var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode, includeProperties: "RespuestasVotos")).FirstOrDefault();
                 if (answer == null)
                     return new AnswerPublicationVoteResponse(false, false);
 
                 var vote = (await _respuestaVotoRepository.Get(
-                    x => x.IDRespuesta == request.answerCode && x.IDUsuario == request.userId)).FirstOrDefault();
+                    x => x.IDRespuesta == request.AnswerCode && x.IDUsuario == request.UserId)).FirstOrDefault();
 
                 if (vote == null)
                 {
                     var newVote = new RespuestaVotoModel
                     {
-                        IDRespuesta = request.answerCode,
-                        IDUsuario = request.userId,
-                        Positivo = request.isPositive,
+                        IDRespuesta = request.AnswerCode,
+                        IDUsuario = request.UserId,
+                        Positivo = request.IsPositive,
                         CreateDate = DateTime.UtcNow
                     };
 
@@ -312,11 +320,11 @@ namespace Core.Business.Services
                     if (DateTime.UtcNow - vote.CreateDate > TimeSpan.FromMinutes(5))
                         return new AnswerPublicationVoteResponse(false, true);
 
-                    if (vote.Positivo == request.isPositive)
+                    if (vote.Positivo == request.IsPositive)
                         await _respuestaVotoRepository.Delete(vote);
                     else
                     {
-                        vote.Positivo = request.isPositive;
+                        vote.Positivo = request.IsPositive;
                         vote.CreateDate = DateTime.UtcNow;
                         await _respuestaVotoRepository.Update(vote);
                     }
@@ -327,7 +335,7 @@ namespace Core.Business.Services
                 var votosPositivos = answer.RespuestasVotos.Count(x => x.Positivo);
                 var votosNegativos = answer.RespuestasVotos.Count(x => !x.Positivo);
                 int votos = votosPositivos - votosNegativos;
-                await _publicationVotePublisher.PublishVoteAnswerChangedAsync(publication.IDPublicacion, answer.IDRespuesta, votos);
+                await _publicationPublisher.PublishVoteAnswerChangedAsync(publication.IDPublicacion, answer.IDRespuesta, votos);
                 return new AnswerPublicationVoteResponse(true, false);
             }
             catch (Exception)

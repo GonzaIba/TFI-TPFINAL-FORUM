@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core.Domain.Events;
 using Core.Domain.IdentityModels;
 using Core.Domain.Models;
 using Core.Domain.Request;
@@ -49,7 +50,7 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.DateFrom, opt => opt.MapFrom(src => src.FechaCreado))
                 .ForMember(dest => dest.LastTimeOnline, opt => opt.MapFrom(src => src.UsersForum.LastTimeConnectedForum))
                 .ForMember(dest => dest.Score, opt => opt.Ignore()); // Lo configuraremos después
-                                                                     //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
+                //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
 
             CreateMap<Users, UserForumResponse>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Nombre))
@@ -81,6 +82,8 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.Visits, opt => opt.MapFrom(src => src.Visitas))
                 .ForMember(dest => dest.Votes, opt => opt.MapFrom(src => ContadorVotosPublicaciones(src.PublicacionesVotos)))
                 .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.Respuestas))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreacion))
+                .ForMember(dest => dest.ClosedDate, opt => opt.MapFrom(src => src.FechaCierre))
                 .ForMember(dest => dest.VotedPositive, opt => opt.MapFrom((src, dest, destMember, context) =>
                 {
                     var userId = context.Items["UserId"] as string;
@@ -89,8 +92,14 @@ namespace ApiForums.Mapping
                     var voto = src.PublicacionesVotos?.FirstOrDefault(v => v.IDUsuario == userId);
                     return voto?.Positivo;
                 }))
-                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreacion))
-                .ForMember(dest => dest.ClosedDate, opt => opt.MapFrom(src => src.FechaCierre));
+                .ForMember(dest => dest.IsAuthor, opt => opt.MapFrom((src, dest, destMember, context) =>
+                {
+                    var userId = context.Items["UserId"] as string;
+                    if (string.IsNullOrEmpty(userId))
+                        return (bool?)null;
+
+                    return src.IDUsuario == userId;
+                }));
                 ///............
 
             CreateMap<RespuestaModel, AnswerResponse>()
@@ -108,6 +117,13 @@ namespace ApiForums.Mapping
                         return (bool?)null;
                     var voto = src.RespuestasVotos?.FirstOrDefault(v => v.IDUsuario == userId);
                     return voto?.Positivo;
+                }))
+                .ForMember(dest => dest.IsAuthor, opt => opt.MapFrom((src, dest, destMember, context) =>
+                {
+                    var userId = context.Items["UserId"] as string;
+                    if (string.IsNullOrEmpty(userId))
+                        return (bool?)null;
+                    return src.IDUsuario == userId;
                 }));
 
             CreateMap<ArchivoModel, FilesResponse>()
@@ -117,6 +133,10 @@ namespace ApiForums.Mapping
 
             CreateMap<PublicationDetailResponse, UsersForumPreviewResponse>();
             CreateMap<UsersForumPreviewResponse, PublicationDetailResponse>();
+            #endregion
+
+            #region Events
+            CreateMap<AddAnswerEvent, AnswerResponse>().ReverseMap();
             #endregion
         }
 

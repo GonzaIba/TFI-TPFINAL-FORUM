@@ -18,6 +18,7 @@ namespace Core.Domain.Response
         public bool? VotedPositive { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ClosedDate { get; set; }
+        public bool IsAuthor { get; set; }
 
         public List<AnswerResponse> Answers { get; set; } = new();
         public List<FilesResponse> Files { get; set; } = new();
@@ -39,6 +40,7 @@ namespace Core.Domain.Response
         public bool CorrectAnswer { get; set; }
         public int Votes { get; set; }
         public bool? VotedPositive { get; set; }
+        public bool IsAuthor { get; set; }
         public List<FilesResponse> Files { get; set; } = new();
     }
 }

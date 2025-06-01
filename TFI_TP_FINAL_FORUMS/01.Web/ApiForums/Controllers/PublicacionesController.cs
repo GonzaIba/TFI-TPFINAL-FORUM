@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Contracts.Services;
 using Core.Domain.Exceptions.BaseException;
+using Core.Domain.IdentityModels;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
@@ -16,15 +17,19 @@ namespace ApiForums.Controllers
         private readonly IMapper _mapper;
         private readonly IPublicacionService _publicacionService;
         private readonly ILogger<PublicacionesController> _logger;
+        private readonly IPublisherService _publisherService;
+
         public PublicacionesController(
             IPublicacionService publicacionService,
             IMapper mapper,
-            ILogger<PublicacionesController> logger
+            ILogger<PublicacionesController> logger,
+            IPublisherService publisherService
             )
         {
             _publicacionService = publicacionService;
             _mapper = mapper;
             _logger = logger;
+            _publisherService = publisherService;
         }
 
         [HttpPost]
@@ -41,14 +46,16 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> AddAnswer([FromBody] AddAnswerRequest answerRequest)
         {
             var result = await _publicacionService.AddAnswer(answerRequest);
-            return Ok(new SuccessfulResponse(result));
+            var answerResponse = _mapper.Map<AnswerResponse>(result, opt => opt.Items["UserId"] = answerRequest.UserId);
+            await _publisherService.PublishAddAnswerChangedAsync(answerResponse);
+            return Ok(answerResponse);
         }
 
         [HttpPost]
         [Route("GuardarPublicacion")]
         public async Task<IActionResult> SavePublication([FromBody] SavePublicationRequest publicationRequest)
         {
-            var result = await _publicacionService.SavePublication(publicationRequest.UserId, publicationRequest.CodigoPublicacion);
+            var result = await _publicacionService.SavePublication(publicationRequest.UserId, publicationRequest.CodePublication);
             return Ok(new SuccessfulResponse(result));
         }
 

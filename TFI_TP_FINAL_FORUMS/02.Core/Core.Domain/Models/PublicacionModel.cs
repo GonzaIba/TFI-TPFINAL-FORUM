@@ -1,11 +1,6 @@
 ﻿using Core.Domain.IdentityModels;
 using Core.Domain.Models.GenericEntityClass;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Domain.Models
 {
@@ -33,7 +28,6 @@ namespace Core.Domain.Models
         [NotMapped]
         public Users Usuario { get; set; }
 
-        // Propiedades de navegación
         public ICollection<EtiquetaPublicacionModel> EtiquetasPublicacion { get; set; }
         public ICollection<RespuestaModel> Respuestas { get; set; }
         public ICollection<ArchivoModel> Archivos { get; set; }

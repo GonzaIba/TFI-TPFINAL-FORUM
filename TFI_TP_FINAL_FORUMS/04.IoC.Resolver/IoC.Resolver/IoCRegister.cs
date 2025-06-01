@@ -76,6 +76,7 @@ namespace IoC.Resolver
             var redisConnectionString = configuration.GetConnectionString("Redis");
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
             services.AddTransient<IPublicationVotePublisher, PublicationVotePublisher>();
+            services.AddTransient<IPublisherService, PublisherService>();
             return services;
         }
 

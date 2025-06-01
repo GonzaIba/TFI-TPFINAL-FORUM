@@ -8,8 +8,8 @@ namespace Core.Domain.Request
 {
     public class PublicationVoteRequest
     {
-        public int publicationCode { get; set; }
-        public bool isPositive { get; set; }
-        public string? userId { get; set; }
+        public int CodePublication { get; set; }
+        public bool IsPositive { get; set; }
+        public string? UserId { get; set; }
     }
 }

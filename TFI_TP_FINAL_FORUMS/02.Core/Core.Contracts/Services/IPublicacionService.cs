@@ -1,12 +1,6 @@
-﻿using Core.Domain.IdentityModels;
-using Core.Domain.Models;
+﻿using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Contracts.Services
 {
@@ -14,7 +8,7 @@ namespace Core.Contracts.Services
     {
         Task<bool> CreatePublication(string userId, PublicacionModel publication);
         Task<bool> SavePublication(string userId, int codePublication);
-        Task<bool> AddAnswer(AddAnswerRequest request);
+        Task<RespuestaModel> AddAnswer(AddAnswerRequest request);
         Task<bool> DeleteSavedPublication(string userId, int codePublication); 
         Task<IEnumerable<PublicacionModel>> GetPublications();
         Task<PublicacionModel> GetDetailPublication(int codePublication);

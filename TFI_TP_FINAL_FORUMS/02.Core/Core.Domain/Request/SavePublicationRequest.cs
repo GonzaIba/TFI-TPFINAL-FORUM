@@ -9,6 +9,6 @@ namespace Core.Domain.Request
     public class SavePublicationRequest
     {
         public string UserId { get; set; }
-        public int CodigoPublicacion { get; set; }
+        public int CodePublication { get; set; }
     }
 }

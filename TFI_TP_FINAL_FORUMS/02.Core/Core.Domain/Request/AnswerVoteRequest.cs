@@ -8,9 +8,9 @@ namespace Core.Domain.Request
 {
     public class AnswerVoteRequest
     {
-        public int publicationCode { get; set; }
-        public int answerCode { get; set; }
-        public bool isPositive { get; set; }
-        public string? userId { get; set; }
+        public int CodePublication { get; set; }
+        public bool IsPositive { get; set; }
+        public string? UserId { get; set; }
+        public int AnswerCode { get; set; }
     }
 }

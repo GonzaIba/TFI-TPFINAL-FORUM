@@ -1,0 +1,14 @@
+{
+    "inputs": [],
+    "servers": {
+        "monkeyserver": {
+			"type": "stdio",
+			"command": "dotnet",
+			"args": [
+				"run",
+				"--project",
+				"/Users/jamesmontemagno/GitHub/TestMCP/MonkeyMCP/MonkeyMCP.csproj"
+			]
+		}
+    }
+}

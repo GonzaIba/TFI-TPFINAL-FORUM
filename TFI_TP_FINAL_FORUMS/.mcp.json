@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "MiServidor": {
+      "type": "http",
+      "url": "http://localhost:64272"
+    }
+  }
+}

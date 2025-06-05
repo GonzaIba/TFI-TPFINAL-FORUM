@@ -69,6 +69,12 @@ namespace ApiForums.Middleware.Helpers
             }
         }
 
+        internal static bool IsMcp(HttpContext context)
+        {
+            var endpoint = context.GetEndpoint();
+            return endpoint?.DisplayName?.Contains("MCP") == true;
+        }
+
         internal static string ObtainTokenFromRequest(HttpRequest request)
         {
             // Implementa lógica para obtener el token de la solicitud, por ejemplo, desde los encabezados

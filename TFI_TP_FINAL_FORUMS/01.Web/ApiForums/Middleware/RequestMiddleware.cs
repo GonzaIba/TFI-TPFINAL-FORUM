@@ -24,6 +24,22 @@ namespace ApiForums.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            //⛔ evitá interferir con rutas especiales como / mcp o / mcp / sse
+            try
+            {
+                if (_.IsMcp(context))
+                {
+                    await _next(context); // dejá que mcp maneje la respuesta completa
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+
             using (var responseBody = new MemoryStream())
             {
                 var originalBodyStream = context.Response.Body;

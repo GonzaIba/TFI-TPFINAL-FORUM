@@ -1,0 +1,88 @@
+﻿using McpServerTest.Utils;
+using ModelContextProtocol.Client;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace McpServerTest
+{
+    public class SseServerIntegrationTestFixture : IAsyncDisposable
+    {
+        private readonly KestrelInMemoryTransport _inMemoryTransport = new();
+
+        private readonly Task _serverTask;
+        private readonly CancellationTokenSource _stopCts = new();
+
+        // XUnit's ITestOutputHelper is created per test, while this fixture is used for
+        // multiple tests, so this dispatches the output to the current test.
+        private readonly DelegatingTestOutputHelper _delegatingTestOutputHelper = new();
+
+        private SseClientTransportOptions DefaultTransportOptions { get; set; } = new()
+        {
+            Endpoint = new("http://localhost/"),
+        };
+
+        public SseServerIntegrationTestFixture()
+        {
+            var socketsHttpHandler = new SocketsHttpHandler()
+            {
+                ConnectCallback = (context, token) =>
+                {
+                    var connection = _inMemoryTransport.CreateConnection();
+                    return new(connection.ClientStream);
+                },
+            };
+
+            HttpClient = new HttpClient(socketsHttpHandler)
+            {
+                BaseAddress = new("http://localhost/"),
+            };
+
+            _serverTask = Program.MainAsync([], new XunitLoggerProvider(_delegatingTestOutputHelper), _inMemoryTransport, _stopCts.Token);
+        }
+
+        public HttpClient HttpClient { get; }
+
+        public Task<IMcpClient> ConnectMcpClientAsync(McpClientOptions? options, ILoggerFactory loggerFactory)
+        {
+            return McpClientFactory.CreateAsync(
+                new SseClientTransport(DefaultTransportOptions, HttpClient, loggerFactory),
+                options,
+                loggerFactory,
+                TestContext.Current.CancellationToken);
+        }
+
+        public void Initialize(ITestOutputHelper output, SseClientTransportOptions clientTransportOptions)
+        {
+            _delegatingTestOutputHelper.CurrentTestOutputHelper = output;
+            DefaultTransportOptions = clientTransportOptions;
+        }
+
+        public void TestCompleted()
+        {
+            _delegatingTestOutputHelper.CurrentTestOutputHelper = null;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _delegatingTestOutputHelper.CurrentTestOutputHelper = null;
+
+            HttpClient.Dispose();
+            _stopCts.Cancel();
+
+            try
+            {
+                await _serverTask.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            _stopCts.Dispose();
+        }
+    }
+
+}

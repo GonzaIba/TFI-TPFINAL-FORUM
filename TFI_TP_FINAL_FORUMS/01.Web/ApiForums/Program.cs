@@ -1,21 +1,29 @@
+using Api.StartupConfiguration;
+using ApiForums.Background;
+using ApiForums.Mapping;
+using ApiForums.Middleware;
+using ApiForums.StartupConfiguration;
+using AutoMapper;
+using Core.Contracts.Configurations;
 using CrossCutting.Extensions;
+using Hangfire;
 using Infrastructure.Data.SQL;
+using Infrastructure.ML.Contracts;
+using Infrastructure.ML.Repositories;
 using IoC.Resolver;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Core.Contracts.Configurations;
-using AutoMapper;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
-using ApiForums.Background;
 using Microsoft.ML;
-using ApiForums.Mapping;
-using ApiForums.StartupConfiguration;
-using Api.StartupConfiguration;
-using ApiForums.Middleware;
-using Infrastructure.ML.Repositories;
-using Infrastructure.ML.Contracts;
-using Hangfire;
-using StackExchange.Redis;
+using ModelContextProtocol.Client;
+using ModelContextProtocol.Server;
+using OpenAI;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 internal class Program
 {
@@ -105,6 +113,72 @@ internal class Program
         //builder.Services.AddSingleton(new QuestionPredictionEngine(modelPath));
         //builder.Services.AddSingleton<PredictionEngine<QuestionModel, QuestionPrediction>>();
         #endregion
+
+        #region Configure MCP
+
+        builder.Services.AddMcpServer()
+            .WithHttpTransport()
+            .WithToolsFromAssembly();
+
+        var openAIClient = new OpenAIClient(builder.Configuration["AI:ApiKey"]).GetChatClient("gpt-4o-mini");
+
+        //IChatClient samplingClient = openAIClient.AsIChatClient()
+        //    .AsBuilder()
+        //    .UseOpenTelemetry(loggerFactory: _loggerFactory, configure: o => o.EnableSensitiveData = true)
+        //    .Build();
+
+        //var mcpClient = McpClientFactory.CreateAsync(
+        //    new StdioClientTransport(new()
+        //    {
+        //        Command = "npx",
+        //        Arguments = ["-y", "--verbose", "@modelcontextprotocol/server-everything"],
+        //        Name = "Everything",
+        //    }),
+        //    clientOptions: new()
+        //    {
+        //        Capabilities = new() { Sampling = new() { SamplingHandler = samplingClient.CreateSamplingHandler() } },
+        //    },
+        //    loggerFactory: _loggerFactory).Result;
+
+
+        //builder.Services.AddSingleton<IMcpClient>(mcpClient);
+        //https://github.com/3choff/mcp-chatbot
+
+
+        IChatClient chatClient = openAIClient.AsIChatClient()
+                .AsBuilder()
+                .UseFunctionInvocation()
+                .UseOpenTelemetry(loggerFactory: _loggerFactory, configure: o => o.EnableSensitiveData = true)
+                .Build();
+
+        //builder.Services.AddSingleton<McpServerTool>();
+
+
+        //builder.Services.AddSingleton(openAIClient);
+        builder.Services.AddSingleton<IChatClient>(chatClient);
+
+
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(b => b.AddSource("*")
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation())
+            .WithMetrics(b => b.AddMeter("*")
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation())
+            .WithLogging()
+            .UseOtlpExporter();
+
+        //IChatClient client =
+        //    new OpenAIClient(builder.Configuration["AI:ApiKey"])
+        //        .AsChatClient("gpt-4o-mini");
+
+        //builder.Services.AddKeyedSingleton<IChatClient>(chatClient);
+
+        //builder.Services.AddChatClient(services => services.GetRequiredService<OpenAIClient>().GetChatClient("gpt-4o-mini"))
+        //    .UseDistributedCache()
+        //    .UseLogging();
+        #endregion
+
         #endregion
 
 
@@ -155,6 +229,7 @@ internal class Program
             #region Configure Default Methods .NET
             app.UseStaticFiles();
             app.UseRouting();
+            //app.UseMiddleware<McpInspectorMiddleware>();
             app.UseMiddleware<RequestMiddleware>();
             app.UseOutputCache();
             app.UseHttpsRedirection();
@@ -169,6 +244,7 @@ internal class Program
         #endregion
 
         #region Run App
+        app.MapMcp();
         app.Run();
         #endregion
         #endregion
@@ -214,6 +290,29 @@ internal class Program
             var connectionString = builder.Configuration.GetConnectionString("MySqlConnection");
             return connectionString;
         }
+
+        //static Task ConfigureMcpSessionOptions(HttpContext httpContext, McpServerOptions options, CancellationToken cancellationToken)
+        //{
+        //    if (httpContext == null) throw new ArgumentNullException(nameof(httpContext));
+        //    if (options == null) throw new ArgumentNullException(nameof(options));
+
+        //    options.Capabilities = new()
+        //    {
+        //        Prompts = new()
+        //        {
+        //            GetPromptHandler = (promptId, cancellationToken) =>
+        //            {
+        //                // Aquí puedes implementar la lógica para obtener un prompt específico por su ID
+        //                // Por ejemplo, podrías buscar en una base de datos o en un archivo de configuración.
+        //                return Task.FromResult(new McpPrompt(promptId, "Descripción del prompt"));
+        //            }
+        //        }
+        //    };
+        //    options.Cookie.HttpOnly = true;
+        //    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+        //    return Task.CompletedTask;
+        //}
         #endregion
     }
 }

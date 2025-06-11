@@ -3,6 +3,7 @@ using Core.Contracts.Repositories;
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
+using Core.Domain.Exceptions.BusinessExceptions;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
@@ -255,7 +256,7 @@ namespace Core.Business.Services
                 {
                     // Verificar si ya expiró el voto
                     if (DateTime.UtcNow - vote.CreateDate > TimeSpan.FromMinutes(5))
-                        return new AnswerPublicationVoteResponse(false, true);
+                        throw new PublicationVoteExpiredException();
 
                     // Si quiere deshacer el voto (mismo valor)
                     if (vote.Positivo == request.IsPositive)
@@ -290,58 +291,51 @@ namespace Core.Business.Services
 
         public async Task<AnswerPublicationVoteResponse> UserAnswerVote(AnswerVoteRequest request)
         {
-            try
+            var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication)).FirstOrDefault();
+            if (publication == null)
+                return new AnswerPublicationVoteResponse(false, false);
+
+            var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode, includeProperties: "RespuestasVotos")).FirstOrDefault();
+            if (answer == null)
+                return new AnswerPublicationVoteResponse(false, false);
+
+            var vote = (await _respuestaVotoRepository.Get(
+                x => x.IDRespuesta == request.AnswerCode && x.IDUsuario == request.UserId)).FirstOrDefault();
+
+            if (vote == null)
             {
-                var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication)).FirstOrDefault();
-                if (publication == null)
-                    return new AnswerPublicationVoteResponse(false, false);
-
-                var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode, includeProperties: "RespuestasVotos")).FirstOrDefault();
-                if (answer == null)
-                    return new AnswerPublicationVoteResponse(false, false);
-
-                var vote = (await _respuestaVotoRepository.Get(
-                    x => x.IDRespuesta == request.AnswerCode && x.IDUsuario == request.UserId)).FirstOrDefault();
-
-                if (vote == null)
+                var newVote = new RespuestaVotoModel
                 {
-                    var newVote = new RespuestaVotoModel
-                    {
-                        IDRespuesta = request.AnswerCode,
-                        IDUsuario = request.UserId,
-                        Positivo = request.IsPositive,
-                        CreateDate = DateTime.UtcNow
-                    };
+                    IDRespuesta = request.AnswerCode,
+                    IDUsuario = request.UserId,
+                    Positivo = request.IsPositive,
+                    CreateDate = DateTime.UtcNow
+                };
 
-                    await _respuestaVotoRepository.Insert(newVote);
-                }
+                await _respuestaVotoRepository.Insert(newVote);
+            }
+            else
+            {
+                if (DateTime.UtcNow - vote.CreateDate > TimeSpan.FromMinutes(5))
+                    throw new AnswerVoteExpiredException();
+
+                if (vote.Positivo == request.IsPositive)
+                    await _respuestaVotoRepository.Delete(vote);
                 else
                 {
-                    if (DateTime.UtcNow - vote.CreateDate > TimeSpan.FromMinutes(5))
-                        return new AnswerPublicationVoteResponse(false, true);
-
-                    if (vote.Positivo == request.IsPositive)
-                        await _respuestaVotoRepository.Delete(vote);
-                    else
-                    {
-                        vote.Positivo = request.IsPositive;
-                        vote.CreateDate = DateTime.UtcNow;
-                        await _respuestaVotoRepository.Update(vote);
-                    }
+                    vote.Positivo = request.IsPositive;
+                    vote.CreateDate = DateTime.UtcNow;
+                    await _respuestaVotoRepository.Update(vote);
                 }
+            }
 
-                await _unitOfWork.SaveChangesAsync();
-                // Cantidad de votos positivos - votos negativos = eso vamos a mandar
-                var votosPositivos = answer.RespuestasVotos.Count(x => x.Positivo);
-                var votosNegativos = answer.RespuestasVotos.Count(x => !x.Positivo);
-                int votos = votosPositivos - votosNegativos;
-                await _publicationPublisher.PublishVoteAnswerChangedAsync(publication.IDPublicacion, answer.IDRespuesta, votos);
-                return new AnswerPublicationVoteResponse(true, false);
-            }
-            catch (Exception)
-            {
-                return new AnswerPublicationVoteResponse(false, false);
-            }
+            await _unitOfWork.SaveChangesAsync();
+            // Cantidad de votos positivos - votos negativos = eso vamos a mandar
+            var votosPositivos = answer.RespuestasVotos.Count(x => x.Positivo);
+            var votosNegativos = answer.RespuestasVotos.Count(x => !x.Positivo);
+            int votos = votosPositivos - votosNegativos;
+            await _publicationPublisher.PublishVoteAnswerChangedAsync(publication.IDPublicacion, answer.IDRespuesta, votos);
+            return new AnswerPublicationVoteResponse(true, false);           
         }
 
 

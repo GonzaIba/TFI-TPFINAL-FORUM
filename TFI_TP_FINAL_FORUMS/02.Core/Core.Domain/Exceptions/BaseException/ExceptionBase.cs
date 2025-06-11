@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Exceptions.BaseException
 {
-    [Serializable]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class ExceptionBase : Exception
     {
         [JsonIgnore]
@@ -29,21 +29,35 @@ namespace Core.Domain.Exceptions.BaseException
             CustomStatusCode = statusCode.ToString();
             CustomHttpCode = (int)statusCode;
         }
-
+        //json property ignore if is null
+        [JsonProperty]
         public string Code { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Title { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Message { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string StatusCode { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public int HttpCode { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string NameError { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Trace { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Image { get; set; }
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CustomMessage { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CustomTitle { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CustomImage { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CustomNameError { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CustomStatusCode { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public int CustomHttpCode { get; set; }
     }
 }

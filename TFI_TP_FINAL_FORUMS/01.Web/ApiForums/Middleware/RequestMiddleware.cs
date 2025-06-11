@@ -78,6 +78,7 @@ namespace ApiForums.Middleware
                     context.Response.StatusCode = exBase.HttpCode;
                     context.Response.ContentType = "application/json";
                     await SerializeApiResponseAsync(originalBodyStream, context, responseBody, exBase);
+                    throw;
                 }
                 catch (Exception ex)
                 {

@@ -18,5 +18,6 @@ namespace Core.Contracts.Services
         Task<IEnumerable<PublicacionModel>> GetPublicationByFilter(string texto);
         Task<AnswerPublicationVoteResponse> UserPublicationVote(PublicationVoteRequest request);
         Task<AnswerPublicationVoteResponse> UserAnswerVote(AnswerVoteRequest request);
+        Task<IEnumerable<PublicacionModel>> GetRelatedPublications(int publicationCode);
     }
 }

@@ -1,5 +1,4 @@
-﻿using Core.Contracts.Publishers;
-using Core.Contracts.Repositories;
+﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
@@ -153,6 +152,20 @@ namespace Core.Business.Services
             {
                 var result = await _repository.Get(tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas");
                 return result;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<PublicacionModel>> GetRelatedPublications(int publicationCode)
+        {
+            try
+            {
+                var repo = _unitOfWork.GetRepository<IPublicacionRepository>();
+                var result = await repo.GetRelatedAsync(publicationCode);
+                return result.Select(x=> x.pub);
             }
             catch (Exception ex)
             {

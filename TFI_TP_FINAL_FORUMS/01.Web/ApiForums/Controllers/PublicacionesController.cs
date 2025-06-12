@@ -81,6 +81,16 @@ namespace ApiForums.Controllers
         }
 
         [HttpGet]
+        [Route("ObtenerPublicacionesRelacionadas")]
+        public async Task<IActionResult> GetRelatedPublications([FromQuery] int publicationCode)
+        {
+            var publicaciones = await _publicacionService.GetRelatedPublications(publicationCode);
+            var publicacionesList = publicaciones.ToList(); // <-- importantísimo
+            var publicacionesResponse = _mapper.Map<IEnumerable<PublicationResponse>>(publicacionesList);
+            return Ok(publicacionesResponse);
+        }
+
+        [HttpGet]
         [Route("ObtenerDetallePublicacion")]
         public async Task<IActionResult> GetDetailPublication([FromQuery] int codePublication, [FromQuery] string? userId)
         {

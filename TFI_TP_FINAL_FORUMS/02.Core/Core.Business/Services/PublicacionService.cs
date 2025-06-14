@@ -292,7 +292,7 @@ namespace Core.Business.Services
                 var votosPositivos = publication.PublicacionesVotos.Count(x=> x.Positivo);
                 var votosNegativos = publication.PublicacionesVotos.Count(x => !x.Positivo);
                 int votos = votosPositivos - votosNegativos;
-                await _publicationPublisher.PublishVotePublicationChangedAsync(publication.IDPublicacion, votos);
+                await _publicationPublisher.PublishVotePublicationChangedAsync(publication.IDPublicacion, votos, request.ConnectionId);
                 return new AnswerPublicationVoteResponse(true, false);
             }
             catch (Exception)
@@ -347,7 +347,7 @@ namespace Core.Business.Services
             var votosPositivos = answer.RespuestasVotos.Count(x => x.Positivo);
             var votosNegativos = answer.RespuestasVotos.Count(x => !x.Positivo);
             int votos = votosPositivos - votosNegativos;
-            await _publicationPublisher.PublishVoteAnswerChangedAsync(publication.IDPublicacion, answer.IDRespuesta, votos);
+            await _publicationPublisher.PublishVoteAnswerChangedAsync(publication.IDPublicacion, answer.IDRespuesta, votos, request.ConnectionId);
             return new AnswerPublicationVoteResponse(true, false);           
         }
 

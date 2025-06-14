@@ -4,8 +4,8 @@ namespace Core.Contracts.Services
 {
     public interface IPublisherService
     {
-        Task PublishVotePublicationChangedAsync(int publicationId, int newVoteCount);
-        Task PublishVoteAnswerChangedAsync(int publicationId, int answerId, int newVoteCount);
-        Task PublishAddAnswerChangedAsync(AnswerResponse answerResponse);
+        Task PublishVotePublicationChangedAsync(int publicationId, int newVoteCount, string? connectionId);
+        Task PublishVoteAnswerChangedAsync(int publicationId, int answerId, int newVoteCount, string? connectionId);
+        Task PublishAddAnswerChangedAsync(AnswerResponse answerResponse, string? connectionId);
     }
 }

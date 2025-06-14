@@ -12,5 +12,6 @@ namespace Core.Domain.Events
         public int AnswerId { get; set; }
         public int NewVoteCount { get; set; }
         public bool IsPositive { get; set; }
+        public string? ConnectionId { get; set; }
     }
 }

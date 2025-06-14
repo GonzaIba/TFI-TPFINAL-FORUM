@@ -11,5 +11,6 @@ namespace Core.Domain.Request
         public int CodePublication { get; set; }
         public string UserId { get; set; }
         public string TextResponse { get; set; }
+        public string? ConnectionId { get; set; }
     }
 }

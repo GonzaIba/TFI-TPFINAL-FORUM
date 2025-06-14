@@ -12,5 +12,6 @@ namespace Core.Domain.Request
         public bool IsPositive { get; set; }
         public string? UserId { get; set; }
         public int AnswerCode { get; set; }
+        public string? ConnectionId { get; set; }
     }
 }

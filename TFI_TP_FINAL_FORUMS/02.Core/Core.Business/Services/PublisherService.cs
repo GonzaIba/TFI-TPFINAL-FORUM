@@ -17,11 +17,12 @@ namespace Core.Business.Services
             _mapper = mapper;
         }
 
-        public Task PublishAddAnswerChangedAsync(AnswerResponse answerResponse)
+        public Task PublishAddAnswerChangedAsync(AnswerResponse answerResponse, string connectionId)
         {
             try
             {
                 var addAnswerEvent = _mapper.Map<AddAnswerEvent>(answerResponse);
+                addAnswerEvent.ConnectionId = connectionId;
                 return _publicationVotePublisher.PublishAddAnswerChangedAsync(addAnswerEvent);
             }
             catch (Exception)
@@ -31,7 +32,7 @@ namespace Core.Business.Services
             }
         }
 
-        public Task PublishVoteAnswerChangedAsync(int publicationId, int answerId, int newVoteCount)
+        public Task PublishVoteAnswerChangedAsync(int publicationId, int answerId, int newVoteCount, string? connectionId)
         {
             try
             {
@@ -39,7 +40,8 @@ namespace Core.Business.Services
                 {
                     PublicationId = publicationId,
                     AnswerId = answerId,
-                    NewVoteCount = newVoteCount
+                    NewVoteCount = newVoteCount,
+                    ConnectionId = connectionId,
                 };
                 return _publicationVotePublisher.PublishVoteAnswerChangedAsync(answerVoteEvent);
             }
@@ -50,14 +52,15 @@ namespace Core.Business.Services
             }
         }
 
-        public Task PublishVotePublicationChangedAsync(int publicationId, int newVoteCount)
+        public Task PublishVotePublicationChangedAsync(int publicationId, int newVoteCount, string? connectionId)
         {
             try
             {
                 var publicationVoteEvent = new PublicationVoteEvent
                 {
                     PublicationId = publicationId,
-                    NewVoteCount = newVoteCount
+                    NewVoteCount = newVoteCount,
+                    ConnectionId = connectionId
                 };
                 return _publicationVotePublisher.PublishVotePublicationChangedAsync(publicationVoteEvent);
             }

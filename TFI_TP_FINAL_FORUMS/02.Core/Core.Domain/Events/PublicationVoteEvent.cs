@@ -10,5 +10,6 @@ namespace Core.Domain.Events
     {
         public int PublicationId { get; set; }
         public int NewVoteCount { get; set; }
+        public string? ConnectionId { get; set; }
     }
 }

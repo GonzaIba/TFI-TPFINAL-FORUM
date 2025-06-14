@@ -47,7 +47,7 @@ namespace ApiForums.Controllers
         {
             var result = await _publicacionService.AddAnswer(answerRequest);
             var answerResponse = _mapper.Map<AnswerResponse>(result, opt => opt.Items["UserId"] = answerRequest.UserId);
-            await _publisherService.PublishAddAnswerChangedAsync(answerResponse);
+            await _publisherService.PublishAddAnswerChangedAsync(answerResponse, answerRequest.ConnectionId);
             return Ok(answerResponse);
         }
 

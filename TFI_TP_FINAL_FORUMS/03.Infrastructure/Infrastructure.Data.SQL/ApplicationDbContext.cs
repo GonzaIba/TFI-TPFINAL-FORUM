@@ -160,7 +160,7 @@ namespace Infrastructure.Data.SQL
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
         #endregion

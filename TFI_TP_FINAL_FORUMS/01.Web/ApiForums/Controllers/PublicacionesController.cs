@@ -160,7 +160,7 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> DeleteAnswerByUser([FromBody] DeleteAnswerRequest request)
         {
             var result = await _publicacionService.DeleteAnswerByUser(request);
-            return Ok(result);
+            return Ok(new SuccessfulResponse(result));
         }
 
         [HttpGet]

@@ -20,6 +20,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(r => r.TextoRespuesta).IsRequired();
             builder.Property(r => r.FechaCreacion).IsRequired().HasDefaultValueSql("GETDATE()");
             builder.Property(r => r.RespuestaCorrecta).IsRequired();
+            builder.Ignore(r => r.CreateDate);
 
             builder.HasOne(r => r.Publicacion)
                 .WithMany(p => p.Respuestas)

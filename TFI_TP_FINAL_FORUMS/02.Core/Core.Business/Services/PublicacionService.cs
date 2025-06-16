@@ -151,7 +151,7 @@ namespace Core.Business.Services
         {
             try
             {
-                var result = await _repository.Get(tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas");
+                var result = await _repository.Get(tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas");
                 return result;
             }
             catch (Exception ex)
@@ -178,7 +178,7 @@ namespace Core.Business.Services
         {
             try
             {
-                var result = (await _repository.Get(x=> x.IDPublicacion == codePublication, tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,Respuestas.RespuestasVotos,PublicacionesVotos")).FirstOrDefault();
+                var result = (await _repository.Get(x=> x.IDPublicacion == codePublication, tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,Respuestas.RespuestasVotos,PublicacionesVotos")).FirstOrDefault();
                 if(result != null)
                 {
                     result.Usuario = (await _usersRepository.Get(x => x.Id == result.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
@@ -360,18 +360,34 @@ namespace Core.Business.Services
 
         public async Task<bool> DeleteAnswerByUser(DeleteAnswerRequest request)
         {
-            var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, tracking: false)).FirstOrDefault();
-            if (publication == null)
-                throw new PublicationNotFoundException();
+            try
+            {
+                var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, includeProperties: "Respuestas")).FirstOrDefault();
+                if (publication == null)
+                    throw new PublicationNotFoundException();
 
-            var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode)).FirstOrDefault();
+                var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode)).FirstOrDefault();
 
-            if(answer == null || answer?.RespuestaCorrecta == true || TimeHelper.IsExpired(TimeSpan.FromHours(1), answer?.CreateDate ?? DateTime.MinValue))
-                throw new CantDeleteAnswerException();
+                if (answer == null || answer?.RespuestaCorrecta == true || TimeHelper.IsExpired(TimeSpan.FromHours(1), answer?.FechaCreacion ?? DateTime.MinValue))
+                    throw new CantDeleteAnswerException();
 
-            await _respuestaRepository.Delete(answer);
-            await _unitOfWork.SaveChangesAsync();
-            return true;
+                //await _respuestaRepository.Delete(answer);
+                if(publication.Respuestas.Count == 1)
+                {
+                    publication.Respondida = false;
+                    await _repository.Update(publication);
+                }
+
+                answer.Active = false;
+                await _respuestaRepository.Update(answer);
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
 

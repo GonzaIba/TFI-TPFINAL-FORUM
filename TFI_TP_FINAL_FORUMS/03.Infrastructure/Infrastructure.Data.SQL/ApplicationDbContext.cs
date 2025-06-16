@@ -46,6 +46,10 @@ namespace Infrastructure.Data.SQL
                 .HasNoKey()
                 .ToView("vw_topThreeUsersLastWeek");
 
+            modelBuilder.Entity<TopTenPublicationsLastWeekView>()
+                .HasNoKey()
+                .ToView("vw_topTenPublicationsLastWeek");
+
             base.OnModelCreating(modelBuilder);
         }
 

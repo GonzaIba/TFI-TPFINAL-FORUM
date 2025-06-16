@@ -351,6 +351,12 @@ namespace Core.Business.Services
             return new AnswerPublicationVoteResponse(true, false);           
         }
 
+        public async Task<IEnumerable<PublicacionModel>> GetTopPublications()
+        {
+            var repo = _unitOfWork.GetRepository<IPublicacionRepository>();
+            return await repo.GetTopPublicationsLastWeek();
+        }
+
 
         #region Metodos Busqueda de textos
         private string GetLabels(string texto)
@@ -366,6 +372,7 @@ namespace Core.Business.Services
             }
             return string.Join(',', etiquetas);
         }
+
         #endregion
     }
 }

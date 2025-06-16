@@ -81,10 +81,23 @@ namespace ApiForums.Controllers
         }
 
         [HttpGet]
-        [Route("ObtenerPublicacionesRelacionadas")]
-        public async Task<IActionResult> GetRelatedPublications([FromQuery] int publicationCode)
+        [Route("ObtenerTopPublicacionesSemana")]
+        public async Task<IActionResult> GetTopPublications([FromQuery] string? userId)
         {
-            var publicaciones = await _publicacionService.GetRelatedPublications(publicationCode);
+            var publicaciones = await _publicacionService.GetTopPublications();
+            var publicacionesList = publicaciones.ToList(); // <-- importantísimo
+            var publicacionesResponse = _mapper.Map<IEnumerable<PublicationResponse>>(
+                publicacionesList,
+                opt => opt.Items["UserId"] = userId
+            );
+            return Ok(publicacionesResponse);
+        }
+
+        [HttpGet]
+        [Route("ObtenerPublicacionesRelacionadas")]
+        public async Task<IActionResult> GetRelatedPublications([FromQuery] int codePublication)
+        {
+            var publicaciones = await _publicacionService.GetRelatedPublications(codePublication);
             var publicacionesList = publicaciones.ToList(); // <-- importantísimo
             var publicacionesResponse = _mapper.Map<IEnumerable<PublicationResponse>>(publicacionesList);
             return Ok(publicacionesResponse);
@@ -137,6 +150,14 @@ namespace ApiForums.Controllers
         [HttpPost]
         [Route("VotarRespuesta")]
         public async Task<IActionResult> AnswerVote([FromBody] AnswerVoteRequest request)
+        {
+            var result = await _publicacionService.UserAnswerVote(request);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("EliminarRespuestaPropia")]
+        public async Task<IActionResult> DeleteAnswerByUser([FromBody] DeleteAnswerRequest request)
         {
             var result = await _publicacionService.UserAnswerVote(request);
             return Ok(result);

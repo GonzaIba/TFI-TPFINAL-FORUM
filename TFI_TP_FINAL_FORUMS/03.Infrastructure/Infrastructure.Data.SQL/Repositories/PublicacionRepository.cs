@@ -1,5 +1,7 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Domain.Models;
+using Core.Domain.Views;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using System.Security.Cryptography.Xml;
@@ -82,6 +84,15 @@ namespace Infrastructure.Data.SQL.Repositories
                 .ToList();
         }
 
+        public async Task<IEnumerable<PublicacionModel>> GetTopPublicationsLastWeek()
+        {
+            var topPublications = await _context.Set<TopTenPublicationsLastWeekView>().AsNoTracking().ToListAsync();
+            var publicationIds = topPublications.Select(p => p.IDPublicacion).ToList();
+            var result = await Get(x => publicationIds.Contains(x.IDPublicacion), tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas");
+            return result;
+        }
+
+        #region Helpers
         private float Cosine(VBuffer<float> a, VBuffer<float> b)
         {
             var dot = 0f;
@@ -98,5 +109,6 @@ namespace Infrastructure.Data.SQL.Repositories
 
         private class Input { public int ID; public string Texto; }
         private class TransformedInput { public int ID; public VBuffer<float> Features; }
+        #endregion
     }
 }

@@ -159,7 +159,7 @@ namespace ApiForums.Controllers
         [Route("EliminarRespuestaPropia")]
         public async Task<IActionResult> DeleteAnswerByUser([FromBody] DeleteAnswerRequest request)
         {
-            var result = await _publicacionService.UserAnswerVote(request);
+            var result = await _publicacionService.DeleteAnswerByUser(request);
             return Ok(result);
         }
 

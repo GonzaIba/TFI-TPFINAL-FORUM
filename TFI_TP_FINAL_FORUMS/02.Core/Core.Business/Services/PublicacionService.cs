@@ -6,6 +6,7 @@ using Core.Domain.Exceptions.BusinessExceptions;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
+using CrossCutting.Helpers;
 using Infrastructure.ML.Contracts;
 using static Infrastructure_ML.PublicacionTituloML;
 
@@ -357,6 +358,22 @@ namespace Core.Business.Services
             return await repo.GetTopPublicationsLastWeek();
         }
 
+        public async Task<bool> DeleteAnswerByUser(DeleteAnswerRequest request)
+        {
+            var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, tracking: false)).FirstOrDefault();
+            if (publication == null)
+                throw new PublicationNotFoundException();
+
+            var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode)).FirstOrDefault();
+
+            if(answer == null || answer?.RespuestaCorrecta == true || TimeHelper.IsExpired(TimeSpan.FromHours(1), answer?.CreateDate ?? DateTime.MinValue))
+                throw new CantDeleteAnswerException();
+
+            await _respuestaRepository.Delete(answer);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
 
         #region Metodos Busqueda de textos
         private string GetLabels(string texto)
@@ -372,7 +389,6 @@ namespace Core.Business.Services
             }
             return string.Join(',', etiquetas);
         }
-
         #endregion
     }
 }

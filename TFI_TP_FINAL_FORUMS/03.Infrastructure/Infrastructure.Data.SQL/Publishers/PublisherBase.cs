@@ -1,18 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using Core.Contracts.Publishers;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 
 namespace Infrastructure.Data.SQL.Publishers
 {
-    public abstract class PublisherBase
+    public abstract class PublisherBase : IPublisherBase
     {
         private readonly IConnectionMultiplexer _redis;
 
-        protected PublisherBase(IConnectionMultiplexer redis)
+        public PublisherBase(IConnectionMultiplexer redis)
         {
             _redis = redis;
         }
 
-        protected async Task PublishAsync<T>(string channelName, T message)
+        public async Task PublishAsync<T>(string channelName, T message)
         {
             var db = _redis.GetSubscriber();
             var serializedMessage = JsonConvert.SerializeObject(message);
@@ -20,5 +21,4 @@ namespace Infrastructure.Data.SQL.Publishers
             await db.PublishAsync(channel, serializedMessage);
         }
     }
-
 }

@@ -1,4 +1,5 @@
-﻿using Core.Contracts.Repositories;
+﻿using Core.Contracts.Publishers;
+using Core.Contracts.Repositories;
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Models;
@@ -19,7 +20,7 @@ namespace Core.Business.Services
             IUnitOfWorkGateway unitOfWorkGateway,
             IUsersService usersService,
             ITextoPrediccionRepositoryML textoPrediccionRepositoryML,
-            IPublisherService publicationPublisher
+            IPublisherPublication publicationPublisher
         )
         : base(unitOfWorkForum, unitOfWorkForum.GetRepository<IRespuestaRepository>())
         {

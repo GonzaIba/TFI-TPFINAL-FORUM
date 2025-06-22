@@ -26,14 +26,14 @@ namespace Core.Business.Services
         public virtual async Task UpdateAsync(T entity)
         {
             await _repository.Update(entity);
-            //await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public virtual async Task DeleteAsync(object id)
         {
             T entity = await _repository.GetByIdAsync(id);
             await _repository.Delete(entity);
-            //await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public virtual async Task<T> GetByIdAsync(object id)

@@ -3,9 +3,6 @@ using Core.Contracts.Services;
 using IoC.Resolver.Register;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using CrossCutting.EmailService.Configurations;
 using CrossCutting.EmailService.Contracts;
 using CrossCutting.EmailService.Factory;
@@ -20,6 +17,7 @@ using Infrastructure.Data.SQL;
 using Core.Contracts.Publishers;
 using Infrastructure.Data.SQL.Publishers;
 using StackExchange.Redis;
+using Core.Business.Publishers;
 
 namespace IoC.Resolver
 {
@@ -70,16 +68,6 @@ namespace IoC.Resolver
 
             return services;
         }
-
-        private static IServiceCollection RegisterPublishers(this IServiceCollection services, IConfiguration configuration)
-        {
-            var redisConnectionString = configuration.GetConnectionString("Redis");
-            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
-            services.AddTransient<IPublicationVotePublisher, PublicationVotePublisher>();
-            services.AddTransient<IPublisherService, PublisherService>();
-            return services;
-        }
-
 
         //Mas adelante, la idea es mudar todos los configurations a un nuevo proyecto en donde solo se guardan las configs y levantarlos con reflexión.
     }

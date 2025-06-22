@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core.Contracts.Publishers;
 using Core.Contracts.Services;
 using Core.Domain.Exceptions.BaseException;
 using Core.Domain.IdentityModels;
@@ -17,13 +18,13 @@ namespace ApiForums.Controllers
         private readonly IMapper _mapper;
         private readonly IPublicacionService _publicacionService;
         private readonly ILogger<PublicacionesController> _logger;
-        private readonly IPublisherService _publisherService;
+        private readonly IPublisherPublication _publisherService;
 
         public PublicacionesController(
             IPublicacionService publicacionService,
             IMapper mapper,
             ILogger<PublicacionesController> logger,
-            IPublisherService publisherService
+            IPublisherPublication publisherService
             )
         {
             _publicacionService = publicacionService;
@@ -47,7 +48,7 @@ namespace ApiForums.Controllers
         {
             var result = await _publicacionService.AddAnswer(answerRequest);
             var answerResponse = _mapper.Map<AnswerResponse>(result, opt => opt.Items["UserId"] = answerRequest.UserId);
-            await _publisherService.PublishAddAnswerChangedAsync(answerResponse, answerRequest.ConnectionId);
+            await _publisherService.PublishAddAnswerAsync(answerResponse, answerRequest.ConnectionId, result.IDPublicacion);
             return Ok(answerResponse);
         }
 

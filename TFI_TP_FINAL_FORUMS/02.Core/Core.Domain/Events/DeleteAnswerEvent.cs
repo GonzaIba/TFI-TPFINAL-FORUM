@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Events
 {
-    public class AnswerVoteEvent
+    public class DeleteAnswerEvent
     {
         public int CodePublication { get; set; }
-        public int AnswerId { get; set; }
-        public int NewVoteCount { get; set; }
-        public bool IsPositive { get; set; }
+        public int CodeAnswer { get; set; }
         public string? ConnectionId { get; set; }
     }
 }

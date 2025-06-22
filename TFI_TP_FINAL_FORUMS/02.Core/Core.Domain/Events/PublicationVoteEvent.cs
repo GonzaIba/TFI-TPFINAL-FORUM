@@ -8,7 +8,7 @@ namespace Core.Domain.Events
 {
     public class PublicationVoteEvent
     {
-        public int PublicationId { get; set; }
+        public int CodePublication { get; set; }
         public int NewVoteCount { get; set; }
         public string? ConnectionId { get; set; }
     }

@@ -21,7 +21,7 @@ namespace CrossCutting.Helpers
         public static bool IsExpired(TimeSpan timeSpan, DateTime referenceDate)
         {
             // Always compare in UTC to avoid timezone issues.
-            var elapsed = DateTime.UtcNow - referenceDate.ToUniversalTime();
+            var elapsed = DateTime.Now - referenceDate;
             return elapsed >= timeSpan;
         }
 

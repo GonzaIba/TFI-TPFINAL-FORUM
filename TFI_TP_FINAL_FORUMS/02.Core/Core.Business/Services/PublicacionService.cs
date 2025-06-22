@@ -1,4 +1,5 @@
-﻿using Core.Contracts.Repositories;
+﻿using Core.Contracts.Publishers;
+using Core.Contracts.Repositories;
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
@@ -22,13 +23,13 @@ namespace Core.Business.Services
         private readonly IRespuestaVotoRepository _respuestaVotoRepository;
         private readonly IRespuestaRepository _respuestaRepository;
         private readonly IUsersRepository _usersRepository;
-        private readonly IPublisherService _publicationPublisher;
+        private readonly IPublisherPublication _publicationPublisher;
         public PublicacionService(
             IUnitOfWorkForum unitOfWorkForum,
             IUnitOfWorkGateway unitOfWorkGateway,
             IUsersService usersService,
             ITextoPrediccionRepositoryML textoPrediccionRepositoryML,
-            IPublisherService publicationPublisher
+            IPublisherPublication publicationPublisher
         )
         : base(unitOfWorkForum, unitOfWorkForum.GetRepository<IPublicacionRepository>())
         {
@@ -99,7 +100,7 @@ namespace Core.Business.Services
                 }
                 await _unitOfWork.SaveChangesAsync();
                 respuesta.Usuario = user; // Asignar el usuario a la respuesta
-                //await _publicationVotePublisher.PublishAddAnswerChangedAsync(publication);
+                //await _publicationPublisher.PublishAddAnswerAsync(respuesta);
                 return respuesta;
             }
             catch (Exception)
@@ -381,6 +382,7 @@ namespace Core.Business.Services
                 answer.Active = false;
                 await _respuestaRepository.Update(answer);
                 await _unitOfWork.SaveChangesAsync();
+                await _publicationPublisher.PublishDeleteAnswerAsync(publication.IDPublicacion, answer.IDRespuesta, request.ConnectionId);
                 return true;
             }
             catch (Exception ex)

@@ -26,7 +26,7 @@ namespace Core.Domain.Models
         public DateTime? FechaCierre { get; set; }
 
         [NotMapped]
-        public Users Usuario { get; set; }
+        public Users? Usuario { get; set; }
 
         public ICollection<EtiquetaPublicacionModel> EtiquetasPublicacion { get; set; }
         public ICollection<RespuestaModel> Respuestas { get; set; }

@@ -10,10 +10,10 @@ namespace Core.Contracts.Services
         Task<bool> SavePublication(string userId, int codePublication);
         Task<RespuestaModel> AddAnswer(AddAnswerRequest request);
         Task<bool> DeleteSavedPublication(string userId, int codePublication); 
-        Task<IEnumerable<PublicacionModel>> GetPublications();
+        Task<List<PublicacionModel>> GetPublications();
         Task<PublicacionModel> GetDetailPublication(int codePublication);
-        Task<IEnumerable<PublicacionModel>> GetCreatedPublicationByUser(string userId);
-        Task<IEnumerable<PublicacionModel>> GetSavedPublications(string userId);
+        Task<List<PublicacionModel>> GetCreatedPublicationByUser(string userId);
+        Task<List<PublicacionModel>> GetSavedPublications(string userId);
         Task<IEnumerable<string>> PredictLabel(string texto);
         Task<IEnumerable<PublicacionModel>> GetPublicationByFilter(string texto);
         Task<AnswerPublicationVoteResponse> UserPublicationVote(PublicationVoteRequest request);

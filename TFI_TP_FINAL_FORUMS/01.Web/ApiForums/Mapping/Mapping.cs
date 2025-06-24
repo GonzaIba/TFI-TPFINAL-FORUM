@@ -30,6 +30,11 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.Closed, opt => opt.MapFrom(src => src.Cerrada))
                 .ForMember(dest => dest.CodePublication, opt => opt.MapFrom(src => src.IDPublicacion))
                 .ForMember(dest => dest.CodeUser, opt => opt.MapFrom(src => src.IDUsuario))
+                .ForMember(dest => dest.UserCreator, opt =>
+                    opt.MapFrom((src, dest, destMember, ctx) =>
+                    ctx.Mapper.Map<UsersForumPreviewResponse>(src.Usuario)
+                    )
+                )
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.EtiquetasPublicacion.Select(x => x.Etiqueta.NombreEtiqueta)))
                 .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.Respuestas.Count))
                 .ForMember(dest => dest.IsSaved, opt => opt.MapFrom((src, dest, destMember, context) =>
@@ -42,14 +47,15 @@ namespace ApiForums.Mapping
                 .ReverseMap();
 
             CreateMap<Users, UsersForumPreviewResponse>()
-                .ForMember(dest => dest.CompleteName, opt => opt.MapFrom(src => src.Nombre + " " + src.Apellido)) // Asumo que Users tiene una propiedad llamada Nombre
+                .ForMember(dest => dest.CompleteName, opt => opt.MapFrom(src => src.Nombre + " " + src.Apellido))
                 .ForMember(dest => dest.Initials, opt => opt.MapFrom(src => ObtenerIniciales(src.Nombre + " " + src.Apellido)))
                 .ForMember(dest => dest.ShortDescription, opt => opt.MapFrom(src => src.UsersForum.ShortDescriptionForum))
                 .ForMember(dest => dest.LongDescription, opt => opt.MapFrom(src => src.UsersForum.LongDescriptionForum))
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.UsersForum.ImageForum))
                 .ForMember(dest => dest.DateFrom, opt => opt.MapFrom(src => src.FechaCreado))
                 .ForMember(dest => dest.LastTimeOnline, opt => opt.MapFrom(src => src.UsersForum.LastTimeConnectedForum))
-                .ForMember(dest => dest.Score, opt => opt.Ignore()); // Lo configuraremos después
+                .ForMember(dest => dest.Score, opt => opt.Ignore()) // Lo configuraremos después
+                .ReverseMap();
                 //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
 
             CreateMap<Users, UserForumResponse>()

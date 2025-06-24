@@ -20,7 +20,7 @@ namespace Core.Domain.Models
         public bool RespuestaCorrecta { get; set; }
 
         [NotMapped]
-        public Users Usuario { get; set; }
+        public Users? Usuario { get; set; }
 
         // Propiedades de navegación
         public PublicacionModel Publicacion { get; set; }

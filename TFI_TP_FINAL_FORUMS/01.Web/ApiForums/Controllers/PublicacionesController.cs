@@ -72,10 +72,9 @@ namespace ApiForums.Controllers
         [Route("ObtenerPublicaciones")]
         public async Task<IActionResult> GetPublications([FromQuery] string? userId)
         {
-            var publicaciones = await _publicacionService.GetPublications();
-            var publicacionesList = publicaciones.ToList(); // <-- importantísimo
+            var publicacionesModel = await _publicacionService.GetPublications();
             var publicacionesResponse = _mapper.Map<IEnumerable<PublicationResponse>>(
-                publicacionesList,
+                publicacionesModel,
                 opt => opt.Items["UserId"] = userId
             );
             return Ok(publicacionesResponse);

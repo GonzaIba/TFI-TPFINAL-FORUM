@@ -148,11 +148,18 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<IEnumerable<PublicacionModel>> GetPublications()
+        public async Task<List<PublicacionModel>> GetPublications()
         {
             try
             {
-                var result = await _repository.Get(tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas");
+                var result = (await _repository.Get(tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas")).ToList();
+                if (result != null)
+                {
+                    foreach (var pub in result)
+                    {
+                        pub.Usuario = (await _usersRepository.Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
+                    }
+                }
                 return result;
             }
             catch (Exception ex)
@@ -196,11 +203,18 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<IEnumerable<PublicacionModel>> GetCreatedPublicationByUser(string userId)
+        public async Task<List<PublicacionModel>> GetCreatedPublicationByUser(string userId)
         {
             try
             {
-                var result = await _repository.Get(x => x.IDUsuario == userId, tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
+                var result = (await _repository.Get(x => x.IDUsuario == userId, tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas")).ToList();
+                if (result != null)
+                {
+                    foreach (var pub in result)
+                    {
+                        pub.Usuario = (await _usersRepository.Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
+                    }
+                }
                 return result;
             }
             catch (Exception)
@@ -209,12 +223,20 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<IEnumerable<PublicacionModel>> GetSavedPublications(string userId)
+        public async Task<List<PublicacionModel>> GetSavedPublications(string userId)
         {
             try
             {
                 var result = await _publicacionGuardadaRepository.Get(x=> x.IDUsuario == userId, tracking: false, ignoreQueryFilters: true, includeProperties: "Publicacion,Publicacion.EtiquetasPublicacion,Publicacion.EtiquetasPublicacion.Etiqueta,Publicacion.Respuestas");
-                return result.Select(x=> x.Publicacion);
+                var pubs = result.Select(x => x.Publicacion).ToList();
+                if (pubs != null)
+                {
+                    foreach (var pub in pubs)
+                    {
+                        pub.Usuario = (await _usersRepository.Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
+                    }
+                }
+                return pubs;
             }
             catch (Exception)
             {

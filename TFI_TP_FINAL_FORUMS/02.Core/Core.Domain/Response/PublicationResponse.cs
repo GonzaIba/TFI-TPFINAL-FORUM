@@ -10,6 +10,7 @@ namespace Core.Domain.Response
     {
         public int CodePublication { get; set; }
         public string CodeUser { get; set; }
+        public UsersForumPreviewResponse UserCreator { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
         public int Reward { get; set; }

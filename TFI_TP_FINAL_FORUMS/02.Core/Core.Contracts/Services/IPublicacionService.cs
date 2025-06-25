@@ -7,6 +7,8 @@ namespace Core.Contracts.Services
     public interface IPublicacionService : IGenericService<PublicacionModel>
     {
         Task<bool> CreatePublication(string userId, PublicacionModel publication);
+        Task<bool> EditPublication(string userId, EditPublicationRequest editPublication);
+        Task<bool> EditAnswer(string userId, EditAnswerRequest editPublication);
         Task<bool> SavePublication(string userId, int codePublication);
         Task<RespuestaModel> AddAnswer(AddAnswerRequest request);
         Task<bool> DeleteSavedPublication(string userId, int codePublication); 

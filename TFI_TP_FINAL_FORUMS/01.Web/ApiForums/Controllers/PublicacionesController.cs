@@ -42,6 +42,22 @@ namespace ApiForums.Controllers
             return Ok(new SuccessfulResponse(result));
         }
 
+        [HttpPut]
+        [Route("EditarPublicacion")]
+        public async Task<IActionResult> EditPublication([FromQuery] string userId, EditPublicationRequest request)
+        {
+            var result = await _publicacionService.EditPublication(userId, request);
+            return Ok(new SuccessfulResponse(result));
+        }
+
+        [HttpPut]
+        [Route("EditarRespuesta")]
+        public async Task<IActionResult> EditAnswer([FromQuery] string userId, EditAnswerRequest request)
+        {
+            var result = await _publicacionService.EditAnswer(userId, request);
+            return Ok(new SuccessfulResponse(result));
+        }
+
         [HttpPost]
         [Route("AgregarRespuesta")]
         public async Task<IActionResult> AddAnswer([FromBody] AddAnswerRequest answerRequest)

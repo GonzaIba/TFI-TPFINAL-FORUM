@@ -8,5 +8,7 @@ namespace Core.Contracts.Publishers
         Task PublishVoteAnswerChangedAsync(int publicationId, int answerId, int newVoteCount, string? connectionId);
         Task PublishAddAnswerAsync(AnswerResponse answerResponse, string? connectionId, int publicationId);
         Task PublishDeleteAnswerAsync(int publicationId, int codeAnswer, string? connectionId);
+        Task PublishEditAnswerAsync(int answerCode, string content, string? connectionId, int publicationId);
+        Task PublishEditPublicationAsync(string content, string? connectionId, int publicationId);
     }
 }

@@ -87,5 +87,44 @@ namespace Core.Business.Publishers
                 throw;
             }
         }
+
+        public Task PublishEditAnswerAsync(int answerCode, string content, string? connectionId, int publicationId)
+        {
+            try
+            {
+                var editAnswerEvent = new EditAnswerEvent
+                {
+                    CodePublication = publicationId,
+                    CodeAnswer = answerCode,
+                    Content = content,
+                    ConnectionId = connectionId
+                };
+                return PublishAsync("forum:publication:editAnswer", editAnswerEvent);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public Task PublishEditPublicationAsync(string content, string? connectionId, int publicationId)
+        {
+            try
+            {
+                var editAnswerEvent = new EditPublicationEvent
+                {
+                    CodePublication = publicationId,
+                    Content = content,
+                    ConnectionId = connectionId
+                };
+                return PublishAsync("forum:publication:editPublication", editAnswerEvent);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }

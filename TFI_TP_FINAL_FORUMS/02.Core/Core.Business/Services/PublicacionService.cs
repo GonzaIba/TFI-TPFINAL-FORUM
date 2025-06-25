@@ -9,6 +9,7 @@ using Core.Domain.Request;
 using Core.Domain.Response;
 using CrossCutting.Helpers;
 using Infrastructure.ML.Contracts;
+using Org.BouncyCastle.Asn1.Ocsp;
 using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Core.Business.Services
@@ -65,6 +66,66 @@ namespace Core.Business.Services
             }
         }
 
+        public async Task<bool> EditPublication(string userId, EditPublicationRequest editPublication)
+        {
+            try
+            {
+                var user = await _usersService.GetByIdAsync(userId);
+                if (user == null)
+                    throw new ApiForumException("No existe el usuario.");
+
+                var publication = (await _repository.Get(x => x.IDPublicacion == editPublication.CodePublication)).FirstOrDefault();
+                if (publication == null)
+                    throw new PublicationNotFoundException();
+
+                if (publication.Cerrada)
+                    throw new ApiForumException("La publicación ya se encuentra cerrada.");
+
+                publication.Contenido = editPublication.Contenido;
+                await _repository.Update(publication);
+                await _unitOfWork.SaveChangesAsync();
+                await _publicationPublisher.PublishEditPublicationAsync(publication.Contenido, editPublication.ConnectionId, publication.IDPublicacion);
+                return true;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<bool> EditAnswer(string userId, EditAnswerRequest editAnswer)
+        {
+            try
+            {
+                var user = await _usersService.GetByIdAsync(userId);
+                if (user == null)
+                    throw new ApiForumException("No existe el usuario.");
+
+                var publication = (await _repository.Get(x => x.IDPublicacion == editAnswer.CodePublication, tracking: false)).FirstOrDefault();
+                if (publication == null)
+                    throw new PublicationNotFoundException();
+
+                var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == editAnswer.AnswerCode)).FirstOrDefault();
+                if (answer == null)
+                    throw new PublicationNotFoundException();
+
+                if (publication.Cerrada)
+                    throw new ApiForumException("La publicación ya se encuentra cerrada.");
+
+                answer.TextoRespuesta = editAnswer.Contenido;
+                await _respuestaRepository.Update(answer);
+                await _unitOfWork.SaveChangesAsync();
+                await _publicationPublisher.PublishEditAnswerAsync(answer.IDRespuesta, answer.TextoRespuesta, editAnswer.ConnectionId, publication.IDPublicacion);
+                return true;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<RespuestaModel> AddAnswer(AddAnswerRequest request)
         {
             try
@@ -75,9 +136,9 @@ namespace Core.Business.Services
 
                 var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication)).FirstOrDefault();
                 if (publication == null)
-                    throw new ApiForumException("No existe la publicación o esta inactiva.");
+                    throw new PublicationNotFoundException();
 
-                if(publication.Cerrada)
+                if (publication.Cerrada)
                     throw new ApiForumException("La publicación ya se encuentra cerrada.");
 
                 //publication.Usuario = (await _usersRepository.Get(x => x.Id == publication.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();

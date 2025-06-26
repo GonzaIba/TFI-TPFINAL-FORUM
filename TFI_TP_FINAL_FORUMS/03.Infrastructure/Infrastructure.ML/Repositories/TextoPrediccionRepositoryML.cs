@@ -1,37 +1,44 @@
 ﻿using Infrastructure.ML.Contracts;
-using Infrastructure_ML;
 using Microsoft.ML.Data;
 using Microsoft.ML;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Infrastructure_ML.PublicacionTituloML;
 using Microsoft.ML.Trainers;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Core.Domain.Models;
-using Microsoft.EntityFrameworkCore;
+using Core.Contracts.Repositories;
+using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Infrastructure.ML.Repositories
 {
-    public class TextoPrediccionRepositoryML : GenericRepositoryML<TextoPrediccionModel> ,ITextoPrediccionRepositoryML
+    public class TextoPrediccionRepositoryML : GenericRepositoryML<EtiquetasPrediccionModeloModel>, ITextoPrediccionRepositoryML
     {
         private readonly Lazy<PredictionEngine<ModelInput, ModelOutput>> PredictEngine;
-        private readonly string _modelPath;
+        private readonly IEtiquetasPrediccionModeloRepository _etiquetasModeloRepository;
         private MLContext _mlContext;
 
-        public TextoPrediccionRepositoryML(string modelPath, MLContext mlContext)
+        public TextoPrediccionRepositoryML(MLContext mlContext, IEtiquetasPrediccionModeloRepository etiquetasModeloRepository)
             : base(BuildPipeline(mlContext), mlContext)
         {
-            PredictEngine = new Lazy<PredictionEngine<ModelInput, ModelOutput>>(() => CargarModelo(), true);
-            _modelPath = modelPath;
+            _etiquetasModeloRepository = etiquetasModeloRepository;
             _mlContext = mlContext;
+            PredictEngine = new Lazy<PredictionEngine<ModelInput, ModelOutput>>(() => CargarModeloDesdeDb(), true);
         }
-        
-        public PredictionEngine<ModelInput, ModelOutput> CargarModelo()
+
+        public PredictionEngine<ModelInput, ModelOutput> CargarModeloDesdeDb()
         {
-            ITransformer mlModel = _mlContext.Model.Load(_modelPath, out var _);
+            // 1. Trae el modelo más reciente
+            var modelEntity = _etiquetasModeloRepository
+                                 .GetAllAsync()
+                                 .GetAwaiter().GetResult();  // evita deadlock en sync
+
+            var latest = modelEntity.FirstOrDefault()
+                     ?? throw new InvalidOperationException("No se encontró modelo en DB");
+
+            // 2. Deserializa el stream
+            using var ms = new MemoryStream(latest.ModelData);
+
+            // 3. Deserializa el ITransformer
+            ITransformer mlModel = _mlContext.Model.Load(ms, out DataViewSchema schema);
+
+            // 4. Crea el PredictionEngine
             return _mlContext.Model.CreatePredictionEngine<ModelInput, ModelOutput>(mlModel);
         }
 

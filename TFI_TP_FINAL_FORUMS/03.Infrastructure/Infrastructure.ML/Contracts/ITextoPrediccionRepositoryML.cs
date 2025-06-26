@@ -1,17 +1,16 @@
-﻿using Microsoft.ML.Data;
+﻿using Core.Domain.Models;
 using Microsoft.ML;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Infrastructure.ML.Contracts
 {
-    public interface ITextoPrediccionRepositoryML
+    public interface ITextoPrediccionRepositoryML : IGenericRepositoryML<EtiquetasPrediccionModeloModel>
     {
-        public PredictionEngine<ModelInput, ModelOutput> CargarModelo();
+        /// <summary>
+        /// Carga el modelo de predicción desde la base de datos.
+        /// </summary>
+        /// <returns></returns>
+        public PredictionEngine<ModelInput, ModelOutput> CargarModeloDesdeDb();
 
         /// <summary>
         /// Use este método para obtener mas de una etiqueta

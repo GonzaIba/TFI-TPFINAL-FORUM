@@ -2,6 +2,7 @@
 using CrossCutting.Extensions;
 using CrossCutting.Helpers;
 using Infrastructure.ML.Repositories;
+using Core.Contracts.Services;
 
 namespace ApiForums.Background
 {
@@ -15,10 +16,6 @@ namespace ApiForums.Background
         /// Marca de tiempo utilizada como condicion en la ejecucion de varios métodos
         /// </summary>
         private DateTime _lastExecution;
-        /// <summary>
-        /// Marca de tiempo utilizada como condicion en la ejecucion de FinalizeMeetings
-        /// </summary>
-        private DateTime _lastFinalizeMeetingsExecution;
 
         public TasksResolver(ILogger<TasksResolver> logger, IServiceProvider serviceProvider, IBackgroundTasksQueue backgroundTasksQueue)
         {
@@ -44,20 +41,10 @@ namespace ApiForums.Background
                 if (DateTime.Now.Minute % 5 == 0 && _lastExecution.Minute != DateTime.Now.Minute)
                 {
                     _lastExecution = DateTime.Now;
-                    //SendMeetingReminders();
-
-                    //if (_interfastPaymentConfiguration.UpdatePendingPaymentsInBackgroundEnabled)
-                    //    UpdatePendingPayments();
-
-                    //DeleteTemporalUsers();
+                    var service = _serviceProvider.GetService<IEtiquetasPrediccionModeloService>();
+                    await service?.TrainAndSaveLabelsAsync();
                 }
 
-                // Se ejecuta todos los días a las 08
-                //if (_meetingConfiguration.AutoFinalization && _lastFinalizeMeetingsExecution.Day != DateTime.Now.Day && DateTime.Now.Hour > 7)
-                //{
-                //    _lastFinalizeMeetingsExecution = DateTime.Now;
-                //    FinalizeMeetings();
-                //}
 
                 await Task.Delay(50);
             }

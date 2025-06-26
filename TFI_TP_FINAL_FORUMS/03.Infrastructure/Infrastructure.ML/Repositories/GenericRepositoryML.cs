@@ -1,11 +1,4 @@
-﻿using Core.Domain.Models;
-using Microsoft.ML.Trainers;
-using Microsoft.ML;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.ML;
 using Infrastructure.ML.Contracts;
 
 namespace Infrastructure.ML.Repositories
@@ -20,6 +13,22 @@ namespace Infrastructure.ML.Repositories
             _pipeline = pipeline;
             _mlContext = mlContext;
         }
+
+        public byte[] TrainAndSaveAsync(List<T> data)
+        {
+            // 1) Carga los ejemplos a un IDataView
+            IDataView trainingData = _mlContext.Data.LoadFromEnumerable(data);
+
+            // 2) Ajusta (fit) el pipeline definido en BuildPipeline
+            ITransformer modeloEntrenado = _pipeline.Fit(trainingData);
+
+            // 3) Serializa el modelo entrenado a un MemoryStream
+            using var ms = new MemoryStream();
+            _mlContext.Model.Save(modeloEntrenado, trainingData.Schema, ms);
+            byte[] modeloBytes = ms.ToArray();
+            return modeloBytes;
+        }
+
         public void Entrenar(string outputModelPath, List<T> data)
         {
             var dataView = _mlContext.Data.LoadFromEnumerable(data);
@@ -41,7 +50,5 @@ namespace Infrastructure.ML.Repositories
             var model = _pipeline.Fit(trainData);
             return model;
         }
-
-
     }
 }

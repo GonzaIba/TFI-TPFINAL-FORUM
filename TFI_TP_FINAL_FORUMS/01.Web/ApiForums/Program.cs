@@ -52,7 +52,9 @@ internal class Program
         #region Configure Personalized
         // Obtén el valor de modelPath de tu configuración de la aplicación
         var modelPath = builder.Configuration["ML_Config:TextoPrediccionesPath"];
-        builder.Services.AddSingleton<ITextoPrediccionRepositoryML>(x => new TextoPrediccionRepositoryML(modelPath, new MLContext()));
+        builder.Services.AddSingleton<MLContext>();
+        builder.Services.AddSingleton<ITextoPrediccionRepositoryML, TextoPrediccionRepositoryML>();
+        //builder.Services.AddSingleton<ITextoPrediccionRepositoryML>(x => new TextoPrediccionRepositoryML(new MLContext()));
         builder.Services.ConfigureSwagger(builder.Environment);
         builder.Services.ConfigureIoC(builder.Configuration);
         builder.Services.ConfigureLogger(builder?.Configuration);

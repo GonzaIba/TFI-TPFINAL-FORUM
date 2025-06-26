@@ -1,9 +1,4 @@
 ﻿using Microsoft.ML;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.ML.Contracts
 {
@@ -32,5 +27,7 @@ namespace Infrastructure.ML.Contracts
         /// <param name="trainData"></param>
         /// <returns></returns>
         ITransformer ReentrenarModelo(IDataView trainData);
+
+        byte[] TrainAndSaveAsync(List<T> data);
     }
 }

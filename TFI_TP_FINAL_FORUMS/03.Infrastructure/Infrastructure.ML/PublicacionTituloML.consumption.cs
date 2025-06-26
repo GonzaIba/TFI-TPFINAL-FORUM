@@ -31,8 +31,8 @@ namespace Infrastructure_ML
         #region model output class
         public class ModelOutput
         {
-            [ColumnName(@"Pregunta")]
-            public float[] Pregunta { get; set; }
+            [ColumnName(@"Texto")]
+            public float[] Texto { get; set; }
 
             [ColumnName(@"Etiquetas")]
             public uint Etiquetas { get; set; }

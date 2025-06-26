@@ -183,7 +183,7 @@ namespace ApiForums.Controllers
         [Route("PredecirEtiquetasPorTexto")]
         public async Task<IActionResult> GetPublicationByFilter([FromQuery] string texto)
         {
-            var publicaciones = await _publicacionService.GetPublicationByFilter(texto);
+            var publicaciones = await _publicacionService.PredictLabel(texto);
             return Ok(publicaciones);
         }
     }

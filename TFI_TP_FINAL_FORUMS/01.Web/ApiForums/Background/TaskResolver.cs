@@ -38,11 +38,13 @@ namespace ApiForums.Background
                 }
 
                 // Se ejecuta cada 5 minutos
-                if (DateTime.Now.Minute % 5 == 0 && _lastExecution.Minute != DateTime.Now.Minute)
+                if (DateTime.Now.Minute % 20 == 0 && _lastExecution.Minute != DateTime.Now.Minute)
                 {
                     _lastExecution = DateTime.Now;
-                    var service = _serviceProvider.GetService<IEtiquetasPrediccionModeloService>();
-                    await service?.TrainAndSaveLabelsAsync();
+                    //create scope to resolve services
+                    //using var scope = _serviceProvider.CreateScope();
+                    //var service = scope.ServiceProvider.GetRequiredService<IEtiquetasPrediccionModeloService>();
+                    //await service?.TrainAndSaveLabelsAsync();
                 }
 
 

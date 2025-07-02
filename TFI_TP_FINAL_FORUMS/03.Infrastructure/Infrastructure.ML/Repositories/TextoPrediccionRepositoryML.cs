@@ -8,7 +8,7 @@ using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Infrastructure.ML.Repositories
 {
-    public class TextoPrediccionRepositoryML : GenericRepositoryML<EtiquetasPrediccionModeloModel>, ITextoPrediccionRepositoryML
+    public class TextoPrediccionRepositoryML : GenericRepositoryML<TextoPrediccionModel>, ITextoPrediccionRepositoryML
     {
         private readonly Lazy<PredictionEngine<ModelInput, ModelOutput>> PredictEngine;
         private readonly IEtiquetasPrediccionModeloRepository _etiquetasModeloRepository;

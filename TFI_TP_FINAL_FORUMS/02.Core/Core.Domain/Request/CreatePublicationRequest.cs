@@ -8,9 +8,9 @@ namespace Core.Domain.Request
 {
     public class CreatePublicationRequest
     {
-        public string Titulo { get; set; }
-        public string Contenido { get; set; }
-        public DateTime FechaCreacion { get; set; }
-        public List<string> Etiquetas { get; set; } = new();
+        public string Title { get; set; }
+        public string Content { get; set; }
+        public List<string> Labels { get; set; }
+        public string? UserId { get; set; }
     }
 }

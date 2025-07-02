@@ -7,37 +7,33 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire" Version="1.8.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.15">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.15" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.15">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.ML" Version="4.0.2" />
-    <PackageReference Include="Serilog" Version="3.0.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Serilog.Sinks.MongoDB" Version="5.3.1" />
-    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="6.3.0" />
-    <PackageReference Include="StackExchange.Redis" Version="2.8.37" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-
-
-
-	<PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.2" />
-	<PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.2.0-preview.2" />
-
-	<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
-	<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
-	<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
-	<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
-	<PackageReference Include="Microsoft.Extensions.AI" />
-	<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0-preview.1.25265.7" />
-	<PackageReference Include="Anthropic.SDK" />
+	  <PackageReference Include="Hangfire" Version="1.8.7" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.17">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.17" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.17">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Microsoft.ML" Version="4.0.2" />
+	  <PackageReference Include="Serilog" Version="3.0.1" />
+	  <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+	  <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+	  <PackageReference Include="Serilog.Sinks.MongoDB" Version="5.3.1" />
+	  <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="6.3.0" />
+	  <PackageReference Include="StackExchange.Redis" Version="2.8.37" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+	  <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.2" />
+	  <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.2.0-preview.2" />
+	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+	  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
+	  <PackageReference Include="Microsoft.Extensions.AI" />
+	  <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0-preview.1.25265.7" />
+	  <PackageReference Include="Anthropic.SDK" />
   </ItemGroup>
 
   <ItemGroup>

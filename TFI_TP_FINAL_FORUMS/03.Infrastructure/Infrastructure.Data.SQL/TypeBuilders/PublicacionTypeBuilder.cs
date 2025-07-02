@@ -23,8 +23,9 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(p => p.Visitas).IsRequired();
             builder.Property(p => p.Respondida).IsRequired();
             builder.Property(p => p.Cerrada).IsRequired();
-            builder.Property(p => p.FechaCreacion).IsRequired().HasDefaultValueSql("GETDATE()");
+            builder.Property(p => p.FechaCreacion).IsRequired().HasDefaultValueSql("getdate()");
             builder.Property(p => p.FechaCierre).IsRequired(false);
+            builder.Ignore(p => p.CreateDate);
             builder.ToTable("Publicaciones");
         }
     }

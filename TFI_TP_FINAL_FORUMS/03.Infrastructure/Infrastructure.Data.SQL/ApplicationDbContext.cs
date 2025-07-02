@@ -6,11 +6,14 @@ using CrossCutting.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Configuration; // Add this using directive at the top of the file
 using MySql.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
@@ -20,6 +23,11 @@ namespace Infrastructure.Data.SQL
 {
     public class ApplicationDbContext : DbContext
     {
+        public ApplicationDbContext()
+        {
+                
+        }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
@@ -29,8 +37,8 @@ namespace Infrastructure.Data.SQL
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly)
                 .SetPropertyDefaultSqlValue("CreateDate", "getdate()")
                 .SetPropertyDefaultValue<bool>("Active", true)
-                .SetPropertyQueryFilter("Active", true)
-                .ConfigureGenericProperties(typeof(GenericEntity));
+                .SetPropertyQueryFilter("Active", true);
+                //.ConfigureGenericProperties(typeof(GenericEntity));
 
             modelBuilder.Ignore<Users>();
             modelBuilder.Ignore<UsersClaims>();

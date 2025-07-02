@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.17" />
 	<PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.2" />
 	<PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.2.0-preview.2" />
   </ItemGroup>

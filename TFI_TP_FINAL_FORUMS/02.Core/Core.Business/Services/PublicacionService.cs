@@ -18,6 +18,7 @@ namespace Core.Business.Services
     {
         private readonly IUsersService _usersService;
         private readonly ITextoPrediccionRepositoryML _textoPrediccionRepositoryML;
+        private readonly ITextoPrediccionRepository _textoPrediccionRepository;
         private readonly IUnitOfWorkGateway _unitOfWorkGateway;
         private readonly IPublicacionGuardadaRepository _publicacionGuardadaRepository;
         private readonly IPublicacionVotoRepository _publicacionVotoRepository;
@@ -42,22 +43,37 @@ namespace Core.Business.Services
             _publicacionVotoRepository = _unitOfWork.GetRepository<IPublicacionVotoRepository>();
             _respuestaVotoRepository = _unitOfWork.GetRepository<IRespuestaVotoRepository>();
             _respuestaRepository = _unitOfWork.GetRepository<IRespuestaRepository>();
+            _textoPrediccionRepository = _unitOfWork.GetRepository<ITextoPrediccionRepository>();
             _publicationPublisher = publicationPublisher;
         }
 
-        public async Task<bool> CreatePublication(string userId, PublicacionModel publication)
+        public async Task<bool> CreatePublication(CreatePublicationRequest request)
         {
             try
             {
-                var user = await _usersService.GetByIdAsync(userId);
+                var user = await _usersService.GetByIdAsync(request.UserId);
                 if (user == null)
                     throw new ApiForumException("No existe el usuario.");
 
+                PublicacionModel publication = new();
                 publication.IDUsuario = user.Id;
                 publication.CreateDate = DateTime.Now;
                 publication.FechaCreacion = DateTime.Now;
                 publication.FechaCierre = null;
+                publication.Titulo = request.Title;
+                publication.Contenido = request.Content;
+                publication.Cerrada = false;
+                publication.Respondida = false;
+                //publication.Active = true;
                 await _repository.Insert(publication);
+
+                TextoPrediccionModel textoPrediccionModel = new TextoPrediccionModel
+                {
+                    Texto = request.Title,
+                    Etiquetas = string.Join(", ",request.Labels),
+                };
+
+                await _textoPrediccionRepository.Insert(textoPrediccionModel);
                 return await _unitOfWork.Complete();
             }
             catch (Exception ex)
@@ -268,7 +284,7 @@ namespace Core.Business.Services
         {
             try
             {
-                var result = (await _repository.Get(x => x.IDUsuario == userId, tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas")).ToList();
+                var result = (await _repository.Get(x => x.IDUsuario == userId, tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas")).ToList();
                 if (result != null)
                 {
                     foreach (var pub in result)
@@ -288,7 +304,7 @@ namespace Core.Business.Services
         {
             try
             {
-                var result = await _publicacionGuardadaRepository.Get(x=> x.IDUsuario == userId, tracking: false, ignoreQueryFilters: true, includeProperties: "Publicacion,Publicacion.EtiquetasPublicacion,Publicacion.EtiquetasPublicacion.Etiqueta,Publicacion.Respuestas");
+                var result = await _publicacionGuardadaRepository.Get(x=> x.IDUsuario == userId, tracking: false, includeProperties: "Publicacion,Publicacion.EtiquetasPublicacion,Publicacion.EtiquetasPublicacion.Etiqueta,Publicacion.Respuestas");
                 var pubs = result.Select(x => x.Publicacion).ToList();
                 if (pubs != null)
                 {
@@ -310,7 +326,7 @@ namespace Core.Business.Services
             try
             {
                 var etiquetas = GetLabels(texto);
-                var result = await _repository.Get(tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
+                var result = await _repository.Get(tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
                 return result;
             }
             catch (Exception ex)

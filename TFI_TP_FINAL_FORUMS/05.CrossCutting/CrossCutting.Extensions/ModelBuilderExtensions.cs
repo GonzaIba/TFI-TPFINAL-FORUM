@@ -14,8 +14,7 @@ namespace CrossCutting.Extensions
         {
             foreach (var entityType in builder.Model.GetEntityTypes().Where(e => e.FindProperty(propertyName) != null))
             {
-                //builder.Entity(entityType.ClrType).Property(propertyName).HasDefaultSqlValue(value);
-                builder.Entity(entityType.ClrType).Property(propertyName).Metadata.AddAnnotation("DefaultValueSql", value);
+                builder.Entity(entityType.ClrType).Property(propertyName).HasDefaultValueSql(value).ValueGeneratedOnAdd();
             }
             return builder;
         }
@@ -26,8 +25,7 @@ namespace CrossCutting.Extensions
                                                     e => e.FindProperty(propertyName) != null
                                                     && e.FindProperty(propertyName)?.ClrType == typeof(TProperty)))
             {
-                //builder.Entity(entityType.ClrType).Property(propertyName).HasDefaultValue(value);
-                builder.Entity(entityType.ClrType).Property(propertyName).Metadata.AddAnnotation("DefaultValueSql", value);
+                builder.Entity(entityType.ClrType).Property(propertyName).HasDefaultValue(value);
             }
             return builder;
         }
@@ -51,24 +49,21 @@ namespace CrossCutting.Extensions
 
         public static ModelBuilder ConfigureGenericProperties(this ModelBuilder builder, Type genericEntity)
         {
-            foreach (var entityType in builder.Model.GetEntityTypes())
+            foreach (var et in builder.Model.GetEntityTypes()
+                                          .Where(e => genericEntity.IsAssignableFrom(e.ClrType)))
             {
-                // Verificar si la entidad hereda de GenericEntity
-                if (genericEntity.IsAssignableFrom(entityType.ClrType))
-                {
-                    try
-                    {
-                        //builder.Entity(entityType.ClrType).Property("Active").IsRequired(true).HasColumnType("bit");
-                        //builder.Entity(entityType.ClrType).Property("CreateDate").IsRequired(true).HasColumnType("datetime");
-                        //builder.Entity(entityType.ClrType).Property("UpdateDate").IsRequired(false).HasColumnType("datetime");
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-                }
-            }
+                // CreateDate con DEFAULT getdate()
+                builder.Entity(et.ClrType)
+                       .Property<DateTime>("CreateDate")
+                       .HasDefaultValueSql("getdate()")
+                       .ValueGeneratedOnAdd();
 
+                // Active con DEFAULT true
+                builder.Entity(et.ClrType)
+                       .Property<bool>("Active")
+                       .HasDefaultValue(true)
+                       .ValueGeneratedOnAdd();
+            }
             return builder;
         }
 

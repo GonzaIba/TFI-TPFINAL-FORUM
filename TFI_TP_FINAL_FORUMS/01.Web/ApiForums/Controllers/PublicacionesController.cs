@@ -35,10 +35,9 @@ namespace ApiForums.Controllers
 
         [HttpPost]
         [Route("CrearPublicacion")]
-        public async Task<IActionResult> CreatePublication([FromQuery] string userId, CreatePublicationRequest publication)
+        public async Task<IActionResult> CreatePublication([FromBody] CreatePublicationRequest publication)
         {
-            var publicacionModel = _mapper.Map<PublicacionModel>(publication);
-            var result = await _publicacionService.CreatePublication(userId, publicacionModel);            
+            var result = await _publicacionService.CreatePublication(publication);            
             return Ok(new SuccessfulResponse(result));
         }
 

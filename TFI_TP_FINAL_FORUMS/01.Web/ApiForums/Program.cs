@@ -12,6 +12,9 @@ using Infrastructure.ML.Contracts;
 using Infrastructure.ML.Repositories;
 using IoC.Resolver;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -53,7 +56,7 @@ internal class Program
         // Obtén el valor de modelPath de tu configuración de la aplicación
         var modelPath = builder.Configuration["ML_Config:TextoPrediccionesPath"];
         builder.Services.AddSingleton<MLContext>();
-        builder.Services.AddSingleton<ITextoPrediccionRepositoryML, TextoPrediccionRepositoryML>();
+        builder.Services.AddTransient<ITextoPrediccionRepositoryML, TextoPrediccionRepositoryML>();
         //builder.Services.AddSingleton<ITextoPrediccionRepositoryML>(x => new TextoPrediccionRepositoryML(new MLContext()));
         builder.Services.ConfigureSwagger(builder.Environment);
         builder.Services.ConfigureIoC(builder.Configuration);
@@ -61,9 +64,12 @@ internal class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHangfire(x => x.UseSqlServerStorage(GetGatewayConnectionString()));
         builder.Services.AddHangfireServer();
-        builder.Services.AddControllers(o =>
+        builder.Services.AddControllers(options =>
         {
-            o.UseRoutePrefix("api");
+            // Inserto primero la convención para que se aplique antes que otras
+            options.Conventions.Insert(
+                0,
+                new RoutePrefixConvention(new RouteAttribute("api")));
         });
         #endregion
 
@@ -316,5 +322,38 @@ internal class Program
         //    return Task.CompletedTask;
         //}
         #endregion
+    }
+
+    public class RoutePrefixConvention : IApplicationModelConvention
+    {
+        private readonly AttributeRouteModel _prefix;
+        public RoutePrefixConvention(IRouteTemplateProvider routeAttribute)
+        {
+            _prefix = new AttributeRouteModel(routeAttribute);
+        }
+
+        public void Apply(ApplicationModel application)
+        {
+            foreach (var controller in application.Controllers)
+            {
+                // Si ya hay rutas con atributos, las combinamos:
+                foreach (var selector in controller.Selectors
+                                                   .Where(s => s.AttributeRouteModel != null))
+                {
+                    selector.AttributeRouteModel =
+                        AttributeRouteModel.CombineAttributeRouteModel(
+                            _prefix, selector.AttributeRouteModel);
+                }
+
+                // Si no tiene ruta, le ponemos solo el prefijo:
+                if (!controller.Selectors.Any(s => s.AttributeRouteModel != null))
+                {
+                    controller.Selectors.Add(new SelectorModel
+                    {
+                        AttributeRouteModel = _prefix
+                    });
+                }
+            }
+        }
     }
 }

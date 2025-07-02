@@ -4,7 +4,7 @@ using static Infrastructure_ML.PublicacionTituloML;
 
 namespace Infrastructure.ML.Contracts
 {
-    public interface ITextoPrediccionRepositoryML : IGenericRepositoryML<EtiquetasPrediccionModeloModel>
+    public interface ITextoPrediccionRepositoryML : IGenericRepositoryML<TextoPrediccionModel>
     {
         /// <summary>
         /// Carga el modelo de predicción desde la base de datos.

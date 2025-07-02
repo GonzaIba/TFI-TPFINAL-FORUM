@@ -12,8 +12,12 @@ namespace Infrastructure.Data.SQL.Repositories
         }
 
         public async Task<IEnumerable<EtiquetasPrediccionModeloModel>> GetAllAsync()
-            => await _entities
-                        .OrderByDescending(m => m.CreatedOn)
+        {
+            var result = await this.Entities
+                        .OrderByDescending(m => m.CreateDate)
                         .ToListAsync();
+
+            return result;
+        }
     }
 }

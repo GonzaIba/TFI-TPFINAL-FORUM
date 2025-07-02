@@ -17,7 +17,7 @@ namespace Infrastructure.Data.SQL.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.15")
+                .HasAnnotation("ProductVersion", "8.0.17")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -31,16 +31,18 @@ namespace Infrastructure.Data.SQL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDArchivo"));
 
                     b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasAnnotation("DefaultValueSql", true);
+                        .HasDefaultValue(true);
 
                     b.Property<byte[]>("Archivo")
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasAnnotation("DefaultValueSql", "getdate()");
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<int>("IDPublicacion")
                         .HasColumnType("int");
@@ -79,12 +81,14 @@ namespace Infrastructure.Data.SQL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDEtiqueta"));
 
                     b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasAnnotation("DefaultValueSql", true);
+                        .HasDefaultValue(true);
 
                     b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasAnnotation("DefaultValueSql", "getdate()");
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("NombreEtiqueta")
                         .IsRequired()
@@ -122,6 +126,116 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.ToTable("EtiquetasPublicaciones", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.EtiquetasPrediccionModeloModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<byte[]>("ModelData")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EtiquetasPrediccionModelo", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.FilterModel", b =>
+                {
+                    b.Property<int>("IDFilter")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDFilter"));
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Api")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IDFilter");
+
+                    b.ToTable("Filter", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.GroupFiltersModel", b =>
+                {
+                    b.Property<int>("IDGroup")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IDFilter")
+                        .HasColumnType("int");
+
+                    b.HasKey("IDGroup", "IDFilter");
+
+                    b.HasIndex("IDFilter");
+
+                    b.ToTable("GroupFilters", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.GroupModel", b =>
+                {
+                    b.Property<int>("IDGroup")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDGroup"));
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("IDGroup");
+
+                    b.ToTable("Group", (string)null);
+                });
+
             modelBuilder.Entity("Core.Domain.Models.MedallaModel", b =>
                 {
                     b.Property<int>("IDMedalla")
@@ -131,20 +245,26 @@ namespace Infrastructure.Data.SQL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDMedalla"));
 
                     b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasAnnotation("DefaultValueSql", true);
+                        .HasDefaultValue(true);
 
                     b.Property<int>("CantidadEntregada")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasAnnotation("DefaultValueSql", "getdate()");
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ImagenMedalla")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NombreMedalla")
                         .IsRequired()
@@ -168,8 +288,9 @@ namespace Infrastructure.Data.SQL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDNotificacion"));
 
                     b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasAnnotation("DefaultValueSql", true);
+                        .HasDefaultValue(true);
 
                     b.Property<DateTime>("FechaNotificacion")
                         .HasColumnType("datetime2");
@@ -227,8 +348,9 @@ namespace Infrastructure.Data.SQL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDPublicacion"));
 
                     b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasAnnotation("DefaultValueSql", true);
+                        .HasDefaultValue(true);
 
                     b.Property<bool>("Cerrada")
                         .HasColumnType("bit");
@@ -237,17 +359,13 @@ namespace Infrastructure.Data.SQL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2")
-                        .HasAnnotation("DefaultValueSql", "getdate()");
-
                     b.Property<DateTime?>("FechaCierre")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("IDUsuario")
                         .IsRequired()
@@ -262,8 +380,8 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     b.Property<string>("Titulo")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
@@ -276,7 +394,28 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.ToTable("Publicaciones", (string)null);
                 });
 
-            modelBuilder.Entity("Core.Domain.Models.RecompensaUsuarioModel", b =>
+            modelBuilder.Entity("Core.Domain.Models.PublicacionVotoModel", b =>
+                {
+                    b.Property<int>("IDPublicacion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IDUsuario")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<bool>("Positivo")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IDPublicacion", "IDUsuario");
+
+                    b.ToTable("PublicacionesVotos", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.RecompensaModel", b =>
                 {
                     b.Property<int>("IDRecompensa")
                         .ValueGeneratedOnAdd()
@@ -284,23 +423,57 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDRecompensa"));
 
-                    b.Property<bool>("Active")
-                        .HasColumnType("bit")
-                        .HasAnnotation("DefaultValueSql", true);
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
-                    b.Property<int>("CantidadRecompensa")
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Valor")
                         .HasColumnType("int");
 
+                    b.HasKey("IDRecompensa");
+
+                    b.ToTable("Recompensas", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.RecompensaUsuarioModel", b =>
+                {
+                    b.Property<int>("IDRecompensaUsuario")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDRecompensaUsuario"));
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasAnnotation("DefaultValueSql", "getdate()");
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<DateTime>("FechaObtencion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<int>("IDRespuesta")
+                    b.Property<int>("IDRecompensa")
                         .HasColumnType("int");
 
                     b.Property<string>("IDUsuario")
@@ -308,12 +481,9 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
+                    b.HasKey("IDRecompensaUsuario");
 
-                    b.HasKey("IDRecompensa");
-
-                    b.HasIndex("IDRespuesta");
+                    b.HasIndex("IDRecompensa");
 
                     b.ToTable("RecompensasUsuario", (string)null);
                 });
@@ -327,12 +497,9 @@ namespace Infrastructure.Data.SQL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDRespuesta"));
 
                     b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasAnnotation("DefaultValueSql", true);
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2")
-                        .HasAnnotation("DefaultValueSql", "getdate()");
+                        .HasDefaultValue(true);
 
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
@@ -357,14 +524,32 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Votos")
-                        .HasColumnType("int");
-
                     b.HasKey("IDRespuesta");
 
                     b.HasIndex("IDPublicacion");
 
                     b.ToTable("Respuestas", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.RespuestaVotoModel", b =>
+                {
+                    b.Property<int>("IDRespuesta")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IDUsuario")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<bool>("Positivo")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IDRespuesta", "IDUsuario");
+
+                    b.ToTable("RespuestasVotos", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Models.TextoPrediccionModel", b =>
@@ -386,6 +571,23 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.ToTable("TextoPredicciones", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.UserFiltersModel", b =>
+                {
+                    b.Property<int>("IDFilter")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IDFilter", "UserId");
+
+                    b.ToTable("UserFilters", (string)null);
+                });
+
             modelBuilder.Entity("Core.Domain.Models.UsuarioMedallaModel", b =>
                 {
                     b.Property<int>("IDUsuarioMedalla")
@@ -393,6 +595,9 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDUsuarioMedalla"));
+
+                    b.Property<DateTime>("FechaObtenido")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("IDMedalla")
                         .HasColumnType("int");
@@ -407,6 +612,30 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.HasIndex("IDMedalla");
 
                     b.ToTable("UsuariosMedallas", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Views.TopTenPublicationsLastWeekView", b =>
+                {
+                    b.Property<int>("IDPublicacion")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_topTenPublicationsLastWeek", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Views.TopThreeUsersLastWeekView", b =>
+                {
+                    b.Property<string>("IDUsuario")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalRecompensa")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_topThreeUsersLastWeek", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Models.ArchivoModel", b =>
@@ -447,6 +676,25 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("Publicacion");
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.GroupFiltersModel", b =>
+                {
+                    b.HasOne("Core.Domain.Models.FilterModel", "Filter")
+                        .WithMany("GroupFilters")
+                        .HasForeignKey("IDFilter")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Models.GroupModel", "Group")
+                        .WithMany("GroupFilters")
+                        .HasForeignKey("IDGroup")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Filter");
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("Core.Domain.Models.PublicacionGuardadaModel", b =>
                 {
                     b.HasOne("Core.Domain.Models.PublicacionModel", "Publicacion")
@@ -458,15 +706,26 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("Publicacion");
                 });
 
-            modelBuilder.Entity("Core.Domain.Models.RecompensaUsuarioModel", b =>
+            modelBuilder.Entity("Core.Domain.Models.PublicacionVotoModel", b =>
                 {
-                    b.HasOne("Core.Domain.Models.RespuestaModel", "Respuesta")
-                        .WithMany("RecompensasUsuario")
-                        .HasForeignKey("IDRespuesta")
+                    b.HasOne("Core.Domain.Models.PublicacionModel", "Publicacion")
+                        .WithMany("PublicacionesVotos")
+                        .HasForeignKey("IDPublicacion")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Respuesta");
+                    b.Navigation("Publicacion");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.RecompensaUsuarioModel", b =>
+                {
+                    b.HasOne("Core.Domain.Models.RecompensaModel", "Recompensa")
+                        .WithMany("RecompensasUsuarios")
+                        .HasForeignKey("IDRecompensa")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recompensa");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.RespuestaModel", b =>
@@ -478,6 +737,28 @@ namespace Infrastructure.Data.SQL.Migrations
                         .IsRequired();
 
                     b.Navigation("Publicacion");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.RespuestaVotoModel", b =>
+                {
+                    b.HasOne("Core.Domain.Models.RespuestaModel", "Respuesta")
+                        .WithMany("RespuestasVotos")
+                        .HasForeignKey("IDRespuesta")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Respuesta");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.UserFiltersModel", b =>
+                {
+                    b.HasOne("Core.Domain.Models.FilterModel", "Filter")
+                        .WithMany("UserFilters")
+                        .HasForeignKey("IDFilter")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Filter");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.UsuarioMedallaModel", b =>
@@ -496,6 +777,18 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("EtiquetasPublicaciones");
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.FilterModel", b =>
+                {
+                    b.Navigation("GroupFilters");
+
+                    b.Navigation("UserFilters");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.GroupModel", b =>
+                {
+                    b.Navigation("GroupFilters");
+                });
+
             modelBuilder.Entity("Core.Domain.Models.MedallaModel", b =>
                 {
                     b.Navigation("UsuariosMedallas");
@@ -509,14 +802,21 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     b.Navigation("PublicacionesGuardadas");
 
+                    b.Navigation("PublicacionesVotos");
+
                     b.Navigation("Respuestas");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.RecompensaModel", b =>
+                {
+                    b.Navigation("RecompensasUsuarios");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.RespuestaModel", b =>
                 {
                     b.Navigation("Archivos");
 
-                    b.Navigation("RecompensasUsuario");
+                    b.Navigation("RespuestasVotos");
                 });
 #pragma warning restore 612, 618
         }

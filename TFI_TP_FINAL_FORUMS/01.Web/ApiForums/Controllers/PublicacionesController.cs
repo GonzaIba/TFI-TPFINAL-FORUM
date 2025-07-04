@@ -2,6 +2,7 @@
 using Core.Contracts.Publishers;
 using Core.Contracts.Services;
 using Core.Domain.Exceptions.BaseException;
+using Core.Domain.GenericEntityClass;
 using Core.Domain.IdentityModels;
 using Core.Domain.Models;
 using Core.Domain.Request;
@@ -83,16 +84,17 @@ namespace ApiForums.Controllers
             return Ok(new SuccessfulResponse(result));
         }
 
-        [HttpGet]
-        [Route("ObtenerPublicaciones")]
-        public async Task<IActionResult> GetPublications([FromQuery] string? userId)
+        [HttpGet("ObtenerPublicaciones")]
+        public async Task<IActionResult> GetPublications([FromQuery] int pageIndex = 1, [FromQuery] int pageCount = 10, [FromQuery] string? userId = null)
         {
-            var publicacionesModel = await _publicacionService.GetPublications();
-            var publicacionesResponse = _mapper.Map<IEnumerable<PublicationResponse>>(
-                publicacionesModel,
+            var pagedResult = await _publicacionService.GetPublications(pageIndex, pageCount);
+
+            var response = _mapper.Map<PaginatedList<PublicationResponse>>(
+                pagedResult,
                 opt => opt.Items["UserId"] = userId
             );
-            return Ok(publicacionesResponse);
+
+            return Ok(response);
         }
 
         [HttpGet]
@@ -132,11 +134,11 @@ namespace ApiForums.Controllers
 
         [HttpGet]
         [Route("ObtenerPublicacionesCreadasPorUsuario")]
-        public async Task<IActionResult> GetCreatedPublicationsByUser([FromQuery] string userId)
+        public async Task<IActionResult> GetCreatedPublicationsByUser([FromQuery] int pageIndex = 1, [FromQuery] int pageCount = 10, [FromQuery] string? userId = null)
         {
-            var publications = await _publicacionService.GetCreatedPublicationByUser(userId); //////////////////////////////////////////////////////
-            var publicationsResponse = _mapper.Map<IEnumerable<PublicationResponse>>(
-                publications.ToList(),
+            var publications = await _publicacionService.GetCreatedPublicationByUser(pageIndex, pageCount, userId); //////////////////////////////////////////////////////
+            var publicationsResponse = _mapper.Map<PaginatedList<PublicationResponse>>(
+                publications,
                 opt => opt.Items["UserId"] = userId
             );
             return Ok(publicationsResponse);
@@ -144,11 +146,11 @@ namespace ApiForums.Controllers
 
         [HttpGet]
         [Route("ObtenerPublicacionesGuardadas")]
-        public async Task<IActionResult> GetSavedPublications([FromQuery] string userId)
+        public async Task<IActionResult> GetSavedPublications([FromQuery] int pageIndex = 1, [FromQuery] int pageCount = 10, [FromQuery] string? userId = null)
         {
-            var publications = await _publicacionService.GetSavedPublications(userId); //////////////////////////////////////////////////////
-            var publicationsResponse = _mapper.Map<IEnumerable<PublicationResponse>>(
-                publications.ToList(),
+            var publications = await _publicacionService.GetSavedPublications(pageIndex, pageCount, userId); //////////////////////////////////////////////////////
+            var publicationsResponse = _mapper.Map<PaginatedList<PublicationResponse>>(
+                publications,
                 opt => opt.Items["UserId"] = userId
             );
             return Ok(publicationsResponse);

@@ -1,6 +1,8 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
+using Core.Domain.GenericEntityClass;
+using Core.Domain.Specification;
 using System.Linq.Expressions;
 
 namespace Core.Business.Services
@@ -59,12 +61,12 @@ namespace Core.Business.Services
             return result;
         }
 
-        public virtual async Task<IEnumerable<T>> GetPagedElements<S>(
+        public virtual async Task<PaginatedList<T>> GetPagedElements<S>(
             int pageIndex,
             int pageCount,
             Expression<Func<T, S>> orderByExpression,
             bool ascending = true,
-            Expression<Func<T, bool>> filter = null)
+            Specification<T> filter = null)
         {
             return await _repository.GetPagedElements(pageIndex, pageCount, orderByExpression, ascending, filter);
         }

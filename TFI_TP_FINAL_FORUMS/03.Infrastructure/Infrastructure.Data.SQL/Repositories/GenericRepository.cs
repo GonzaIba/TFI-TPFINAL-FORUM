@@ -1,4 +1,6 @@
 ﻿using Core.Contracts.Repositories;
+using Core.Domain.GenericEntityClass;
+using Core.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -247,13 +249,10 @@ namespace Infrastructure.Data.SQL.Repositories
             return result.FirstOrDefault();
         }
 
-        public virtual async Task<IEnumerable<T>> GetPagedElements<S>(
-            int pageIndex,
-            int pageCount,
-            Expression<Func<T, S>> orderByExpression,
-            bool ascending,
-            Expression<Func<T, bool>> filter = null,
-            string includeProperties = "")
+        public virtual async Task<PaginatedList<T>> GetPagedElements<S>(
+             int pageIndex, int pageCount,
+             Expression<Func<T, S>> orderByExpression, bool ascending,
+             Specification<T> filter = null, string includeProperties = "", bool tracking = false)
         {
             //Verificar los argumentos para esta consulta
             if (pageIndex < 0)
@@ -277,7 +276,7 @@ namespace Infrastructure.Data.SQL.Repositories
                         );
             }
 
-            IQueryable<T> query = this.Entities;
+            IQueryable<T> query = tracking ? this.Entities : this.Entities.AsNoTracking();
 
             if (filter != null)
             {
@@ -293,12 +292,24 @@ namespace Infrastructure.Data.SQL.Repositories
                 }
             }
 
-            query = (ascending) ? query.OrderBy(orderByExpression)
-                                : query.OrderByDescending(orderByExpression);
-
-
-            return query.Skip((pageIndex - 1) * pageCount)
-                        .Take(pageCount);
+            int totalPages = (int)Math.Ceiling(query.Count() / (double)pageCount);
+            pageIndex = pageIndex == 0 ? 1 : pageIndex;
+            return new PaginatedList<T>
+            {
+                PageIndex = pageIndex,
+                PageCount = pageCount,
+                TotalCount = query.Count(),
+                TotalPages = totalPages == 0 ? 1 : totalPages,
+                List = (ascending)
+                            ?
+                        query.OrderBy(orderByExpression)
+                            .Skip((pageIndex - 1) * pageCount)
+                            .Take(pageCount)
+                            :
+                        query.OrderByDescending(orderByExpression)
+                            .Skip((pageIndex - 1) * pageCount)
+                            .Take(pageCount)
+            };
         }
 
         public virtual async Task CancelChanges(T entity)

@@ -1,4 +1,5 @@
-﻿using Core.Domain.Models;
+﻿using Core.Domain.GenericEntityClass;
+using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
 
@@ -11,11 +12,11 @@ namespace Core.Contracts.Services
         Task<bool> EditAnswer(string userId, EditAnswerRequest editPublication);
         Task<bool> SavePublication(string userId, int codePublication);
         Task<RespuestaModel> AddAnswer(AddAnswerRequest request);
-        Task<bool> DeleteSavedPublication(string userId, int codePublication); 
-        Task<List<PublicacionModel>> GetPublications();
+        Task<bool> DeleteSavedPublication(string userId, int codePublication);
+        Task<PaginatedList<PublicacionModel>> GetPublications(int pageIndex, int pageCount);
         Task<PublicacionModel> GetDetailPublication(int codePublication);
-        Task<List<PublicacionModel>> GetCreatedPublicationByUser(string userId);
-        Task<List<PublicacionModel>> GetSavedPublications(string userId);
+        Task<PaginatedList<PublicacionModel>> GetCreatedPublicationByUser(int pageIndex, int pageCount, string userId);
+        Task<PaginatedList<PublicacionModel>> GetSavedPublications(int pageIndex, int pageCount, string userId);
         Task<IEnumerable<string>> PredictLabel(string texto);
         Task<IEnumerable<PublicacionModel>> GetPublicationByFilter(string texto);
         Task<AnswerPublicationVoteResponse> UserPublicationVote(PublicationVoteRequest request);

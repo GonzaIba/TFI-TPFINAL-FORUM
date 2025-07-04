@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Domain.Events;
+using Core.Domain.GenericEntityClass;
 using Core.Domain.IdentityModels;
 using Core.Domain.Models;
 using Core.Domain.Request;
@@ -12,6 +13,12 @@ namespace ApiForums.Mapping
     {
         public Mapping()
         {
+            // Mapping genérico para PaginatedList<T>
+            CreateMap(typeof(PaginatedList<>), typeof(PaginatedList<>))
+                // Indicas que la propiedad List se mapea de sí misma (AutoMapper infiere el tipo interno)
+                .ForMember("List", opt => opt.MapFrom("List"));
+
+
             #region Request
             CreateMap<CreatePublicationRequest, PublicacionModel>();
             #endregion

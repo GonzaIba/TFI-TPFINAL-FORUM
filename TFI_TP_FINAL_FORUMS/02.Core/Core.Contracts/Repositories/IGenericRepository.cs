@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Core.Domain.GenericEntityClass;
+using Core.Domain.Specification;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Contracts.Repositories
 {
     public partial interface IGenericRepository<T> : IDisposable where T : class
     {
-
         public T GetById(object id);
 
         public Task<T> GetByIdAsync(object id);
@@ -76,13 +72,10 @@ namespace Core.Contracts.Repositories
             bool ignoreQueryFilters = false,
             bool tracking = true);
 
-        public Task<IEnumerable<T>> GetPagedElements<S>(
-            int pageIndex,
-            int pageCount,
-            Expression<Func<T, S>> orderByExpression,
-            bool ascending,
-            Expression<Func<T, bool>> filter = null,
-            string includeProperties = "");
+        public Task<PaginatedList<T>> GetPagedElements<S>(
+            int pageIndex, int pageCount,
+            Expression<Func<T, S>> orderByExpression, bool ascending,
+            Specification<T> filter = null, string includeProperties = "", bool tracking = false);
 
         public IQueryable<T> Table { get; }
 

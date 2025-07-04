@@ -4,9 +4,11 @@ using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Exceptions.BusinessExceptions;
+using Core.Domain.GenericEntityClass;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
+using Core.Domain.Specification.Business;
 using CrossCutting.Helpers;
 using Infrastructure.ML.Contracts;
 using Org.BouncyCastle.Asn1.Ocsp;
@@ -225,25 +227,28 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<List<PublicacionModel>> GetPublications()
+        public async Task<PaginatedList<PublicacionModel>> GetPublications(int pageIndex, int pageCount)
         {
-            try
+            var paged = await _repository.GetPagedElements(
+                pageIndex,
+                pageCount,
+                orderByExpression: p => p.FechaCreacion,
+                ascending: false,
+                includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas",
+                tracking: false
+            );
+
+            // 2️⃣ Cargo el Usuario en cada publicación (si lo necesitas igual)
+            foreach (var pub in paged.List)
             {
-                var result = (await _repository.Get(tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas")).ToList();
-                if (result != null)
-                {
-                    foreach (var pub in result)
-                    {
-                        pub.Usuario = (await _usersRepository.Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
-                    }
-                }
-                return result;
+                pub.Usuario = (await _usersRepository
+                    .Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false))
+                    .FirstOrDefault();
             }
-            catch (Exception ex)
-            {
-                throw;
-            }
+
+            return paged;
         }
+
 
         public async Task<IEnumerable<PublicacionModel>> GetRelatedPublications(int publicationCode)
         {
@@ -280,19 +285,28 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<List<PublicacionModel>> GetCreatedPublicationByUser(string userId)
+        public async Task<PaginatedList<PublicacionModel>> GetCreatedPublicationByUser(int pageIndex, int pageCount, string userId)
         {
             try
             {
-                var result = (await _repository.Get(x => x.IDUsuario == userId, tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas")).ToList();
-                if (result != null)
+                var paged = await _repository.GetPagedElements(               
+                    pageIndex,
+                    pageCount,
+                    orderByExpression: p => p.FechaCreacion,
+                    filter: new PublicationUserIdSpec(userId),
+                    ascending: false,
+                    includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas",
+                    tracking: false
+                );
+
+                if (paged != null)
                 {
-                    foreach (var pub in result)
+                    foreach (var pub in paged.List)
                     {
                         pub.Usuario = (await _usersRepository.Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
                     }
                 }
-                return result;
+                return paged;
             }
             catch (Exception)
             {
@@ -300,12 +314,21 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<List<PublicacionModel>> GetSavedPublications(string userId)
+        public async Task<PaginatedList<PublicacionModel>> GetSavedPublications(int pageIndex, int pageCount, string userId)
         {
             try
             {
-                var result = await _publicacionGuardadaRepository.Get(x=> x.IDUsuario == userId, tracking: false, includeProperties: "Publicacion,Publicacion.EtiquetasPublicacion,Publicacion.EtiquetasPublicacion.Etiqueta,Publicacion.Respuestas");
-                var pubs = result.Select(x => x.Publicacion).ToList();
+                var paged = await _publicacionGuardadaRepository.GetPagedElements(
+                    pageIndex,
+                    pageCount,
+                    orderByExpression: p => p.IDPublicacionGuardada,
+                    filter: new PublicationSavedUserIdSpec(userId),
+                    ascending: false,
+                    includeProperties: "Publicacion,Publicacion.EtiquetasPublicacion,Publicacion.EtiquetasPublicacion.Etiqueta,Publicacion.Respuestas",
+                    tracking: false
+                );
+
+                var pubs = paged?.List?.Select(x => x.Publicacion).ToList();
                 if (pubs != null)
                 {
                     foreach (var pub in pubs)
@@ -313,7 +336,9 @@ namespace Core.Business.Services
                         pub.Usuario = (await _usersRepository.Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
                     }
                 }
-                return pubs;
+
+                PaginatedList<PublicacionModel> pubPaged = new PaginatedList<PublicacionModel>(pubs, paged.PageIndex, paged.PageCount, paged.TotalCount, paged.TotalPages);
+                return pubPaged;
             }
             catch (Exception)
             {

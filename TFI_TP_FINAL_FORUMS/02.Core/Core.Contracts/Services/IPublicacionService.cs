@@ -18,7 +18,7 @@ namespace Core.Contracts.Services
         Task<PaginatedList<PublicacionModel>> GetCreatedPublicationByUser(int pageIndex, int pageCount, string userId);
         Task<PaginatedList<PublicacionModel>> GetSavedPublications(int pageIndex, int pageCount, string userId);
         Task<IEnumerable<string>> PredictLabel(string texto);
-        Task<IEnumerable<PublicacionModel>> GetPublicationByFilter(string texto);
+        Task<PaginatedList<PublicacionModel>> GetPublicationsByFilter(string rawQuery, int pageIndex, int pageCount);
         Task<AnswerPublicationVoteResponse> UserPublicationVote(PublicationVoteRequest request);
         Task<AnswerPublicationVoteResponse> UserAnswerVote(AnswerVoteRequest request);
         Task<IEnumerable<PublicacionModel>> GetRelatedPublications(int publicationCode);

@@ -8,11 +8,13 @@ using Core.Domain.GenericEntityClass;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
+using Core.Domain.Specification;
 using Core.Domain.Specification.Business;
 using CrossCutting.Helpers;
 using Infrastructure.ML.Contracts;
-using Org.BouncyCastle.Asn1.Ocsp;
+using System.Text.RegularExpressions;
 using static Infrastructure_ML.PublicacionTituloML;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Core.Business.Services
 {
@@ -238,14 +240,20 @@ namespace Core.Business.Services
                 tracking: false
             );
 
-            // 2️⃣ Cargo el Usuario en cada publicación (si lo necesitas igual)
-            foreach (var pub in paged.List)
+            var publicaciones = paged.List.ToList();
+
+            var ids = publicaciones.Select(p => p.IDUsuario).Distinct().ToList();
+            var usuarios = (await _usersRepository
+                .Get(x => ids.Contains(x.Id), includeProperties: "UsersForum", tracking: false))
+                .ToDictionary(u => u.Id);
+
+            foreach (var pub in publicaciones)
             {
-                pub.Usuario = (await _usersRepository
-                    .Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false))
-                    .FirstOrDefault();
+                usuarios.TryGetValue(pub.IDUsuario, out var user);
+                pub.Usuario = user;
             }
 
+            paged.List = publicaciones;
             return paged;
         }
 
@@ -285,79 +293,204 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<PaginatedList<PublicacionModel>> GetCreatedPublicationByUser(int pageIndex, int pageCount, string userId)
+        public async Task<PaginatedList<PublicacionModel>> GetCreatedPublicationByUser(
+            int pageIndex,
+            int pageCount,
+            string userId)
         {
-            try
-            {
-                var paged = await _repository.GetPagedElements(               
-                    pageIndex,
-                    pageCount,
-                    orderByExpression: p => p.FechaCreacion,
-                    filter: new PublicationUserIdSpec(userId),
-                    ascending: false,
-                    includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas",
-                    tracking: false
-                );
+            var paged = await _repository.GetPagedElements(
+                pageIndex,
+                pageCount,
+                orderByExpression: p => p.FechaCreacion,
+                filter: new PublicationUserIdSpec(userId),
+                ascending: false,
+                includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas",
+                tracking: false
+            );
 
-                if (paged != null)
+            if (paged?.List?.Any() == true)
+            {
+                var publicaciones = paged.List.ToList();
+
+                var ids = publicaciones
+                    .Select(p => p.IDUsuario)
+                    .Distinct()
+                    .ToList();
+
+                var usuarios = (await _usersRepository
+                        .Get(x => ids.Contains(x.Id),
+                             includeProperties: "UsersForum",
+                             tracking: false))
+                    .ToDictionary(u => u.Id, u => u);
+
+                foreach (var pub in publicaciones)
                 {
-                    foreach (var pub in paged.List)
-                    {
-                        pub.Usuario = (await _usersRepository.Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
-                    }
-                }
-                return paged;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<PaginatedList<PublicacionModel>> GetSavedPublications(int pageIndex, int pageCount, string userId)
-        {
-            try
-            {
-                var paged = await _publicacionGuardadaRepository.GetPagedElements(
-                    pageIndex,
-                    pageCount,
-                    orderByExpression: p => p.IDPublicacionGuardada,
-                    filter: new PublicationSavedUserIdSpec(userId),
-                    ascending: false,
-                    includeProperties: "Publicacion,Publicacion.EtiquetasPublicacion,Publicacion.EtiquetasPublicacion.Etiqueta,Publicacion.Respuestas",
-                    tracking: false
-                );
-
-                var pubs = paged?.List?.Select(x => x.Publicacion).ToList();
-                if (pubs != null)
-                {
-                    foreach (var pub in pubs)
-                    {
-                        pub.Usuario = (await _usersRepository.Get(x => x.Id == pub.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
-                    }
+                    usuarios.TryGetValue(pub.IDUsuario, out var usr);
+                    pub.Usuario = usr;
                 }
 
-                PaginatedList<PublicacionModel> pubPaged = new PaginatedList<PublicacionModel>(pubs, paged.PageIndex, paged.PageCount, paged.TotalCount, paged.TotalPages);
-                return pubPaged;
+                paged.List = publicaciones;
             }
-            catch (Exception)
-            {
-                throw;
-            }
+
+            return paged;
         }
 
-        public async Task<IEnumerable<PublicacionModel>> GetPublicationByFilter(string texto)
+        public async Task<PaginatedList<PublicacionModel>> GetSavedPublications(
+            int pageIndex,
+            int pageCount,
+            string userId
+        )
         {
-            try
+            var pagedGuardadas = await _publicacionGuardadaRepository.GetPagedElements(
+                pageIndex,
+                pageCount,
+                orderByExpression: p => p.IDPublicacionGuardada,
+                filter: new PublicationSavedUserIdSpec(userId),
+                ascending: false,
+                includeProperties: "Publicacion,Publicacion.EtiquetasPublicacion,Publicacion.EtiquetasPublicacion.Etiqueta,Publicacion.Respuestas",
+                tracking: false
+            );
+
+            var publicaciones = pagedGuardadas?.List?
+                .Select(x => x.Publicacion)
+                .ToList()
+                ?? new List<PublicacionModel>();
+
+            if (publicaciones.Any())
             {
-                var etiquetas = GetLabels(texto);
-                var result = await _repository.Get(tracking: false, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas");
-                return result;
+                var ids = publicaciones
+                    .Select(p => p.IDUsuario)
+                    .Distinct()
+                    .ToList();
+
+                var usuarios = (await _usersRepository
+                        .Get(x => ids.Contains(x.Id),
+                             includeProperties: "UsersForum",
+                             tracking: false))
+                    .ToDictionary(u => u.Id, u => u);
+
+                foreach (var pub in publicaciones)
+                {
+                    usuarios.TryGetValue(pub.IDUsuario, out var usr);
+                    pub.Usuario = usr;
+                }
             }
-            catch (Exception ex)
+
+            return new PaginatedList<PublicacionModel>(
+                publicaciones,
+                pagedGuardadas.PageIndex,
+                pagedGuardadas.PageCount,
+                pagedGuardadas.TotalCount,
+                pagedGuardadas.TotalPages
+            );
+        }
+
+
+        public async Task<PaginatedList<PublicacionModel>> GetPublicationsByFilter(
+            string rawQuery,
+            int pageIndex,
+            int pageCount)
+        {
+            // 1) Lo primero que hacemos es parsear el rawQuery.
+            var parsed = ParseRawQuery(rawQuery);
+
+            // 2) Spec base = “true” para ir encadenando &
+            Specification<PublicacionModel> baseSpec =
+                new AdHocSpecification<PublicacionModel>(p => true);
+
+            // 2.1) Filtrar por userName → traer userId desde el otro repositorio (ya que es otra DB)
+            if (!string.IsNullOrEmpty(parsed.Filters.UserName))
             {
-                throw;
+                var user = (await _usersRepository
+                    .Get(u => u.UserName == parsed.Filters.UserName, tracking: false))
+                    .FirstOrDefault();
+
+                // Si no existe, devolvemos vacío
+                if (user == null)
+                    return new PaginatedList<PublicacionModel>(
+                        new List<PublicacionModel>(), pageIndex, pageCount, 0, 0);
+
+                // Si existe, filtramos por su ID
+                baseSpec &= new AdHocSpecification<PublicacionModel>(
+                    p => p.IDUsuario == user.Id);
             }
+
+            // 2.2) Tags
+            if (parsed.Filters.Tags.Any())
+                baseSpec &= new AdHocSpecification<PublicacionModel>(p =>
+                    p.EtiquetasPublicacion.Any(pt =>
+                        parsed.Filters.Tags.Contains(pt.Etiqueta.NombreEtiqueta)));
+
+            // 2.3) Fecha (exact match de día completo)
+            if (!string.IsNullOrEmpty(parsed.Filters.Date)
+                && DateTime.TryParse(parsed.Filters.Date, out var dt))
+            {
+                var start = dt.Date;
+                var end = start.AddDays(1);
+                baseSpec &= new AdHocSpecification<PublicacionModel>(p =>
+                    p.FechaCreacion >= start && p.FechaCreacion < end);
+            }
+
+            // 2.4) MinScore
+            if (parsed.Filters.MinScore.HasValue)
+                baseSpec &= new AdHocSpecification<PublicacionModel>(
+                    p => p.Recompensa >= parsed.Filters.MinScore.Value);
+
+            // 3) Specs ad‐hoc para texto libre
+            var titleSpec = new AdHocSpecification<PublicacionModel>(
+                p => p.Titulo.Contains(parsed.Text));
+            var bodySpec = new AdHocSpecification<PublicacionModel>(
+                p => !p.Titulo.Contains(parsed.Text)
+                  && p.Contenido.Contains(parsed.Text));
+
+            // 4) Traigo coincidencias de título y cuerpo (cada una con su peso)
+            var include =
+                "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas,PublicacionesVotos";
+
+            var titleMatches = (await _repository
+              .Get(baseSpec & titleSpec, includeProperties: include, tracking: false))
+              .Select(p => new { Entity = p, Weight = 2 })
+              .ToList();
+
+            var bodyMatches = (await _repository
+              .Get(baseSpec & bodySpec, includeProperties: include, tracking: false))
+              .Select(p => new { Entity = p, Weight = 1 })
+              .ToList();
+
+            // 5) Union en memoria, agrupando para no repetir la misma publicación,
+            // luego ordeno por Weight y por FechaCreacion
+            var all = titleMatches
+              .Concat(bodyMatches)
+              .GroupBy(x => x.Entity.IDPublicacion)
+              .Select(g => g.OrderByDescending(x => x.Weight).First())
+              .OrderByDescending(x => x.Weight)
+              .ThenByDescending(x => x.Entity.FechaCreacion)
+              .ToList();
+
+            var totalCount = all.Count;
+            int totalPages = (int)Math.Ceiling(totalCount / (double)pageCount);
+
+            var pageItems = all
+              .Skip((pageIndex - 1) * pageCount)
+              .Take(pageCount)
+              .Select(x => x.Entity)
+              .ToList();
+
+            // 6) Cargo en lote los usuarios desde la otra DB. Esto se hace para 
+            var userIds = pageItems.Select(p => p.IDUsuario).Distinct().ToList();
+            var users = await _usersRepository
+              .Get(u => userIds.Contains(u.Id),
+                   includeProperties: "UsersForum",
+                   tracking: false);
+            var dict = users.ToDictionary(u => u.Id);
+
+            foreach (var pub in pageItems)
+                if (dict.TryGetValue(pub.IDUsuario, out var usr))
+                    pub.Usuario = usr;
+
+            // 7) Empaqueto en el PaginatedList
+            return new PaginatedList<PublicacionModel>(
+              pageItems, pageIndex, pageCount, totalCount, totalPages);
         }
 
         public async Task<IEnumerable<string>> PredictLabel(string texto)
@@ -517,7 +650,7 @@ namespace Core.Business.Services
         }
 
 
-        #region Metodos Busqueda de textos
+        #region Helpers
         private string GetLabels(string texto)
         {
             var etiquetas = new List<string>();
@@ -531,6 +664,78 @@ namespace Core.Business.Services
             }
             return string.Join(',', etiquetas);
         }
+
+        private ParsedQueryRequest ParseRawQuery(string raw)
+        {
+            var filters = new SearchFilters();
+            var text = raw;
+
+            // etiquetas: [tag]
+            foreach (Match m in Regex.Matches(text, @"\[(?<tag>[^\]]+)\]"))
+            {
+                filters.Tags.Add(m.Groups["tag"].Value);
+                text = text.Replace(m.Value, "");
+            }
+
+            // user:username
+            var mUser = Regex.Match(text, @"\buser:(?<name>\S+)\b");
+            if (mUser.Success)
+            {
+                filters.UserName = mUser.Groups["name"].Value;
+                text = text.Replace(mUser.Value, "");
+            }
+
+            // date:DD/MM/YYYY
+            var mDate = Regex.Match(text, @"\bdate:(?<d>\d{1,2}/\d{1,2}/\d{4})\b");
+            if (mDate.Success)
+            {
+                filters.Date = mDate.Groups["d"].Value;
+                text = text.Replace(mDate.Value, "");
+            }
+
+            // score:N
+            var mScore = Regex.Match(text, @"\bscore:(?<n>\d+)\b");
+            if (mScore.Success)
+            {
+                filters.MinScore = int.Parse(mScore.Groups["n"].Value);
+                text = text.Replace(mScore.Value, "");
+            }
+
+            // limpio espacios
+            text = Regex.Replace(text, @"\s+", " ").Trim();
+
+            return new ParsedQueryRequest
+            {
+                Text = text,
+                Filters = filters
+            };
+        }
+
+        //private Specification<PublicacionModel> BuildFilterSpecification(SearchFilters filters)
+        //{
+        //    // empezamos con “verdad” para poder ir haciendo &=
+        //    Specification<PublicacionModel> spec =
+        //        new AdHocSpecification<PublicacionModel>(p => true);
+
+        //    if (!string.IsNullOrEmpty(filters.UserId))
+        //        spec &= new AdHocSpecification<PublicacionModel>(p => 
+        //            p.IDUsuario == filters.UserId);
+
+        //    if (filters.Tags.Any())
+        //        spec &= new AdHocSpecification<PublicacionModel>(p =>
+        //            p.EtiquetasPublicacion.Any(pt => filters.Tags.Contains(pt.Etiqueta.NombreEtiqueta)));
+
+        //    if (!string.IsNullOrEmpty(filters.Date))
+        //        spec &= new AdHocSpecification<PublicacionModel>(p =>
+        //            p.CreateDate == Convert.ToDateTime(filters.Date));
+
+        //    if (filters.MinScore.HasValue)
+        //        spec &= new AdHocSpecification<PublicacionModel>(p =>
+        //            p.Recompensa >= filters.MinScore.Value);
+
+        //    return spec;
+        //}
+
         #endregion
     }
 }

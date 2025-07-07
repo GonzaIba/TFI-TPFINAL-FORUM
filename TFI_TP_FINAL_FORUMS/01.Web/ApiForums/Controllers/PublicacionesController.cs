@@ -181,6 +181,18 @@ namespace ApiForums.Controllers
         }
 
         [HttpGet]
+        [Route("BuscarPublicaciones")]
+        public async Task<IActionResult> GetPublicationByFilter([FromQuery] string rawQuery, [FromQuery] int pageIndex = 1, [FromQuery] int pageCount = 10, [FromQuery] string? userId = null)
+        {
+            var publications = await _publicacionService.GetPublicationsByFilter(rawQuery, pageIndex, pageCount);
+            var publicationsResponse = _mapper.Map<PaginatedList<PublicationResponse>>(
+                publications,
+                opt => opt.Items["UserId"] = userId
+            );
+            return Ok(publicationsResponse);
+        }
+
+        [HttpGet]
         [Route("PredecirEtiquetasPorTexto")]
         public async Task<IActionResult> GetPublicationByFilter([FromQuery] string texto)
         {

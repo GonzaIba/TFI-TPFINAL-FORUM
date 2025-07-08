@@ -50,6 +50,11 @@ namespace Infrastructure.Data.SQL
             modelBuilder.Ignore<RolesClaim>();
             modelBuilder.Ignore<RefreshToken>();
 
+            modelBuilder.Ignore<FilterModel>();
+            modelBuilder.Ignore<GroupModel>();
+            modelBuilder.Ignore<GroupFiltersModel>();
+            modelBuilder.Ignore<UserFiltersModel>();
+
             modelBuilder.Entity<TopThreeUsersLastWeekView>()
                 .HasNoKey()
                 .ToView("vw_topThreeUsersLastWeek");

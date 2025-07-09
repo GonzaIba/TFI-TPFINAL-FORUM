@@ -74,8 +74,17 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> ObtenerUsuariosForos([FromQuery] string userId)
         {
             var result = await _usuarioService.GetUsersForumAsync(userId);
-            var usersForum = _mapper.Map<IEnumerable<UserForumResponse>>(result);
-            return Ok(usersForum);
+
+            var mappedUsers = result.Select(r => new UserForumResponse
+            {
+                Name = r.Key.Nombre + " " + r.Key.Apellido,
+                Score = r.Value,
+                Email = r.Key.Email,
+                CreatedDate =  r.Key.FechaCreado,
+            });
+
+            //var usersForum = _mapper.Map<IEnumerable<UserForumResponse>>(result);
+            return Ok(mappedUsers);
         }
 
 

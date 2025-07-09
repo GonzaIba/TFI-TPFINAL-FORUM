@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using Core.Contracts.UoW;
 using Core.Domain.Specification;
 using CrossCutting.Extensions.Linq;
+using Core.Domain.Models;
 
 namespace Core.Business.Services
 {
@@ -92,11 +93,10 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<IEnumerable<Users>> GetUsersForumAsync(string userId)
+        public async Task<Dictionary<Users,int>> GetUsersForumAsync(string userId)
         {
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(1));
                 var userFiltersRepository = _unitOfWorkGateway.GetRepository<IUserFiltersRepository>();
                 var userFilters = (await userFiltersRepository.Get(x => x.UserId == userId, includeProperties: "Filter")).ToList();
 
@@ -113,7 +113,16 @@ namespace Core.Business.Services
                     includeProperties: "UsersForum"
                 )).ToList();
 
-                return filteredUsers;
+                Dictionary<Users, int> dicUsers = new Dictionary<Users, int>();
+
+                filteredUsers.ForEach(async x =>
+                {
+                    Specification<RecompensaUsuarioModel> regardUser = new AdHocSpecification<RecompensaUsuarioModel>(reg => reg.IDUsuario == x.Id);
+                    var recompensaUsuario = (await _unitOfWorkForum.GetRepository<IRecompensaUsuarioRepository>().Get(regardUser,includeProperties: "Recompensa")).Sum(x => x.Recompensa.Valor);
+                    dicUsers.Add(x, recompensaUsuario);
+                });
+
+                return dicUsers;
             }
             catch (Exception ex)
             {

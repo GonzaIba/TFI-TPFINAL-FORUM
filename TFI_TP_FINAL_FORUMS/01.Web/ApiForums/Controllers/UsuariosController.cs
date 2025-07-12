@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Core.Contracts.Services;
 using Core.Domain.Exceptions.BaseException;
+using Core.Domain.GenericEntityClass;
 using Core.Domain.Response;
 using CrossCutting.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ApiForums.Controllers
 {
@@ -71,11 +73,11 @@ namespace ApiForums.Controllers
         [HttpGet]
         [Route("ObtenerUsuariosForos")]
         [AllowAnonymous]
-        public async Task<IActionResult> ObtenerUsuariosForos([FromQuery] int pageIndex = 1, [FromQuery] int pageCount = 10, [FromQuery] string userId)
+        public async Task<IActionResult> ObtenerUsuariosForos([FromQuery] string userId, [FromQuery] int pageIndex = 1, [FromQuery] int pageCount = 10)
         {
             var result = await _usuarioService.GetUsersForumAsync(pageIndex, pageCount, userId);
 
-            var mappedUsers = result.Select(r => new UserForumResponse
+            var mappedUsers = result.Item2.Select(r => new UserForumResponse
             {
                 Name = r.Key.Nombre + " " + r.Key.Apellido,
                 Score = r.Value,
@@ -83,8 +85,17 @@ namespace ApiForums.Controllers
                 CreatedDate =  r.Key.FechaCreado,
             });
 
-            //var usersForum = _mapper.Map<IEnumerable<UserForumResponse>>(result);
-            return Ok(mappedUsers);
+            var response = _mapper.Map<PaginatedList<UserForumResponse>>(
+                mappedUsers,
+                opt => opt.Items["UserId"] = userId
+            );
+
+            response.TotalCount = result.Item1.TotalCount;
+            response.TotalPages = result.Item1.PageCount;
+            response.PageCount = pageCount;
+            response.PageIndex = pageIndex;
+
+            return Ok(response);
         }
 
 

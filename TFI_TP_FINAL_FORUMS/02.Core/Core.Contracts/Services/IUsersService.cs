@@ -10,7 +10,7 @@ namespace Core.Contracts.Services
         public Task<bool> UpdateUserAsync(Users users);
 
         public Task<Dictionary<Users, int>> GetTopLastWeekAsync();
-        public Task<PaginatedList<Dictionary<Users, int>>> GetUsersForumAsync(int pageIndex, int pageCount, string userId);
+        public Task<(PaginatedList<Users>, Dictionary<Users, int>)> GetUsersForumAsync(int pageIndex, int pageCount, string userId);
         public Task<Users> GetDetailUserAsync(string userEmail);
     }
 }

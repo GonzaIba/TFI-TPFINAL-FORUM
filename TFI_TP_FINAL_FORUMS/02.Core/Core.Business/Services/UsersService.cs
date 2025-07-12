@@ -93,7 +93,7 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<PaginatedList<Dictionary<Users,int>>> GetUsersForumAsync(int pageIndex, int pageCount, string userId)
+        public async Task<(PaginatedList<Users>, Dictionary<Users, int>)> GetUsersForumAsync(int pageIndex, int pageCount, string userId)
         {
             try
             {
@@ -133,9 +133,7 @@ namespace Core.Business.Services
                     dicUsers.Add(x, recompensaUsuario);
                 });
 
-                paged.List = dicUsers;
-
-                return dicUsers;
+                return (paged,dicUsers);
             }
             catch (Exception ex)
             {

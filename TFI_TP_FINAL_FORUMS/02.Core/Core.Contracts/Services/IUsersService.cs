@@ -1,4 +1,5 @@
-﻿using Core.Domain.IdentityModels;
+﻿using Core.Domain.GenericEntityClass;
+using Core.Domain.IdentityModels;
 
 namespace Core.Contracts.Services
 {
@@ -9,7 +10,7 @@ namespace Core.Contracts.Services
         public Task<bool> UpdateUserAsync(Users users);
 
         public Task<Dictionary<Users, int>> GetTopLastWeekAsync();
-        public Task<Dictionary<Users, int>> GetUsersForumAsync(string userId);
+        public Task<PaginatedList<Dictionary<Users, int>>> GetUsersForumAsync(int pageIndex, int pageCount, string userId);
         public Task<Users> GetDetailUserAsync(string userEmail);
     }
 }

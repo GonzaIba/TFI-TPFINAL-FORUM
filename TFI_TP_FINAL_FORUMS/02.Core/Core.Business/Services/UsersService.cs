@@ -8,6 +8,7 @@ using Core.Contracts.UoW;
 using Core.Domain.Specification;
 using CrossCutting.Extensions.Linq;
 using Core.Domain.Models;
+using Core.Domain.GenericEntityClass;
 
 namespace Core.Business.Services
 {
@@ -58,7 +59,6 @@ namespace Core.Business.Services
             catch (Exception ex)
             {
                 return false;
-                throw ex;
             }     
         }
 
@@ -93,7 +93,7 @@ namespace Core.Business.Services
             }
         }
 
-        public async Task<Dictionary<Users,int>> GetUsersForumAsync(string userId)
+        public async Task<PaginatedList<Dictionary<Users,int>>> GetUsersForumAsync(int pageIndex, int pageCount, string userId)
         {
             try
             {
@@ -108,19 +108,32 @@ namespace Core.Business.Services
                     combinedSpecification &= newSpec;
                 }
 
-                var filteredUsers = (await _repository.Get(
-                    filter: combinedSpecification,
-                    includeProperties: "UsersForum"
-                )).ToList();
+                //var filteredUsers = (await _repository.Get(
+                //    filter: combinedSpecification,
+                //    includeProperties: "UsersForum"
+                //)).ToList();
+
+                var paged = await _repository.GetPagedElements(
+                    pageIndex,
+                    pageCount,
+                    orderByExpression: p => p.Nombre, 
+                    ascending: false,
+                    combinedSpecification,
+                    includeProperties: "UsersForum",
+                    tracking: false
+                );
 
                 Dictionary<Users, int> dicUsers = new Dictionary<Users, int>();
 
-                filteredUsers.ForEach(async x =>
+                var users = paged.List.Distinct().ToList();
+                users.ForEach(async x =>
                 {
                     Specification<RecompensaUsuarioModel> regardUser = new AdHocSpecification<RecompensaUsuarioModel>(reg => reg.IDUsuario == x.Id);
                     var recompensaUsuario = (await _unitOfWorkForum.GetRepository<IRecompensaUsuarioRepository>().Get(regardUser,includeProperties: "Recompensa")).Sum(x => x.Recompensa.Valor);
                     dicUsers.Add(x, recompensaUsuario);
                 });
+
+                paged.List = dicUsers;
 
                 return dicUsers;
             }

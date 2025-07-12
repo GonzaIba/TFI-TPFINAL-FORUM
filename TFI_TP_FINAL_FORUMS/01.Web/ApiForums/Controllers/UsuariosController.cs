@@ -71,9 +71,9 @@ namespace ApiForums.Controllers
         [HttpGet]
         [Route("ObtenerUsuariosForos")]
         [AllowAnonymous]
-        public async Task<IActionResult> ObtenerUsuariosForos([FromQuery] string userId)
+        public async Task<IActionResult> ObtenerUsuariosForos([FromQuery] int pageIndex = 1, [FromQuery] int pageCount = 10, [FromQuery] string userId)
         {
-            var result = await _usuarioService.GetUsersForumAsync(userId);
+            var result = await _usuarioService.GetUsersForumAsync(pageIndex, pageCount, userId);
 
             var mappedUsers = result.Select(r => new UserForumResponse
             {

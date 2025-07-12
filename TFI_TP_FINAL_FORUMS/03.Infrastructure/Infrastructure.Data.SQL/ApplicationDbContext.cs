@@ -1,23 +1,9 @@
 ﻿using Core.Domain.IdentityModels;
 using Core.Domain.Models;
-using Core.Domain.Models.GenericEntityClass;
 using Core.Domain.Views;
 using CrossCutting.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Configuration; // Add this using directive at the top of the file
-using MySql.EntityFrameworkCore;
-using MySql.EntityFrameworkCore.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Data.SQL
 {

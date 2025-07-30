@@ -9,6 +9,8 @@ using Core.Domain.Specification;
 using CrossCutting.Extensions.Linq;
 using Core.Domain.Models;
 using Core.Domain.GenericEntityClass;
+using Core.Domain.Exceptions.BaseException;
+using Core.Domain.Request;
 
 namespace Core.Business.Services
 {
@@ -156,7 +158,7 @@ namespace Core.Business.Services
                     userForum.Publicaciones = (await _unitOfWorkForum.GetRepository<IPublicacionRepository>().Get(x => x.IDUsuario == userForum.Id)).ToList();
                 }
 
-                return userForum;
+                return userForum; ////////////////////////////////
             }
             catch (Exception ex)
             {
@@ -164,39 +166,53 @@ namespace Core.Business.Services
                 throw;
             }
         }
-    }
-    public static class HOLA
-    {
-        public static Expression<Func<T, bool>> Combine<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
+
+        public async Task<List<NotificacionesModel>> GetNotificationsAsync(string userId)
         {
-            var parameter = Expression.Parameter(typeof(T));
+            try
+            {
+                var user = (await _repository.Get(x => x.Id == userId, includeProperties: "UsersForum")).FirstOrDefault();
 
-            var leftVisitor = new ReplaceExpressionVisitor(first.Parameters[0], parameter);
-            var left = leftVisitor.Visit(first.Body);
+                if (user is null)
+                    throw new ApiForumException("El usuario no existe.");
+                else
+                {
+                    return (await _unitOfWorkForum.GetRepository<INotificacionRepository>().Get(x => x.IDUsuario == userId, orderBy: y=> y.OrderByDescending(u=> u.FechaNotificacion)))?.ToList() ?? new List<NotificacionesModel>();
+                }
+            }
+            catch (Exception ex)
+            {
 
-            var rightVisitor = new ReplaceExpressionVisitor(second.Parameters[0], parameter);
-            var right = rightVisitor.Visit(second.Body);
-
-            return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(left, right), parameter);
-        }
-    }
-
-    class ReplaceExpressionVisitor : ExpressionVisitor
-    {
-        private readonly Expression _oldValue;
-        private readonly Expression _newValue;
-
-        public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
-        {
-            _oldValue = oldValue;
-            _newValue = newValue;
+                throw;
+            }
         }
 
-        public override Expression Visit(Expression node)
+        public async Task<bool> MarkNotificationAsReadAsync(MarkNotificationAsReadRequest request)
         {
-            if (node == _oldValue)
-                return _newValue;
-            return base.Visit(node);
+            try
+            {
+                var user = (await _repository.Get(x => x.Id == request.UserId, includeProperties: "UsersForum")).FirstOrDefault();
+
+                if (user is null)
+                    throw new ApiForumException("El usuario no existe.");
+                else
+                {
+                    var repo = _unitOfWorkForum.GetRepository<INotificacionRepository>();
+                    var notification = (await repo.Get(x => x.IDNotificacion == request.CodeNotification && x.IDUsuario == request.UserId)).FirstOrDefault();
+                    if (notification is null)
+                        return false;
+                    else
+                    {
+                        notification.Leida = true;
+                        await repo.Update(notification);
+                        return await _unitOfWorkForum.SaveChangesAsync() > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

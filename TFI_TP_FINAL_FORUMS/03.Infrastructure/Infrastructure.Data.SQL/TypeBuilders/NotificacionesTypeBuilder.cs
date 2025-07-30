@@ -18,7 +18,6 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(p => p.Mensaje).IsRequired().HasMaxLength(5000);
             builder.Property(p => p.FechaNotificacion).IsRequired();
             builder.Property(p => p.Leida).IsRequired();
-            builder.Ignore(p => p.CreateDate);
 
             builder.ToTable("Notificaciones");
         }

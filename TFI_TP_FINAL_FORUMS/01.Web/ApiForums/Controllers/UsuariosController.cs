@@ -2,6 +2,8 @@
 using Core.Contracts.Services;
 using Core.Domain.Exceptions.BaseException;
 using Core.Domain.GenericEntityClass;
+using Core.Domain.IdentityModels;
+using Core.Domain.Request;
 using Core.Domain.Response;
 using CrossCutting.Helpers;
 using Microsoft.AspNetCore.Authorization;
@@ -85,17 +87,13 @@ namespace ApiForums.Controllers
                 CreatedDate =  r.Key.FechaCreado,
             });
 
-            var response = _mapper.Map<PaginatedList<UserForumResponse>>(
-                mappedUsers,
+            var response = _mapper.Map<List<UserForumResponse>>(
+                mappedUsers.ToList(),
                 opt => opt.Items["UserId"] = userId
             );
 
-            response.TotalCount = result.Item1.TotalCount;
-            response.TotalPages = result.Item1.PageCount;
-            response.PageCount = pageCount;
-            response.PageIndex = pageIndex;
-
-            return Ok(response);
+            PaginatedList<UserForumResponse> paginatedList = new(response, pageIndex, pageCount, result.Item1.TotalCount, result.Item1.PageCount);
+            return Ok(paginatedList);
         }
 
 
@@ -107,6 +105,25 @@ namespace ApiForums.Controllers
             var result = await _usuarioService.GetDetailUserAsync(userEmail);
             var userForum = _mapper.Map<DetailsUserForumResponse>(result);
             return Ok(userForum);
+        }
+
+        [HttpGet]
+        [Route("ObtenerNotificacionesForo")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetNotificationForum([FromQuery] string userId)
+        {
+            var result = await _usuarioService.GetNotificationsAsync(userId);
+            var userForum = _mapper.Map<List<NotificationsResponse>>(result);
+            return Ok(userForum);
+        }
+
+        [HttpPost]
+        [Route("MarcarNotificacionleida")]
+        public async Task<IActionResult> MarkNotificationAsRead([FromBody] MarkNotificationAsReadRequest request)
+        {
+            var result = await _usuarioService.MarkNotificationAsReadAsync(request);
+            var successfulResponse = _mapper.Map<SuccessfulResponse>(result);
+            return Ok(successfulResponse);
         }
     }
 }

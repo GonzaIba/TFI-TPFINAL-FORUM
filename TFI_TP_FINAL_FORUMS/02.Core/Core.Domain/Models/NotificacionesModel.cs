@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Models
 {
-    public class NotificacionesModel : GenericEntity
+    public class NotificacionesModel
     {
         public int IDNotificacion { get; set; }
         public string IDUsuario { get; set; }

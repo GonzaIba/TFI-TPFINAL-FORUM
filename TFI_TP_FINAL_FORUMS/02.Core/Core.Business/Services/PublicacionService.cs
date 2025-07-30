@@ -30,12 +30,15 @@ namespace Core.Business.Services
         private readonly IRespuestaRepository _respuestaRepository;
         private readonly IUsersRepository _usersRepository;
         private readonly IPublisherPublication _publicationPublisher;
+        private readonly IPublisherNotification _publisherNotification;
+
         public PublicacionService(
             IUnitOfWorkForum unitOfWorkForum,
             IUnitOfWorkGateway unitOfWorkGateway,
             IUsersService usersService,
             ITextoPrediccionRepositoryML textoPrediccionRepositoryML,
-            IPublisherPublication publicationPublisher
+            IPublisherPublication publicationPublisher,
+            IPublisherNotification publisherNotification
         )
         : base(unitOfWorkForum, unitOfWorkForum.GetRepository<IPublicacionRepository>())
         {
@@ -49,6 +52,7 @@ namespace Core.Business.Services
             _respuestaRepository = _unitOfWork.GetRepository<IRespuestaRepository>();
             _textoPrediccionRepository = _unitOfWork.GetRepository<ITextoPrediccionRepository>();
             _publicationPublisher = publicationPublisher;
+            _publisherNotification = publisherNotification;
         }
 
         public async Task<bool> CreatePublication(CreatePublicationRequest request)
@@ -179,14 +183,79 @@ namespace Core.Business.Services
                     //publication.FechaCierre = DateTime.Now.AddDays(7); // Asignar fecha de cierre 7 días después de la respuesta
                     await _repository.Update(publication);
                 }
-                await _unitOfWork.SaveChangesAsync();
                 respuesta.Usuario = user; // Asignar el usuario a la respuesta
+
+                if(request.UserId != publication.IDUsuario)
+                {
+                    NotificacionesModel notificacionesModel = new NotificacionesModel
+                    {
+                        Mensaje = $"El usuario {user.UserName} ha respondido a tu publicación {publication.IDPublicacion}.",
+                        IDUsuario = publication.IDUsuario, // Le notificamos al autor de la publicación
+                        FechaNotificacion = DateTime.Now,
+                        Leida = false
+                    };
+                    await _unitOfWork.GetRepository<INotificacionRepository>().Insert(notificacionesModel);
+                    await _publisherNotification.AddNotification(
+                        notificacionesModel.IDNotificacion, 
+                        notificacionesModel.IDUsuario, 
+                        notificacionesModel.Mensaje, 
+                        notificacionesModel.FechaNotificacion,
+                        notificacionesModel.Leida
+                    );
+                }
+                await _unitOfWork.SaveChangesAsync();
+
                 //await _publicationPublisher.PublishAddAnswerAsync(respuesta);
                 return respuesta;
             }
             catch (Exception)
             {
                 throw new ApiForumException("Error al agregar la respuesta a la publicación.");
+            }
+        }
+
+        public async Task<bool> DeleteAnswerByUser(DeleteAnswerRequest request) //Aclaramos byUser porque puede un admin forzar un delete de publication.
+        {
+            try
+            {
+                var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, includeProperties: "Respuestas")).FirstOrDefault();
+                if (publication == null)
+                    throw new PublicationNotFoundException();
+
+                var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode)).FirstOrDefault();
+
+                if (answer == null || answer?.RespuestaCorrecta == true || TimeHelper.IsExpired(TimeSpan.FromHours(1), answer?.FechaCreacion ?? DateTime.MinValue))
+                    throw new CantDeleteAnswerException();
+
+                var notifRepo = _unitOfWork.GetRepository<INotificacionRepository>();
+
+                //await _respuestaRepository.Delete(answer);
+                if (publication.Respuestas.Count == 1)
+                {
+                    publication.Respondida = false;
+                    await _repository.Update(publication);
+                }
+
+                if (publication.IDUsuario != request.UserId)
+                {
+                    var notificationModel = (await notifRepo.Get(x => x.IDUsuario == publication.IDUsuario && x.Mensaje.Contains($"ha respondido a tu publicación"))).LastOrDefault();
+                    if (notificationModel != null)
+                    {
+                        await notifRepo.Delete(notificationModel);
+                        await _publisherNotification.RemoveNotification(notificationModel.IDNotificacion, notificationModel.IDUsuario);
+                    }
+                }
+
+                answer.Active = false;
+                await _respuestaRepository.Update(answer);
+                await _unitOfWork.SaveChangesAsync();
+                await _publicationPublisher.PublishDeleteAnswerAsync(publication.IDPublicacion, answer.IDRespuesta, request.ConnectionId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
             }
         }
 
@@ -502,62 +571,79 @@ namespace Core.Business.Services
 
         public async Task<AnswerPublicationVoteResponse> UserPublicationVote(PublicationVoteRequest request)
         {
-            try
+            var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, includeProperties: "PublicacionesVotos")).FirstOrDefault();
+            if (publication == null)
+                return new AnswerPublicationVoteResponse(false, false);
+
+            var vote = (await _publicacionVotoRepository.Get(x => x.IDPublicacion == request.CodePublication && x.IDUsuario == request.UserId)).FirstOrDefault();
+            var notifRepo = _unitOfWork.GetRepository<INotificacionRepository>();
+
+            // Crear nuevo voto si no existe
+            if (vote == null)
             {
-                var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, includeProperties: "PublicacionesVotos")).FirstOrDefault();
-                if (publication == null)
-                    return new AnswerPublicationVoteResponse(false, false);
-
-                var vote = (await _publicacionVotoRepository.Get(x => x.IDPublicacion == request.CodePublication && x.IDUsuario == request.UserId)).FirstOrDefault();
-
-                // Crear nuevo voto si no existe
-                if (vote == null)
+                var newVote = new PublicacionVotoModel
                 {
-                    var newVote = new PublicacionVotoModel
-                    {
-                        IDPublicacion = request.CodePublication,
-                        IDUsuario = request.UserId,
-                        Positivo = request.IsPositive,
-                        CreateDate = DateTime.UtcNow
-                    };
+                    IDPublicacion = request.CodePublication,
+                    IDUsuario = request.UserId,
+                    Positivo = request.IsPositive,
+                    CreateDate = DateTime.UtcNow
+                };
 
-                    await _publicacionVotoRepository.Insert(newVote);
-                    publication.Recompensa += request.IsPositive ? 10 : -10;
+                await _publicacionVotoRepository.Insert(newVote);
+                publication.Recompensa += request.IsPositive ? 10 : -10;
+
+                var userCreator = (await _usersRepository.Get(x => x.Id == publication.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
+
+                NotificacionesModel notificacionesModel = new();
+                notificacionesModel.Mensaje = $"El usuario {userCreator?.Nombre ?? "Desconocido"} ha votado tu publicación  como {(request.IsPositive ? "positivo" : "negativo")}.";
+                notificacionesModel.IDUsuario = publication.IDUsuario; // Asignar al usuario de la publicación
+                notificacionesModel.FechaNotificacion = DateTime.Now;
+                notificacionesModel.Leida = false;
+                await notifRepo.Insert(notificacionesModel);
+                await _publisherNotification.AddNotification(
+                    notificacionesModel.IDNotificacion, 
+                    notificacionesModel.IDUsuario, 
+                    notificacionesModel.Mensaje, 
+                    notificacionesModel.FechaNotificacion, 
+                    notificacionesModel.Leida
+                );
+            }
+            else
+            {
+                // Verificar si ya expiró el voto
+                if (DateTime.UtcNow - vote.CreateDate > TimeSpan.FromMinutes(5))
+                    throw new PublicationVoteExpiredException();
+
+                // Si quiere deshacer el voto (mismo valor)
+                if (vote.Positivo == request.IsPositive)
+                {
+                    await _publicacionVotoRepository.Delete(vote);
+                    publication.Recompensa -= request.IsPositive ? 10 : -10;
+                    var notificationModel = (await notifRepo.Get(x => x.IDUsuario == publication.IDUsuario && x.Mensaje.Contains($"ha votado tu publicación"))).LastOrDefault();
+                    if (notificationModel != null)
+                    {
+                        await notifRepo.Delete(notificationModel);
+                        await _publisherNotification.RemoveNotification(notificationModel.IDNotificacion, notificationModel.IDUsuario);
+                    }
                 }
                 else
                 {
-                    // Verificar si ya expiró el voto
-                    if (DateTime.UtcNow - vote.CreateDate > TimeSpan.FromMinutes(5))
-                        throw new PublicationVoteExpiredException();
-
-                    // Si quiere deshacer el voto (mismo valor)
-                    if (vote.Positivo == request.IsPositive)
-                    {
-                        await _publicacionVotoRepository.Delete(vote);
-                        publication.Recompensa -= request.IsPositive ? 10 : -10;
-                    }
-                    else
-                    {
-                        // Cambió de positivo a negativo o viceversa
-                        vote.Positivo = request.IsPositive;
-                        vote.CreateDate = DateTime.UtcNow;
-                        publication.Recompensa += request.IsPositive ? 20 : -20;
-                    }
+                    // Cambió de positivo a negativo o viceversa
+                    vote.Positivo = request.IsPositive;
+                    vote.CreateDate = DateTime.UtcNow;
+                    publication.Recompensa += request.IsPositive ? 20 : -20;
                 }
+            }
 
-                await _repository.Update(publication);
-                await _unitOfWork.SaveChangesAsync();
-                // Cantidad de votos positivos - votos negativos = eso vamos a mandar
-                var votosPositivos = publication.PublicacionesVotos.Count(x=> x.Positivo);
-                var votosNegativos = publication.PublicacionesVotos.Count(x => !x.Positivo);
-                int votos = votosPositivos - votosNegativos;
-                await _publicationPublisher.PublishVotePublicationChangedAsync(publication.IDPublicacion, votos, request.ConnectionId);
-                return new AnswerPublicationVoteResponse(true, false);
-            }
-            catch (Exception)
-            {
-                return new AnswerPublicationVoteResponse(false, false);
-            }
+            await _repository.Update(publication);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Cantidad de votos positivos - votos negativos = eso vamos a mandar
+            var votosPositivos = publication.PublicacionesVotos.Count(x=> x.Positivo);
+            var votosNegativos = publication.PublicacionesVotos.Count(x => !x.Positivo);
+            int votos = votosPositivos - votosNegativos;
+            await _publicationPublisher.PublishVotePublicationChangedAsync(publication.IDPublicacion, votos, request.ConnectionId);
+            return new AnswerPublicationVoteResponse(true, false);
         }
 
 
@@ -574,6 +660,8 @@ namespace Core.Business.Services
             var vote = (await _respuestaVotoRepository.Get(
                 x => x.IDRespuesta == request.AnswerCode && x.IDUsuario == request.UserId)).FirstOrDefault();
 
+            var notifRepo = _unitOfWork.GetRepository<INotificacionRepository>();
+
             if (vote == null)
             {
                 var newVote = new RespuestaVotoModel
@@ -585,6 +673,24 @@ namespace Core.Business.Services
                 };
 
                 await _respuestaVotoRepository.Insert(newVote);
+
+                var userCreator = (await _usersRepository.Get(x => x.Id == answer.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
+
+                NotificacionesModel notificacionesModel = new NotificacionesModel
+                {
+                    Mensaje = $"El usuario {userCreator?.Nombre ?? "Desconocido"} ha votado tu respuesta como {(request.IsPositive ? "positivo" : "negativo")}",
+                    IDUsuario = answer.IDUsuario, // Asignar al usuario de la respuesta
+                    FechaNotificacion = DateTime.Now,
+                    Leida = false
+                };
+                await notifRepo.Insert(notificacionesModel);
+                await _publisherNotification.AddNotification(
+                    notificacionesModel.IDNotificacion,
+                    notificacionesModel.IDUsuario,
+                    notificacionesModel.Mensaje,
+                    notificacionesModel.FechaNotificacion,
+                    notificacionesModel.Leida
+                );
             }
             else
             {
@@ -592,7 +698,15 @@ namespace Core.Business.Services
                     throw new AnswerVoteExpiredException();
 
                 if (vote.Positivo == request.IsPositive)
+                {
                     await _respuestaVotoRepository.Delete(vote);
+                    var notificationModel = (await notifRepo.Get(x => x.IDUsuario == answer.IDUsuario && x.Mensaje.Contains($"ha votado tu respuesta"))).LastOrDefault();
+                    if (notificationModel != null)
+                    {
+                        await notifRepo.Delete(notificationModel);
+                        await _publisherNotification.RemoveNotification(notificationModel.IDNotificacion, notificationModel.IDUsuario);
+                    }
+                }
                 else
                 {
                     vote.Positivo = request.IsPositive;
@@ -607,6 +721,7 @@ namespace Core.Business.Services
             var votosNegativos = answer.RespuestasVotos.Count(x => !x.Positivo);
             int votos = votosPositivos - votosNegativos;
             await _publicationPublisher.PublishVoteAnswerChangedAsync(publication.IDPublicacion, answer.IDRespuesta, votos, request.ConnectionId);
+
             return new AnswerPublicationVoteResponse(true, false);           
         }
 
@@ -615,40 +730,6 @@ namespace Core.Business.Services
             var repo = _unitOfWork.GetRepository<IPublicacionRepository>();
             return await repo.GetTopPublicationsLastWeek();
         }
-
-        public async Task<bool> DeleteAnswerByUser(DeleteAnswerRequest request)
-        {
-            try
-            {
-                var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, includeProperties: "Respuestas")).FirstOrDefault();
-                if (publication == null)
-                    throw new PublicationNotFoundException();
-
-                var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode)).FirstOrDefault();
-
-                if (answer == null || answer?.RespuestaCorrecta == true || TimeHelper.IsExpired(TimeSpan.FromHours(1), answer?.FechaCreacion ?? DateTime.MinValue))
-                    throw new CantDeleteAnswerException();
-
-                //await _respuestaRepository.Delete(answer);
-                if(publication.Respuestas.Count == 1)
-                {
-                    publication.Respondida = false;
-                    await _repository.Update(publication);
-                }
-
-                answer.Active = false;
-                await _respuestaRepository.Update(answer);
-                await _unitOfWork.SaveChangesAsync();
-                await _publicationPublisher.PublishDeleteAnswerAsync(publication.IDPublicacion, answer.IDRespuesta, request.ConnectionId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-        }
-
 
         #region Helpers
         private string GetLabels(string texto)

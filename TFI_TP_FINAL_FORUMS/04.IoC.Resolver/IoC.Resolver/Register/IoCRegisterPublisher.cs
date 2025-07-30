@@ -16,6 +16,7 @@ namespace IoC.Resolver.Register
             var connect = ConnectionMultiplexer.Connect(redisConnectionString);
             services.AddSingleton<IConnectionMultiplexer>(connect);
             services.AddTransient<IPublisherPublication, PublisherPublication>();
+            services.AddTransient<IPublisherNotification, PublisherNotification>();
             //services.AddTransient<IPublisherBase, PublisherBase>();
             services.AddSingleton<IPublisherBase, RedisPublisher>();
             services.AddTransient<IPublisherCoreBase, PublisherCoreBase>();

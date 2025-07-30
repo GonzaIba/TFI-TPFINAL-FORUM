@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace Core.Domain.Models.GenericEntityClass
 {
     public abstract class GenericEntity : IGenericEntity
-    {       
+    {
         [Column(TypeName = "bit")]
-        public bool Active { get; set; }
+        public bool Active { get; set; } = true;
 
         [Column(TypeName = "datetime2")]
         public DateTime CreateDate { get; set; }

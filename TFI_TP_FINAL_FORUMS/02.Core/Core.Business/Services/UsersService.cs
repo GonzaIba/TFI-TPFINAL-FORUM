@@ -110,11 +110,6 @@ namespace Core.Business.Services
                     combinedSpecification &= newSpec;
                 }
 
-                //var filteredUsers = (await _repository.Get(
-                //    filter: combinedSpecification,
-                //    includeProperties: "UsersForum"
-                //)).ToList();
-
                 var paged = await _repository.GetPagedElements(
                     pageIndex,
                     pageCount,

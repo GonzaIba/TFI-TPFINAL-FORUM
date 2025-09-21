@@ -4,6 +4,7 @@ using Infrastructure.Data.SQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Data.SQL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250804192637_ALTER_TABLE_ETIQUETA_ADD_COLUMN")]
+    partial class ALTER_TABLE_ETIQUETA_ADD_COLUMN
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -466,306 +469,6 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.ToTable("RespuestasVotos", (string)null);
                 });
 
-            modelBuilder.Entity("Core.Domain.Models.SesionAyudaModel", b =>
-                {
-                    b.Property<Guid>("IDSesion")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("Dominio")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("Fin")
-                        .HasColumnType("datetime2(3)");
-
-                    b.Property<int>("IDReserva")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Inicio")
-                        .HasColumnType("datetime2(3)");
-
-                    b.Property<string>("NombreSala")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("IDSesion");
-
-                    b.HasIndex("IDReserva")
-                        .IsUnique()
-                        .HasDatabaseName("IX_SesionAyuda_Reserva");
-
-                    b.HasIndex("Dominio", "NombreSala")
-                        .IsUnique()
-                        .HasDatabaseName("UQ_SesionAyuda_Sala");
-
-                    b.ToTable("SesionAyuda", (string)null);
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaDisponibilidadModel", b =>
-                {
-                    b.Property<int>("IDDisponibilidad")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDDisponibilidad"));
-
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<byte>("Estado")
-                        .HasColumnType("tinyint");
-
-                    b.Property<DateTime>("Fin")
-                        .HasColumnType("datetime2(3)");
-
-                    b.Property<int>("IDSolicitudAyuda")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Inicio")
-                        .HasColumnType("datetime2(3)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("IDDisponibilidad");
-
-                    b.HasIndex("IDSolicitudAyuda")
-                        .HasDatabaseName("IX_SAD_Solicitud");
-
-                    b.HasIndex("Estado", "Inicio")
-                        .HasDatabaseName("IX_SAD_EstadoTiempo");
-
-                    b.ToTable("SolicitudAyudaDisponibilidad", (string)null);
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaEstadoModel", b =>
-                {
-                    b.Property<int>("IDEstado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDEstado"));
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("IDEstado");
-
-                    b.HasIndex("Estado")
-                        .IsUnique()
-                        .HasDatabaseName("UQ_SolicitudAyudaEstado_Estado");
-
-                    b.ToTable("SolicitudAyudaEstado", (string)null);
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaEtiquetasModel", b =>
-                {
-                    b.Property<int>("IDSolicitudAyudaEtiquetas")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDSolicitudAyudaEtiquetas"));
-
-                    b.Property<int>("IDSolicitudAyuda")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IDEtiqueta")
-                        .HasColumnType("int");
-
-                    b.HasKey("IDSolicitudAyudaEtiquetas", "IDSolicitudAyuda", "IDEtiqueta");
-
-                    b.HasIndex("IDEtiqueta");
-
-                    b.HasIndex("IDSolicitudAyuda", "IDEtiqueta")
-                        .IsUnique()
-                        .HasDatabaseName("UX_SolicitudAyudaEtiquetas");
-
-                    b.ToTable("SolicitudAyudaEtiquetas", (string)null);
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaHistorialModel", b =>
-                {
-                    b.Property<int>("IDHistorial")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDHistorial"));
-
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2(3)")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<byte?>("EstadoAnterior")
-                        .HasColumnType("tinyint");
-
-                    b.Property<byte>("EstadoNuevo")
-                        .HasColumnType("tinyint");
-
-                    b.Property<int>("IDSolicitudAyuda")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Motivo")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("UserIdAccion")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("IDHistorial");
-
-                    b.HasIndex("IDSolicitudAyuda", "CreateDate")
-                        .HasDatabaseName("IX_SAH_Solicitud");
-
-                    b.ToTable("SolicitudAyudaHistorial", (string)null);
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaModel", b =>
-                {
-                    b.Property<int>("IDSolicitudAyuda")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDSolicitudAyuda"));
-
-                    b.Property<bool>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("Descripcion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("FechaVencimiento")
-                        .HasColumnType("datetime2(3)");
-
-                    b.Property<int>("IDEstado")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IDUsuarioSolicitante")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("IncrementoPorHora")
-                        .HasPrecision(6, 4)
-                        .HasColumnType("decimal(6,4)");
-
-                    b.Property<string>("Lenguaje")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<decimal>("RecompensaBase")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("decimal(12,2)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("nvarchar(400)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte>("Urgencia")
-                        .HasColumnType("tinyint");
-
-                    b.HasKey("IDSolicitudAyuda");
-
-                    b.HasIndex("FechaVencimiento")
-                        .HasDatabaseName("IX_SA_Vencimiento");
-
-                    b.HasIndex("IDEstado")
-                        .HasDatabaseName("IX_SA_IDEstado");
-
-                    b.HasIndex("IDUsuarioSolicitante")
-                        .HasDatabaseName("IX_SA_Solicitante");
-
-                    b.ToTable("SolicitudAyuda", (string)null);
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaReservaModel", b =>
-                {
-                    b.Property<int>("IDReserva")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDReserva"));
-
-                    b.Property<bool>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<byte>("Estado")
-                        .HasColumnType("tinyint");
-
-                    b.Property<int>("IDDisponibilidad")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IDUsuarioAyudante")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdateDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("IDReserva");
-
-                    b.HasIndex("IDDisponibilidad")
-                        .IsUnique()
-                        .HasDatabaseName("UX_SolRes_Disponibilidad_Activa")
-                        .HasFilter("([Estado] IN (0,1,2))");
-
-                    b.HasIndex("IDUsuarioAyudante", "Estado")
-                        .HasDatabaseName("IX_SolRes_Ayudante");
-
-                    b.ToTable("SolicitudAyudaReserva", (string)null);
-                });
-
             modelBuilder.Entity("Core.Domain.Models.TextoPrediccionModel", b =>
                 {
                     b.Property<int>("IDTextoPrediccion")
@@ -928,80 +631,6 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("Respuesta");
                 });
 
-            modelBuilder.Entity("Core.Domain.Models.SesionAyudaModel", b =>
-                {
-                    b.HasOne("Core.Domain.Models.SolicitudAyudaReservaModel", "Reserva")
-                        .WithOne("Sesion")
-                        .HasForeignKey("Core.Domain.Models.SesionAyudaModel", "IDReserva")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Reserva");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaDisponibilidadModel", b =>
-                {
-                    b.HasOne("Core.Domain.Models.SolicitudAyudaModel", "Solicitud")
-                        .WithMany("Disponibilidades")
-                        .HasForeignKey("IDSolicitudAyuda")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Solicitud");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaEtiquetasModel", b =>
-                {
-                    b.HasOne("Core.Domain.Models.EtiquetaModel", "Etiqueta")
-                        .WithMany("SolicitudAyudaEtiquetas")
-                        .HasForeignKey("IDEtiqueta")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Core.Domain.Models.SolicitudAyudaModel", "Solicitud")
-                        .WithMany("SolicitudAyudaEtiquetas")
-                        .HasForeignKey("IDSolicitudAyuda")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Etiqueta");
-
-                    b.Navigation("Solicitud");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaHistorialModel", b =>
-                {
-                    b.HasOne("Core.Domain.Models.SolicitudAyudaModel", "Solicitud")
-                        .WithMany("Historial")
-                        .HasForeignKey("IDSolicitudAyuda")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Solicitud");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaModel", b =>
-                {
-                    b.HasOne("Core.Domain.Models.SolicitudAyudaEstadoModel", "SolicitudAyudaEstado")
-                        .WithMany("Solicitudes")
-                        .HasForeignKey("IDEstado")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("SolicitudAyudaEstado");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaReservaModel", b =>
-                {
-                    b.HasOne("Core.Domain.Models.SolicitudAyudaDisponibilidadModel", "Disponibilidad")
-                        .WithMany("Reservas")
-                        .HasForeignKey("IDDisponibilidad")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Disponibilidad");
-                });
-
             modelBuilder.Entity("Core.Domain.Models.UsuarioMedallaModel", b =>
                 {
                     b.HasOne("Core.Domain.Models.MedallaModel", "Medalla")
@@ -1016,8 +645,6 @@ namespace Infrastructure.Data.SQL.Migrations
             modelBuilder.Entity("Core.Domain.Models.EtiquetaModel", b =>
                 {
                     b.Navigation("EtiquetasPublicaciones");
-
-                    b.Navigation("SolicitudAyudaEtiquetas");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.MedallaModel", b =>
@@ -1048,30 +675,6 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("Archivos");
 
                     b.Navigation("RespuestasVotos");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaDisponibilidadModel", b =>
-                {
-                    b.Navigation("Reservas");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaEstadoModel", b =>
-                {
-                    b.Navigation("Solicitudes");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaModel", b =>
-                {
-                    b.Navigation("Disponibilidades");
-
-                    b.Navigation("Historial");
-
-                    b.Navigation("SolicitudAyudaEtiquetas");
-                });
-
-            modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaReservaModel", b =>
-                {
-                    b.Navigation("Sesion");
                 });
 #pragma warning restore 612, 618
         }

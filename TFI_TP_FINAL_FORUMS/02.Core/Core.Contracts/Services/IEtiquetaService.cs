@@ -1,15 +1,13 @@
-﻿using Core.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Domain.Enum;
+using Core.Domain.GenericEntityClass;
+using Core.Domain.Models;
 
 namespace Core.Contracts.Services
 {
     public interface IEtiquetaService : IGenericService<EtiquetaModel>
     {
-        Task<IEnumerable<EtiquetaModel>> ObtenerEtiquetasDetalle();
-        Task<bool> CrearEtiqueta(string nombreEtiqueta);
+        Task<PaginatedList<EtiquetaModel>> GetLabelsByName(string rawqQuery, int pageIndex, int pageCount);
+        Task<PaginatedList<EtiquetaModel>> GetLabelsByFilter(LabelFiltersEnum filter, int pageIndex, int pageCount);     
+        Task<bool> CreateLabel(string nombreEtiqueta);
     }
 }

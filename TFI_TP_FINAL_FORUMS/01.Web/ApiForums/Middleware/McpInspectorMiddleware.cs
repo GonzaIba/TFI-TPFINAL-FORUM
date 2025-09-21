@@ -27,6 +27,5 @@ namespace ApiForums.Middleware
 
             await _next(context);
         }
-
     }
 }

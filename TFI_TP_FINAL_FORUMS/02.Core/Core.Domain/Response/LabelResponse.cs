@@ -8,13 +8,10 @@ namespace Core.Domain.Response
 {
     public class LabelResponse
     {
-        public LabelResponse()
-        {
-            EtiquetasPublicaciones = new HashSet<LabelsPublicationsResponse>();
-        }
-        public int CodigoEtiqueta { get; set; }
-        public string NombreEtiqueta { get; set; }
-
-        public IEnumerable<LabelsPublicationsResponse> EtiquetasPublicaciones { get; set; }
+        public int CodeLabel { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int CountThisWeek { get; set; }
+        public int CountTotal {  get; set; }
     }
 }

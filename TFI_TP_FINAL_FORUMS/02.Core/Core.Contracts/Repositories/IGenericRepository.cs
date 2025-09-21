@@ -1,4 +1,5 @@
 ﻿using Core.Domain.GenericEntityClass;
+using Core.Domain.Operators;
 using Core.Domain.Specification;
 using System.Linq.Expressions;
 
@@ -23,6 +24,13 @@ namespace Core.Contracts.Repositories
         public Task Delete(IEnumerable<T> entities);
 
         public Task CancelChanges(T entity);
+
+        public IQueryable<T> Query(
+            Expression<Func<T, bool>>? filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            string includeProperties = "",
+            bool ignoreQueryFilters = false,
+            bool tracking = true);
 
         /// <summary>
         /// Devuelve una lista acorde al filtro y orden especificados. La ejecución del
@@ -76,6 +84,14 @@ namespace Core.Contracts.Repositories
             int pageIndex, int pageCount,
             Expression<Func<T, S>> orderByExpression, bool ascending,
             Specification<T> filter = null, string includeProperties = "", bool tracking = false);
+
+        Task<PaginatedList<T>> GetPagedElements(
+            int pageIndex, int pageCount,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy,
+            Specification<T> filter = null,
+            string includeProperties = null,
+            bool tracking = false);
+
 
         public IQueryable<T> Table { get; }
 

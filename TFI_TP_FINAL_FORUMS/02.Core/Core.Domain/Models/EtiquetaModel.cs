@@ -1,10 +1,4 @@
 ﻿using Core.Domain.Models.GenericEntityClass;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Domain.Models
 {
@@ -14,11 +8,12 @@ namespace Core.Domain.Models
         {
             EtiquetasPublicaciones = new HashSet<EtiquetaPublicacionModel>();
         }
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IDEtiqueta { get; set; }
         public string NombreEtiqueta { get; set; }
+        public string DescripcionEtiqueta { get; set; }
 
         // Propiedades de navegación
         public ICollection<EtiquetaPublicacionModel> EtiquetasPublicaciones { get; set; }
+        public ICollection<SolicitudAyudaEtiquetasModel> SolicitudAyudaEtiquetas { get; set; }
     }
 }

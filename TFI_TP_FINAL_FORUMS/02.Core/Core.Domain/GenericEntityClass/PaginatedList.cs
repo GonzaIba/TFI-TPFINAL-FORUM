@@ -24,6 +24,8 @@ namespace Core.Domain.GenericEntityClass
         public int PageCount { get; set; }
         public int TotalCount { get; set; }
         public int TotalPages { get; set; }
+        public bool HasPreviousPage { get; set; }
+        public bool HasNextPage { get; set; }
         public IEnumerable<T> List { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using Core.Domain.GenericEntityClass;
 using Core.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Data.SQL.Repositories
@@ -122,6 +123,31 @@ namespace Infrastructure.Data.SQL.Repositories
                 await this.Delete(entity);
             }
         }
+
+        public IQueryable<T> Query(
+            Expression<Func<T, bool>>? filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            string includeProperties = "",
+            bool ignoreQueryFilters = false,
+            bool tracking = true)
+        {
+            IQueryable<T> query = tracking ? this.Entities : this.Entities.AsNoTracking();
+
+            if (!tracking) query = query.AsNoTracking();
+            if (ignoreQueryFilters) query = query.IgnoreQueryFilters();
+            if (filter is not null) query = query.Where(filter);
+
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var includeProp in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    query = query.Include(includeProp);
+            }
+
+            if (orderBy is not null) query = orderBy(query);
+
+            return query;
+        }
+
 
         public virtual async Task<IEnumerable<TResult>> GetWithGroupBy<TResult>(
             Expression<Func<T, bool>> filter = null,
@@ -300,6 +326,8 @@ namespace Infrastructure.Data.SQL.Repositories
                 PageCount = pageCount,
                 TotalCount = query.Count(),
                 TotalPages = totalPages == 0 ? 1 : totalPages,
+                HasPreviousPage = pageIndex > 1,
+                HasNextPage = pageIndex < totalPages,
                 List = (ascending)
                             ?
                         query.OrderBy(orderByExpression)
@@ -311,6 +339,55 @@ namespace Infrastructure.Data.SQL.Repositories
                             .Take(pageCount)
             };
         }
+
+        public virtual async Task<PaginatedList<T>> GetPagedElements(
+            int pageIndex, int pageCount,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy,
+            Specification<T> filter = null, string includeProperties = null,
+            bool tracking = false)
+        {
+            if (pageCount <= 0) throw new ArgumentException(nameof(pageCount));
+            if (orderBy is null) throw new ArgumentNullException(nameof(orderBy));
+            if (pageIndex <= 0) pageIndex = 1; // 1-based
+
+            IQueryable<T> query = tracking ? this.Entities : this.Entities.AsNoTracking();
+
+            if (filter != null)
+                query = query.Where(filter.ToExpression());
+
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var includeProperty in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    query = query.Include(includeProperty.Trim());
+                query = query.AsSplitQuery();
+            }
+
+            var totalCount = await query.CountAsync().ConfigureAwait(false);
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageCount));
+
+            // (opcional) clamp a rango válido para evitar páginas vacías involuntarias
+            // pageIndex = Math.Min(pageIndex, totalPages);
+
+            var ordered = orderBy(query);
+
+            var list = await ordered
+                .Skip((pageIndex - 1) * pageCount)
+                .Take(pageCount)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            return new PaginatedList<T>
+            {
+                PageIndex = pageIndex,
+                PageCount = pageCount,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                List = list,
+                HasPreviousPage = pageIndex > 1,
+                HasNextPage = pageIndex < totalPages
+            };
+        }
+
 
         public virtual async Task CancelChanges(T entity)
         {
@@ -343,9 +420,6 @@ namespace Infrastructure.Data.SQL.Repositories
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
         #endregion Methods
-
-
     }
 }

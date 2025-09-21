@@ -78,6 +78,5 @@ namespace ApiForums.Tools
             var result = await chat.GetResponseAsync(mensajes, new ChatOptions { MaxOutputTokens = 200, Temperature = 0.3f }, default);
             return result?.Text ?? "No se pudo generar el resumen del debate.";
         }
-
     }
 }

@@ -189,7 +189,7 @@ namespace Core.Business.Services
                 {
                     NotificacionesModel notificacionesModel = new NotificacionesModel
                     {
-                        Mensaje = $"El usuario {user.UserName} ha respondido a tu publicación {publication.IDPublicacion}.",
+                        Mensaje = $"El usuario {(user is null ? "Desconocido" : (user.Nombre + " " + user.Apellido))} ha respondido a tu publicación {publication.IDPublicacion}.",
                         IDUsuario = publication.IDUsuario, // Le notificamos al autor de la publicación
                         FechaNotificacion = DateTime.Now,
                         Leida = false
@@ -595,7 +595,7 @@ namespace Core.Business.Services
                 var userCreator = (await _usersRepository.Get(x => x.Id == publication.IDUsuario, includeProperties: "UsersForum", tracking: false)).FirstOrDefault();
 
                 NotificacionesModel notificacionesModel = new();
-                notificacionesModel.Mensaje = $"El usuario {userCreator?.Nombre ?? "Desconocido"} ha votado tu publicación  como {(request.IsPositive ? "positivo" : "negativo")}.";
+                notificacionesModel.Mensaje = $"El usuario {(userCreator is null ? "Desconocido" : (userCreator.Nombre + " " + userCreator.Apellido))} ha votado tu publicación  como {(request.IsPositive ? "positivo" : "negativo")}.";
                 notificacionesModel.IDUsuario = publication.IDUsuario; // Asignar al usuario de la publicación
                 notificacionesModel.FechaNotificacion = DateTime.Now;
                 notificacionesModel.Leida = false;
@@ -678,7 +678,7 @@ namespace Core.Business.Services
 
                 NotificacionesModel notificacionesModel = new NotificacionesModel
                 {
-                    Mensaje = $"El usuario {userCreator?.Nombre ?? "Desconocido"} ha votado tu respuesta como {(request.IsPositive ? "positivo" : "negativo")}",
+                    Mensaje = $"El usuario {(userCreator is null ? "Desconocido" : (userCreator.Nombre + " " + userCreator.Apellido))} ha votado tu respuesta como {(request.IsPositive ? "positivo" : "negativo")}",
                     IDUsuario = answer.IDUsuario, // Asignar al usuario de la respuesta
                     FechaNotificacion = DateTime.Now,
                     Leida = false

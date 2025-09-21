@@ -21,6 +21,8 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             //builder.Property(e => e.IDEtiqueta).UseHiLo();
 
             builder.Property(e => e.NombreEtiqueta).IsRequired().HasMaxLength(100);
+            builder.Property(e => e.DescripcionEtiqueta).IsRequired().HasMaxLength(4000);
+
             builder.ToTable("Etiquetas");
         }
     }

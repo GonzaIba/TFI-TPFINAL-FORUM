@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core.Domain.Enum
+{
+    public enum LabelFiltersEnum
+    {
+        MostPopular = 1,
+        Latest,
+        Alphabetical_AZ,
+        Alphabetical_ZA
+    }
+}

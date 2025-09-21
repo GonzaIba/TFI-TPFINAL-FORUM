@@ -18,15 +18,16 @@ namespace ApiForums.Mapping
                 // Indicas que la propiedad List se mapea de sí misma (AutoMapper infiere el tipo interno)
                 .ForMember("List", opt => opt.MapFrom("List"));
 
+            CreateMap(typeof(CursorPage<>), typeof(CursorPage<>))
+                // Indicas que la propiedad List se mapea de sí misma (AutoMapper infiere el tipo interno)
+                .ForMember("Items", opt => opt.MapFrom("Items"));
+
 
             #region Request
             CreateMap<CreatePublicationRequest, PublicacionModel>();
             #endregion
 
             #region Response
-            CreateMap<EtiquetaPublicacionModel, LabelsPublicationsResponse>();
-            CreateMap<LabelResponse, LabelsPublicationsResponse>();
-
             CreateMap<PublicacionModel, PublicationResponse>()
                 .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreacion))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Titulo))
@@ -50,7 +51,11 @@ namespace ApiForums.Mapping
                 .ReverseMap();
 
             CreateMap<EtiquetaModel, LabelResponse>()
-                .ForMember(dest => dest.CodigoEtiqueta, opt => opt.MapFrom(src => src.IDEtiqueta))
+                .ForMember(dest => dest.CodeLabel, opt => opt.MapFrom(src => src.IDEtiqueta))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.NombreEtiqueta))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.DescripcionEtiqueta))
+                .ForMember(dest => dest.CountThisWeek, opt => opt.MapFrom(src => src.EtiquetasPublicaciones.Select(x=> x.Publicacion).Where(y=> y.FechaCreacion.ToUniversalTime() >= DateTime.UtcNow.AddDays(-7)).Count()))
+                .ForMember(dest => dest.CountTotal, opt => opt.MapFrom(src => src.EtiquetasPublicaciones.Count()))
                 .ReverseMap();
 
             CreateMap<Users, UsersForumPreviewResponse>()
@@ -153,6 +158,29 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.CodeUser, opt => opt.MapFrom(src => src.IDUsuario))
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.FechaNotificacion))
                 .ForMember(dest => dest.CodeNotification, opt => opt.MapFrom(src => src.IDNotificacion));
+
+            CreateMap<SolicitudAyudaModel, RequestHelpResponse>()
+                .ForMember(dest => dest.TitleHelp, opt => opt.MapFrom(src => src.Titulo))
+                .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Descripcion))
+                .ForMember(dest => dest.Labels, opt => opt.MapFrom(src => src.SolicitudAyudaEtiquetas.Select(x => x.Etiqueta.NombreEtiqueta)))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreateDate))
+                .ForMember(dest => dest.Regard, opt => opt.MapFrom(src => src.RecompensaBase))
+                .ForMember(dest => dest.ExpiresAt, opt => opt.MapFrom(src => src.CreateDate.AddHours(48)))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.SolicitudAyudaEstado.Estado))
+                .ForMember(d => d.Languages, o => o.MapFrom(s =>
+                    string.IsNullOrWhiteSpace(s.Lenguaje)
+                    ? new List<string>()
+                    : s.Lenguaje
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => x.Trim())
+                        .Where(x => x.Length > 0)
+                        .ToList()
+                ))
+                .ForMember(dest => dest.UserCreator, opt =>
+                    opt.MapFrom((src, dest, destMember, ctx) =>
+                    ctx.Mapper.Map<UsersForumPreviewResponse>(src.UsuarioSolicitante))
+                )
+                .ReverseMap();
             #endregion
 
             #region Events

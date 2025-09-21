@@ -28,6 +28,14 @@ namespace Infrastructure.Data.SQL.TypeBuilders
                    .IsUnicode(false)
                    .HasMaxLength(50);
 
+            builder.Property(x => x.Options)
+                   .IsRequired(false)
+                   .HasColumnType("nvarchar(1000)");
+
+            builder.HasOne(x => x.FilterType)
+                   .WithMany(z => z.Filters)
+                   .HasForeignKey(f => f.IDFilterType);
+
             builder.Ignore(x => x.UpdateDate);
 
             builder.ToTable("Filter");

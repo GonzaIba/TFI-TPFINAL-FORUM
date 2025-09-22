@@ -155,7 +155,6 @@ namespace ApiForums.Mapping
             CreateMap<NotificacionesModel, NotificationsResponse>()
                 .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Mensaje))
                 .ForMember(dest => dest.Readed, opt => opt.MapFrom(src => src.Leida))
-                .ForMember(dest => dest.CodeUser, opt => opt.MapFrom(src => src.IDUsuario))
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.FechaNotificacion))
                 .ForMember(dest => dest.CodeNotification, opt => opt.MapFrom(src => src.IDNotificacion));
 

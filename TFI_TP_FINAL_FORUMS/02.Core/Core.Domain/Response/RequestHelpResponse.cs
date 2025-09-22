@@ -17,5 +17,11 @@ namespace Core.Domain.Response
         public DateTime CreatedAt { get; set; }
         public decimal Regard { get; set; }
         public DateTime ExpiresAt { get; set; }
+        public RequestHelpTimeSlot TimeSlot { get; set; }
+    }
+
+    public class RequestHelpTimeSlot
+    {
+        public List<DateTime> Slots { get; set; }
     }
 }

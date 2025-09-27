@@ -61,6 +61,12 @@ namespace ApiForums.Controllers
             return Ok(mapped);
         }
 
-
+        [HttpPost("CrearSolicitudAyuda")]
+        public async Task<IActionResult> CreateHelpRequest([FromBody] CreateHelpRequest request)
+        {
+            //Validaciones...
+            var result = await _solicitudAyudaService.CreateHelpRequest(request);
+            return Ok(new SuccessfulResponse(result));
+        }
     }
 }

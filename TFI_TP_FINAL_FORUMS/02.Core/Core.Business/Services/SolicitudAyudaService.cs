@@ -2,17 +2,20 @@
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Enum;
+using Core.Domain.Exceptions.BaseException;
 using Core.Domain.GenericEntityClass;
 using Core.Domain.IdentityModels;
 using Core.Domain.Models;
+using Core.Domain.Request;
 using Core.Domain.Specification;
 using Core.Domain.Specification.Business;
 using CrossCutting.Extensions.Linq;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace Core.Business.Services
 {
-    public class SolicitudAyudaService : GenericService<SolicitudAyudaModel>, ISolicitudAyudaService
+    public partial class SolicitudAyudaService : GenericService<SolicitudAyudaModel>, ISolicitudAyudaService
     {
         private readonly IUsersRepository _usersRepository;
         private readonly IUnitOfWorkForum _unitOfWorkForum;
@@ -62,7 +65,7 @@ namespace Core.Business.Services
 
             var q = _repository.Query(
                 validateAnchor, // condición base (CreateDate<=anchor && Vence>=anchor)
-                includeProperties: "SolicitudAyudaEstado,SolicitudAyudaEtiquetas.Etiqueta",
+                includeProperties: "SolicitudAyudaEstado,SolicitudAyudaEtiquetas.Etiqueta,Disponibilidades",
                 tracking: false
             );
 
@@ -133,7 +136,89 @@ namespace Core.Business.Services
             };
         }
 
+        public async Task<bool> CreateHelpRequest(CreateHelpRequest request)
+        {
+            if (request == null)
+                throw new ApiForumException("Solicitud inválida.");
 
+            if (string.IsNullOrWhiteSpace(request.TitleHelp) || string.IsNullOrWhiteSpace(request.UserId))
+                throw new ApiForumException("Datos insuficientes para crear la solicitud de ayuda.");
+
+            var user = (await _usersRepository.Get(x => x.Id == request.UserId, tracking: false)).FirstOrDefault();
+            if (user == null)
+                throw new ApiForumException("No existe el usuario.");
+
+            var nowUtc = DateTime.UtcNow;
+
+            // Estado inicial: "Activa"; si no existe, lo creamos
+            var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
+            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Activa", tracking: true)).First();
+
+            var solicitud = new SolicitudAyudaModel
+            {
+                Titulo = request.TitleHelp.Trim(),
+                Descripcion = request.Message?.Trim(),
+                IDUsuarioSolicitante = user.Id,
+                CreateDate = nowUtc,
+                IDEstado = estadoActiva.IDEstado,
+                SolicitudAyudaEstado = estadoActiva,
+                Lenguaje = request.Languages != null && request.Languages.Count > 0
+                    ? string.Join(",", request.Languages.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()))
+                    : null,
+                RecompensaBase = 1m,
+                IncrementoPorHora = 0.5m,
+                FechaVencimiento = nowUtc.AddHours(48)
+            };
+
+            // Etiquetas
+            if (request.Labels != null && request.Labels.Count > 0)
+            {
+                var labelNames = request.Labels
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Select(n => n.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                if (labelNames.Count > 0)
+                {
+                    var etiquetaRepo = _unitOfWorkForum.GetRepository<IEtiquetaRepository>();
+                    var etiquetas = (await etiquetaRepo.Get(e => labelNames.Contains(e.NombreEtiqueta), tracking: true)).ToList();
+                    foreach (var et in etiquetas)
+                    {
+                        solicitud.SolicitudAyudaEtiquetas.Add(new SolicitudAyudaEtiquetasModel
+                        {
+                            IDEtiqueta = et.IDEtiqueta
+                        });
+                    }
+                }
+            }
+
+            // Disponibilidades
+            if (request.TimeSlot?.Slots != null && request.TimeSlot.Slots.Count > 0)
+            {
+                foreach (var slot in request.TimeSlot.Slots)
+                {
+                    if (DateTime.TryParse(slot.Start, null, DateTimeStyles.RoundtripKind, out var inicio) &&
+                        DateTime.TryParse(slot.End, null, DateTimeStyles.RoundtripKind, out var fin) &&
+                        fin > inicio)
+                    {
+                        solicitud.Disponibilidades.Add(new SolicitudAyudaDisponibilidadModel
+                        {
+                            Inicio = inicio, //Se queda en UTC
+                            Fin = fin, //Se queda en UTC
+                            Estado = 1
+                        });
+                    }
+                }
+            }
+
+
+            await _repository.Insert(solicitud);
+            return await _unitOfWorkForum.Complete();
+        }
+
+
+        #region Helpers for GetRequestsHelp
         private static string EscapeLike(string input)
         {
             // Escapa comodines especiales de LIKE para evitar falsos positivos
@@ -217,6 +302,6 @@ namespace Core.Business.Services
 
             return q;
         }
-
+        #endregion
     }
 }

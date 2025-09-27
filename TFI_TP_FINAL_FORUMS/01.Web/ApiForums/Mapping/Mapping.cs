@@ -175,6 +175,7 @@ namespace ApiForums.Mapping
                         .Where(x => x.Length > 0)
                         .ToList()
                 ))
+                .ForMember(dest => dest.TimeSlot, opt => opt.MapFrom(src => BuildTimeSlots(src)))
                 .ForMember(dest => dest.UserCreator, opt =>
                     opt.MapFrom((src, dest, destMember, ctx) =>
                     ctx.Mapper.Map<UsersForumPreviewResponse>(src.UsuarioSolicitante))
@@ -228,6 +229,28 @@ namespace ApiForums.Mapping
             }
 
             return iniciales.ToString();
+        }
+
+        private static RequestHelpTimeSlot BuildTimeSlots(SolicitudAyudaModel src)
+        {
+            var now = DateTime.UtcNow;
+            var slotItems = new List<TimeSlotItem>();
+            if (src?.Disponibilidades == null) return new RequestHelpTimeSlot { Slots = slotItems };
+            foreach (var disp in src.Disponibilidades)
+            {
+                if (disp.Estado == 1 && disp.Fin > now)
+                {
+                    var start = disp.Inicio > now ? disp.Inicio : now;
+                    var end = disp.Fin;
+                    var interval = (end - start).TotalMinutes >= 30 ? TimeSpan.FromMinutes(30) : TimeSpan.FromMinutes(15);
+                    for (var dt = start; dt.Add(interval) <= end; dt = dt.Add(interval))
+                    {
+                        var slotEnd = dt.Add(interval) <= end ? dt.Add(interval) : end;
+                        slotItems.Add(new TimeSlotItem { Start = dt, End = slotEnd });
+                    }
+                }
+            }
+            return new RequestHelpTimeSlot { Slots = slotItems };
         }
         #endregion
     }

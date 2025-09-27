@@ -22,6 +22,12 @@ namespace Core.Domain.Response
 
     public class RequestHelpTimeSlot
     {
-        public List<DateTime> Slots { get; set; }
+        public List<TimeSlotItem> Slots { get; set; }
+    }
+
+    public class TimeSlotItem
+    {
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
     }
 }

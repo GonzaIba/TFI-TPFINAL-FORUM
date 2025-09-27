@@ -15,7 +15,7 @@ using System.Globalization;
 
 namespace Core.Business.Services
 {
-    public partial class SolicitudAyudaService : GenericService<SolicitudAyudaModel>, ISolicitudAyudaService
+    public class SolicitudAyudaService : GenericService<SolicitudAyudaModel>, ISolicitudAyudaService
     {
         private readonly IUsersRepository _usersRepository;
         private readonly IUnitOfWorkForum _unitOfWorkForum;

@@ -26,6 +26,6 @@ namespace Core.Domain.Specification.Business
 
         public override Expression<Func<SolicitudAyudaModel, bool>> ToExpression()
             => z => z.CreateDate <= _anchorUtc
-                  && z.FechaVencimiento >= _anchorUtc;
+                  && z.FechaVencimiento >= DateTime.UtcNow;
     }
 }

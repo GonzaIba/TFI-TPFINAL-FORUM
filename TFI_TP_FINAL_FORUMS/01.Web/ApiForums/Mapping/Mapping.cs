@@ -164,7 +164,7 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.Labels, opt => opt.MapFrom(src => src.SolicitudAyudaEtiquetas.Select(x => x.Etiqueta.NombreEtiqueta)))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreateDate))
                 .ForMember(dest => dest.Regard, opt => opt.MapFrom(src => src.RecompensaBase))
-                .ForMember(dest => dest.ExpiresAt, opt => opt.MapFrom(src => src.CreateDate.AddHours(48)))
+                .ForMember(dest => dest.ExpiresAt, opt => opt.MapFrom(src => src.FechaVencimiento))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.SolicitudAyudaEstado.Estado))
                 .ForMember(d => d.Languages, o => o.MapFrom(s =>
                     string.IsNullOrWhiteSpace(s.Lenguaje)

@@ -37,6 +37,7 @@ namespace Infrastructure.Data.SQL
             modelBuilder.Ignore<RefreshToken>();
 
             modelBuilder.Ignore<FilterModel>();
+            modelBuilder.Ignore<FilterTypeModel>();
             modelBuilder.Ignore<GroupModel>();
             modelBuilder.Ignore<GroupFiltersModel>();
             modelBuilder.Ignore<UserFiltersModel>();

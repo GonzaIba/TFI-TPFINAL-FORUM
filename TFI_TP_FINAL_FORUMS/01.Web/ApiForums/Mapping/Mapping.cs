@@ -54,7 +54,7 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.CodeLabel, opt => opt.MapFrom(src => src.IDEtiqueta))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.NombreEtiqueta))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.DescripcionEtiqueta))
-                .ForMember(dest => dest.CountThisWeek, opt => opt.MapFrom(src => src.EtiquetasPublicaciones.Select(x=> x.Publicacion).Where(y=> y.FechaCreacion.ToUniversalTime() >= DateTime.UtcNow.AddDays(-7)).Count()))
+                .ForMember(dest => dest.CountThisWeek, opt => opt.MapFrom(src => src.EtiquetasPublicaciones.Select(x => x.Publicacion).Where(y => y.FechaCreacion.ToUniversalTime() >= DateTime.UtcNow.AddDays(-7)).Count()))
                 .ForMember(dest => dest.CountTotal, opt => opt.MapFrom(src => src.EtiquetasPublicaciones.Count()))
                 .ReverseMap();
 
@@ -68,13 +68,13 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.LastTimeOnline, opt => opt.MapFrom(src => src.UsersForum.LastTimeConnectedForum))
                 .ForMember(dest => dest.Score, opt => opt.Ignore()) // Lo configuraremos después
                 .ReverseMap();
-                //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
+            //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
 
             CreateMap<Users, UserForumResponse>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Nombre))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreado));
-                //.ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)));
+            //.ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)));
 
             CreateMap<Users, DetailsUserForumResponse>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Nombre))
@@ -89,7 +89,7 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.QuantityResponses, opt => opt.MapFrom(src => src.Respuestas.Count()))
                 .ForMember(dest => dest.NumberPostsCreated, opt => opt.MapFrom(src => src.Publicaciones.Count()))
                 .ForMember(dest => dest.Medals, opt => opt.MapFrom(src => src.UsuarioMedallas.Select(x => new Medalla { NameMedal = x.Medalla.NombreMedalla, DateObtained = x.FechaObtenido, Description = x.Medalla.Descripcion, ImageMedal = x.Medalla.ImagenMedalla })));
-                //.ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)))
+            //.ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)))
 
             CreateMap<PublicacionModel, PublicationDetailResponse>()
                 .ForMember(dest => dest.CodePublication, opt => opt.MapFrom(src => src.IDPublicacion))
@@ -118,7 +118,7 @@ namespace ApiForums.Mapping
 
                     return src.IDUsuario == userId;
                 }));
-                ///............
+            ///............
 
             CreateMap<RespuestaModel, AnswerResponse>()
                 .ForMember(dest => dest.CodeAnswer, opt => opt.MapFrom(src => src.IDRespuesta))
@@ -159,6 +159,7 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.CodeNotification, opt => opt.MapFrom(src => src.IDNotificacion));
 
             CreateMap<SolicitudAyudaModel, RequestHelpResponse>()
+                .ForMember(dest => dest.CodeRequestHelp, opt => opt.MapFrom(src => src.IDSolicitudAyuda))
                 .ForMember(dest => dest.TitleHelp, opt => opt.MapFrom(src => src.Titulo))
                 .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Descripcion))
                 .ForMember(dest => dest.Labels, opt => opt.MapFrom(src => src.SolicitudAyudaEtiquetas.Select(x => x.Etiqueta.NombreEtiqueta)))
@@ -181,6 +182,20 @@ namespace ApiForums.Mapping
                     ctx.Mapper.Map<UsersForumPreviewResponse>(src.UsuarioSolicitante))
                 )
                 .ReverseMap();
+
+            // Chat mappings
+            CreateMap<SolicitudAyudaChatMensajeModel, ChatMessageResponse>()
+                .ForMember(d => d.CodeMessage, o => o.MapFrom(s => s.IDMensaje))
+                .ForMember(d => d.CodeChat, o => o.MapFrom(s => s.IDChat))
+                .ForMember(d => d.Message, o => o.MapFrom(s => s.Mensaje))
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreateDate))
+                .ForMember(d => d.Readed, o => o.MapFrom(s => s.LeidoPorUsuarioActual))
+                .ForMember(d => d.SentByMe, o => o.MapFrom((s, d, dm, ctx) =>
+                    {
+                        var userId = ctx.Items.ContainsKey("UserId") ? ctx.Items["UserId"] as string : null;
+                        return !string.IsNullOrWhiteSpace(userId) && s.IDUsuario == userId;
+                    }
+                ));
             #endregion
 
             #region Events

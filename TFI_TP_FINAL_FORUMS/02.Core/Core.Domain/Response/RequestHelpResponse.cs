@@ -9,6 +9,7 @@ namespace Core.Domain.Response
     public class RequestHelpResponse
     {
         public UsersForumPreviewResponse UserCreator { get; set; }
+        public int CodeRequestHelp { get; set; }
         public string TitleHelp { get; set; }
         public string Message { get; set; }
         public string Status { get; set; }

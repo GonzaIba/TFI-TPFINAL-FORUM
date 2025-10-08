@@ -25,7 +25,7 @@ namespace Core.Domain.Response
             public string Text { get; set; } = "";
             public DateTime At { get; set; }
             public bool FromMe { get; set; }
-            public bool ReadByOther { get; set; }
+            public bool IsRead { get; set; }
         }
     }
 }

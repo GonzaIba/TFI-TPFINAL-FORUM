@@ -6,6 +6,7 @@ using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace ApiForums.Mapping
@@ -220,19 +221,17 @@ namespace ApiForums.Mapping
                                     string.Equals(last.IDUsuario, userId, StringComparison.OrdinalIgnoreCase)
                     };
                 }))
-                // unreadCount (mensajes del otro que YO no marqué como leídos)
+                // unreadCount provisto (query directa en servicio)
                 .ForMember(d => d.UnreadCount, o => o.MapFrom((s, _, __, ctx) =>
                 {
-                    var userId = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
-                    if (string.IsNullOrWhiteSpace(userId)) return 0;
+                    if (ctx.Items.TryGetValue("UnreadByChat", out var raw) &&
+                        raw is IDictionary<int, int> map &&
+                        map.TryGetValue(s.IDChat, out var count))
+                    {
+                        return count;
+                    }
 
-                    // tomamos "otro" como: no soy yo
-                    var unread = s.Mensajes
-                        .Where(m => !string.Equals(m.IDUsuario, userId, StringComparison.OrdinalIgnoreCase))
-                        .Count(m => m.Lecturas == null || !m.Lecturas.Any(l =>
-                                        string.Equals(l.IDUsuario, userId, StringComparison.OrdinalIgnoreCase)));
-
-                    return unread;
+                    return 0;
                 }));
 
             // Detail: from SolicitudAyudaChatModel -> HelpRequestChatDetailResponse
@@ -251,17 +250,12 @@ namespace ApiForums.Mapping
                         ? ctx.Mapper.Map<UsersForumPreviewResponse>(otherPart)
                         : null;
                 }))
-                // UnreadCount: mensajes del OTRO que YO aún no marqué como leídos
-                .ForMember(d => d.UnreadCount, o => o.MapFrom((s, _, __, ctx) =>
+                // UnreadCount pre-calculado (query COUNT en servicio)
+                .ForMember(d => d.UnreadCount, o => o.MapFrom((_, _, __, ctx) =>
                 {
-                    var me = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
-                    if (string.IsNullOrWhiteSpace(me)) return 0;
-
-                    return s.Mensajes?
-                        .Where(m => !string.Equals(m.IDUsuario, me, StringComparison.OrdinalIgnoreCase))
-                        .Count(m => m.Lecturas == null || !m.Lecturas.Any(l =>
-                                    string.Equals(l.IDUsuario, me, StringComparison.OrdinalIgnoreCase)))
-                        ?? 0;
+                    return ctx.Items.TryGetValue("UnreadCount", out var raw) && raw is int count
+                        ? count
+                        : 0;
                 }))
                 // Messages (orden cronológico ascendente)
                 .ForMember(d => d.Messages, o => o.MapFrom((s, _, __, ctx) =>
@@ -281,11 +275,20 @@ namespace ApiForums.Mapping
                             var fromMe = !string.IsNullOrWhiteSpace(me) &&
                                          string.Equals(m.IDUsuario, me, StringComparison.OrdinalIgnoreCase);
 
-                            // "ReadByOther": solo tiene sentido para MIS mensajes
-                            var readByOther = fromMe &&
-                                              !string.IsNullOrWhiteSpace(otherId) &&
-                                              (m.Lecturas?.Any(l =>
-                                                    string.Equals(l.IDUsuario, otherId, StringComparison.OrdinalIgnoreCase)) ?? false);
+                            var isRead = false;
+                            if (fromMe)
+                            {
+                                if (!string.IsNullOrWhiteSpace(otherId))
+                                {
+                                    isRead = m.Lecturas?.Any(l =>
+                                        string.Equals(l.IDUsuario, otherId, StringComparison.OrdinalIgnoreCase)) ?? false;
+                                }
+                            }
+                            else if (!string.IsNullOrWhiteSpace(me))
+                            {
+                                isRead = m.Lecturas?.Any(l =>
+                                    string.Equals(l.IDUsuario, me, StringComparison.OrdinalIgnoreCase)) ?? false;
+                            }
 
                             return new HelpRequestChatDetailResponse.MessageView
                             {
@@ -293,7 +296,7 @@ namespace ApiForums.Mapping
                                 Text = m.Mensaje ?? string.Empty,
                                 At = m.CreateDate,
                                 FromMe = fromMe,
-                                ReadByOther = readByOther
+                                IsRead = isRead
                             };
                         })
                         .ToList() ?? new List<HelpRequestChatDetailResponse.MessageView>();

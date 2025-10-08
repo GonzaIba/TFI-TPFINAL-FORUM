@@ -1,6 +1,7 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
+using Core.Domain.Enum;
 using Core.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -42,16 +43,42 @@ namespace Core.Business.Services
                 tracking: false)).FirstOrDefault();
             if (existing != null) return existing.IDChat;
 
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
+
             var chat = new SolicitudAyudaChatModel
             {
                 IDSolicitudAyuda = requestCode,
                 IDUsuarioAyudante = userId,
-                Active = true,
+                Active = true, ///////////////////////////////////////
                 CreateDate = DateTime.UtcNow
             };
 
             await _chatRepo.Insert(chat);
             await _unitOfWork.SaveChangesAsync();
+            var participantes = new List<SolicitudAyudaChatParticipanteModel>
+            {
+                new SolicitudAyudaChatParticipanteModel
+                {
+                    IDChat = chat.IDChat,
+                    IDUsuario = requestHelp.IDUsuarioSolicitante,
+                    Active = true, ///////////////////////////////////////
+                    CreateDate = DateTime.UtcNow,
+                    Rol = (byte)ParticipantChatEnum.Solicitante
+                },
+                new SolicitudAyudaChatParticipanteModel
+                {
+                    IDChat = chat.IDChat,
+                    IDUsuario = userId,
+                    Active = true, ///////////////////////////////////////
+                    CreateDate = DateTime.UtcNow,
+                    Rol = (byte)ParticipantChatEnum.Ayudante
+                }
+            };
+
+            var participantesRepo = _unitOfWork.GetRepository<ISolicitudAyudaChatParticipanteRepository>();
+            await participantesRepo.Insert(participantes);
+            await _unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
             return chat.IDChat;
         }
 

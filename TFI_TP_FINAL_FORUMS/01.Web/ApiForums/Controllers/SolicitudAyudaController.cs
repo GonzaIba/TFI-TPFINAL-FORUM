@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ApiForums.Controllers
 {
@@ -106,8 +108,22 @@ namespace ApiForums.Controllers
         [HttpGet("{id:int}/ObtenerChatsDeMiSolicitud")]
         public async Task<IActionResult> GetMyHelpRequestChats([FromRoute] int id, [FromQuery] string userId)
         {
-            var chats = await _chatService.ListMyHelpRequestChatsAsync(userId, id);
-            var mapped = _mapper.Map<IEnumerable<HelpRequestChatsResponse>>(chats, opt => opt.Items["UserId"] = userId);
+            var normalizedUser = userId?.Trim() ?? string.Empty;
+            var chats = await _chatService.ListMyHelpRequestChatsAsync(normalizedUser, id);
+
+            var unreadTasks = chats
+                .Select(async chat => new KeyValuePair<int, int>(chat.IDChat, await _chatMsgService.CountUnreadAsync(chat.IDChat, normalizedUser)))
+                .ToList();
+
+            var unreadResults = await Task.WhenAll(unreadTasks);
+            var unreadByChat = unreadResults.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            var mapped = _mapper.Map<List<HelpRequestChatsResponse>>(chats, opt =>
+            {
+                opt.Items["UserId"] = normalizedUser;
+                opt.Items["UnreadByChat"] = unreadByChat;
+            });
+
             return Ok(mapped);
         }
 
@@ -117,7 +133,8 @@ namespace ApiForums.Controllers
             [FromQuery] string userId,
             [FromQuery] int chatId)
         {
-            var chat = await _chatService.GetRequestHelpChatAsync(id, userId, chatId);
+            var normalizedUser = userId?.Trim() ?? string.Empty;
+            var chat = await _chatService.GetRequestHelpChatAsync(id, normalizedUser, chatId);
 
             if (chat == null) return NotFound();
 
@@ -126,7 +143,12 @@ namespace ApiForums.Controllers
             //    p.IDUsuario.Equals(userId, StringComparison.OrdinalIgnoreCase));
             //if (!isParticipant) return Forbid(); //Acá vamos a devolver una excepcion de que no tiene permisos para ver este chat
 
-            var dto = _mapper.Map<HelpRequestChatDetailResponse>(chat, opt => { opt.Items["UserId"] = userId;});
+            var unreadCount = await _chatMsgService.CountUnreadAsync(chat.IDChat, normalizedUser);
+            var dto = _mapper.Map<HelpRequestChatDetailResponse>(chat, opt =>
+            {
+                opt.Items["UserId"] = normalizedUser;
+                opt.Items["UnreadCount"] = unreadCount;
+            });
 
             return Ok(dto);
         }

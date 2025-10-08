@@ -32,7 +32,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
                    .HasForeignKey(e => e.IDChat)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // Garantiza "máximo un participante por Rol" dentro del mismo chat (1 solicitante y 1 ayudante)
+            // Garantiza "máximo un participante por Rol" dentro del mismo chat (0 solicitante y 1 ayudante)
             builder.HasIndex(e => new { e.IDChat, e.Rol })
                    .IsUnique()
                    .HasDatabaseName("UQ_SCP_ChatRol");

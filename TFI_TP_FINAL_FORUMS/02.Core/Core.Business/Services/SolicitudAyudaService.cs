@@ -212,11 +212,35 @@ namespace Core.Business.Services
                 }
             }
 
-
             await _repository.Insert(solicitud);
             return await _unitOfWorkForum.Complete();
         }
 
+        public async Task<(SolicitudAyudaModel, int?)> GetDetailRequestsHelp(int codeRequest, string codeUser)
+        {
+            var requestHelp = (await _repository.Get(x=> x.IDSolicitudAyuda == codeRequest, includeProperties: "SolicitudAyudaEstado,SolicitudAyudaEtiquetas.Etiqueta,Disponibilidades,Chats")).FirstOrDefault();
+            if (requestHelp == null)
+                throw new ApiForumException("No se encontró la solicitud de ayuda indicada.");
+
+            requestHelp.UsuarioSolicitante = (await _usersRepository.Get(x => x.Id == requestHelp.IDUsuarioSolicitante, tracking: false, includeProperties: "UsersForum")).FirstOrDefault();
+
+            var chat = requestHelp.Chats.FirstOrDefault(c => c.IDUsuarioAyudante == codeUser && c.Active);
+            return (requestHelp, chat?.IDChat);
+        }
+
+        public async Task<List<SolicitudAyudaModel>> GetMyRequestsHelp(string? userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return [];
+
+            var q = _repository.Query(
+                s => s.IDUsuarioSolicitante == userId && s.FechaVencimiento >= DateTime.UtcNow,
+                includeProperties: "SolicitudAyudaEstado,SolicitudAyudaEtiquetas.Etiqueta,Disponibilidades",
+                tracking: false
+            ).OrderByDescending(s => s.CreateDate).ThenByDescending(s => s.IDSolicitudAyuda);
+
+            return await q.ToListAsync();
+        }
 
         #region Helpers for GetRequestsHelp
         private static string EscapeLike(string input)

@@ -5,7 +5,10 @@ using Core.Domain.GenericEntityClass;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
 
 namespace ApiForums.Controllers
 {
@@ -33,6 +36,14 @@ namespace ApiForums.Controllers
             _chatService = chatService;
             _chatMsgService = chatMsgService;
             _mapper = mapper;
+        }
+
+        [HttpPost("CrearSolicitudAyuda")]
+        public async Task<IActionResult> CreateHelpRequest([FromBody] CreateHelpRequest request)
+        {
+            //Validaciones...
+            var result = await _solicitudAyudaService.CreateHelpRequest(request);
+            return Ok(new SuccessfulResponse(result));
         }
 
         [HttpGet("ObtenerSolicitudesDeAyuda")]
@@ -68,59 +79,88 @@ namespace ApiForums.Controllers
             return Ok(mapped);
         }
 
-        [HttpPost("CrearSolicitudAyuda")]
-        public async Task<IActionResult> CreateHelpRequest([FromBody] CreateHelpRequest request)
+        [HttpGet("ObtenerMisSolicitudesDeAyuda")]
+        public async Task<IActionResult> GetMyRequestsHelp([FromQuery] string? userId = null)
         {
-            //Validaciones...
-            var result = await _solicitudAyudaService.CreateHelpRequest(request);
-            return Ok(new SuccessfulResponse(result));
+            var page = await _solicitudAyudaService.GetMyRequestsHelp(userId);
+            var mapped = _mapper.Map<List<RequestHelpResponse>>(page);
+            return Ok(mapped);
         }
 
-        //[HttpGet("{id:int}/Chat")] 
-        //public async Task<IActionResult> GetOrCreateChat([FromRoute] int id)
-        //{
-        //    var chat = await _chatService.GetOrCreateBySolicitudAsync(id);
-        //    var resp = new ChatResponse { CodeChat = chat.IDChat, CodeRequestHelp = id };
-        //    return Ok(resp);
-        //}
+        [HttpGet]
+        [Route("{id:int}/ObtenerDetalleSolicitudAyuda")]
+        public async Task<IActionResult> GetDetailRequestsHelp([FromRoute] int id, [FromQuery] string userId)
+        {
+            var requestAndChat = await _solicitudAyudaService.GetDetailRequestsHelp(id, userId);
+            if (requestAndChat.Item1 == null) return NotFound();
+            var dto = _mapper.Map<RequestHelpResponse>(requestAndChat.Item1, opt => { opt.Items["UserId"] = userId; });
+            var response = new RequestHelpDetailResponse
+            {
+                RequestHelp = dto,
+                CodeChat = requestAndChat.Item2,
+                IsOwner = requestAndChat.Item1.IDUsuarioSolicitante.Equals(userId, StringComparison.OrdinalIgnoreCase)
+            };
+            return Ok(response);
+        }
+
+        [HttpGet("{id:int}/ObtenerChatsDeMiSolicitud")]
+        public async Task<IActionResult> GetMyHelpRequestChats([FromRoute] int id, [FromQuery] string userId)
+        {
+            var chats = await _chatService.ListMyHelpRequestChatsAsync(userId, id);
+            var mapped = _mapper.Map<IEnumerable<HelpRequestChatsResponse>>(chats, opt => opt.Items["UserId"] = userId);
+            return Ok(mapped);
+        }
 
         [HttpGet("{id:int}/Chat/Mensajes")]
         public async Task<IActionResult> GetChatMessages(
             [FromRoute] int id,
             [FromQuery] string userId,
-            [FromQuery] DateTime? afterUtc = null,
-            [FromQuery] int take = 50,
-            [FromQuery] bool asc = false)
+            [FromQuery] int chatId)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest("userId requerido");
+            var chat = await _chatService.GetRequestHelpChatAsync(id, userId, chatId);
 
-            var chat = await _chatService.GetOrCreateBySolicitudAsync(id);
-            var msgs = await _chatMsgService.GetMessagesAsync(chat.IDChat, afterUtc, take, asc, userId);
-            var mapped = _mapper.Map<IEnumerable<ChatMessageResponse>>(msgs, opt => opt.Items["UserId"] = userId);
-            return Ok(mapped);
+            if (chat == null) return NotFound();
+
+            // Validación de participación (por seguridad, aunque el service ya valida)
+            //var isParticipant = chat.Participantes.Any(p =>
+            //    p.IDUsuario.Equals(userId, StringComparison.OrdinalIgnoreCase));
+            //if (!isParticipant) return Forbid(); //Acá vamos a devolver una excepcion de que no tiene permisos para ver este chat
+
+            var dto = _mapper.Map<HelpRequestChatDetailResponse>(chat, opt => { opt.Items["UserId"] = userId;});
+
+            return Ok(dto);
         }
 
-        [HttpPost("{id:int}/Chat/Mensajes")]
+        [HttpPost("{id:int}/Chat/Crear")]
+        public async Task<IActionResult> CreateChat(
+            [FromRoute] int id,
+            [FromBody] CreateRHChatRequest request)
+        {
+            var chat = await _chatService.CreateChatAsync(id, request.UserId);
+            return Ok(new CreateChatResponse { CodeChat = chat });
+        }
+
+        [HttpPost("{id:int}/Chat/EnviarMensaje")]
         public async Task<IActionResult> SendChatMessage([FromRoute] int id, [FromBody] SendChatMessageRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.UserId) || string.IsNullOrWhiteSpace(request.Message))
-                return BadRequest("Datos inválidos");
+            var normalizedUser = request.UserId.Trim();
+            var message = request.Message.TrimStart().TrimEnd();
+            if (message.Length == 0)
+                return BadRequest("Mensaje vacío");
 
-            var chat = await _chatService.GetOrCreateBySolicitudAsync(id);
+            var chat = await _chatService.GetRequestHelpChatAsync(id, normalizedUser, request.CodeChat);
             var entity = new SolicitudAyudaChatMensajeModel
             {
                 IDChat = chat.IDChat,
-                IDUsuario = request.UserId,
-                Mensaje = request.Message.Trim()
+                IDUsuario = normalizedUser,
+                Mensaje = message
             };
 
             await _chatMsgService.CreateAsync(entity);
 
-            // Flag de lectura para el emisor
             entity.LeidoPorUsuarioActual = true;
-
-            var response = _mapper.Map<ChatMessageResponse>(entity, opt => opt.Items["UserId"] = request.UserId);
+            var response = _mapper.Map<ChatMessageResponse>(entity, opt => opt.Items["UserId"] = normalizedUser);
+            response.Readed = false;
             response.SentByMe = true;
             return Ok(response);
         }
@@ -131,29 +171,32 @@ namespace ApiForums.Controllers
             if (request == null || string.IsNullOrWhiteSpace(request.UserId))
                 return BadRequest("Datos inválidos");
 
-            var chat = await _chatService.GetOrCreateBySolicitudAsync(id);
+            var normalizedUser = request.UserId.Trim();
+
+            var chat = await _chatService.GetByRequestCodeAndChatCodeAsync(id, request.CodeChat);
+            if (chat == null)
+                return NotFound("Chat no encontrado");
+
             int affected = 0;
 
             if (request.UpToUtc.HasValue)
-            {
-                affected = await _chatMsgService.MarkAllAsReadUpToAsync(chat.IDChat, request.UserId, request.UpToUtc.Value);
-            }
+                affected = await _chatMsgService.MarkAllAsReadUpToAsync(chat.IDChat, normalizedUser, request.UpToUtc.Value);
             else if (request.MessageIds != null && request.MessageIds.Count > 0)
-            {
-                affected = await _chatMsgService.MarkAsReadAsync(chat.IDChat, request.UserId, request.MessageIds);
-            }
+                affected = await _chatMsgService.MarkAsReadAsync(chat.IDChat, normalizedUser, request.MessageIds);
 
             return Ok(new SuccessfulResponse(affected >= 0));
         }
 
         [HttpGet("{id:int}/Chat/NoLeido")]
-        public async Task<IActionResult> GetUnreadCount([FromRoute] int id, [FromQuery] string userId)
+        public async Task<IActionResult> GetUnreadCount([FromRoute] int id, [FromQuery] string userId, [FromQuery] int codeChat)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest("userId requerido");
+            var normalizedUser = userId.Trim();
 
-            var chat = await _chatService.GetOrCreateBySolicitudAsync(id);
-            var count = await _chatMsgService.CountUnreadAsync(chat.IDChat, userId);
+            var chat = await _chatService.GetByRequestCodeAndChatCodeAsync(id, codeChat);
+            if (chat == null)
+                return NotFound("Chat no encontrado");
+
+            var count = await _chatMsgService.CountUnreadAsync(chat.IDChat, normalizedUser);
             return Ok(new ChatUnreadCountResponse { Count = count });
         }
     }

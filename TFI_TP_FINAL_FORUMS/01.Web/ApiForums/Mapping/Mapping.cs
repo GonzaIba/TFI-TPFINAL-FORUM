@@ -5,6 +5,7 @@ using Core.Domain.IdentityModels;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
+using System;
 using System.Text;
 
 namespace ApiForums.Mapping
@@ -184,22 +185,147 @@ namespace ApiForums.Mapping
                 .ReverseMap();
 
             // Chat mappings
+
+            CreateMap<SolicitudAyudaChatModel, HelpRequestChatsResponse>()
+                .ForMember(d => d.ChatId, o => o.MapFrom(s => s.IDChat))
+                .ForMember(d => d.RequestId, o => o.MapFrom(s => s.IDSolicitudAyuda))
+                .ForMember(d => d.State, o => o.MapFrom(s => "Abierto")) // mapear desde EstadoChat si lo tenés
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreateDate))
+                .ForMember(d => d.Active, o => o.MapFrom(s => s.Active))
+                // other (el ayudante)
+                .ForMember(dest => dest.Other, opt =>
+                    opt.MapFrom((src, dest, destMember, ctx) =>
+                    ctx.Mapper.Map<UsersForumPreviewResponse>(src.UsuarioAyudante))
+                )
+                // lastMessage (preview, fecha, si es mío)
+                .ForMember(d => d.LastMessage, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    var userId = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
+                    var last = s.Mensajes
+                                .OrderByDescending(m => m.CreateDate)
+                                .ThenByDescending(m => m.IDMensaje)
+                                .FirstOrDefault();
+
+                    if (last == null) return null;
+
+                    var preview = last.Mensaje?.Length > 180
+                                    ? last.Mensaje.Substring(0, 180) + "…"
+                                    : last.Mensaje ?? string.Empty;
+
+                    return new HelpRequestChatsResponse.LastMessageView
+                    {
+                        Preview = preview,
+                        At = last.CreateDate,
+                        FromMe = !string.IsNullOrWhiteSpace(userId) &&
+                                    string.Equals(last.IDUsuario, userId, StringComparison.OrdinalIgnoreCase)
+                    };
+                }))
+                // unreadCount (mensajes del otro que YO no marqué como leídos)
+                .ForMember(d => d.UnreadCount, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    var userId = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
+                    if (string.IsNullOrWhiteSpace(userId)) return 0;
+
+                    // tomamos "otro" como: no soy yo
+                    var unread = s.Mensajes
+                        .Where(m => !string.Equals(m.IDUsuario, userId, StringComparison.OrdinalIgnoreCase))
+                        .Count(m => m.Lecturas == null || !m.Lecturas.Any(l =>
+                                        string.Equals(l.IDUsuario, userId, StringComparison.OrdinalIgnoreCase)));
+
+                    return unread;
+                }));
+
+            // Detail: from SolicitudAyudaChatModel -> HelpRequestChatDetailResponse
+            CreateMap<SolicitudAyudaChatModel, HelpRequestChatDetailResponse>()
+                .ForMember(d => d.ChatCode, o => o.MapFrom(s => s.IDChat))
+                .ForMember(d => d.RequestCode, o => o.MapFrom(s => s.IDSolicitudAyuda))
+                .ForMember(d => d.State, o => o.MapFrom(s => "Abierto")) // TODO: mapear desde Estado si corresponde
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreateDate))
+                .ForMember(d => d.Active, o => o.MapFrom(s => s.Active))
+                // Other (el otro participante respecto del usuario actual)
+                .ForMember(d => d.Other, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    // Busco primero “el que no soy yo”; si no hay, tomo ayudante por Rol=1 como fallback
+                    var otherPart = s.UsuarioAyudante;
+                    return otherPart != null
+                        ? ctx.Mapper.Map<UsersForumPreviewResponse>(otherPart)
+                        : null;
+                }))
+                // UnreadCount: mensajes del OTRO que YO aún no marqué como leídos
+                .ForMember(d => d.UnreadCount, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    var me = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
+                    if (string.IsNullOrWhiteSpace(me)) return 0;
+
+                    return s.Mensajes?
+                        .Where(m => !string.Equals(m.IDUsuario, me, StringComparison.OrdinalIgnoreCase))
+                        .Count(m => m.Lecturas == null || !m.Lecturas.Any(l =>
+                                    string.Equals(l.IDUsuario, me, StringComparison.OrdinalIgnoreCase)))
+                        ?? 0;
+                }))
+                // Messages (orden cronológico ascendente)
+                .ForMember(d => d.Messages, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    var me = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
+
+                    // Determino el "otro" (para read receipts de mis mensajes)
+                    var otherId = s.Participantes?
+                        .FirstOrDefault(p => !string.Equals(p.IDUsuario, me, StringComparison.OrdinalIgnoreCase))?
+                        .IDUsuario;
+
+                    var ordered = s.Mensajes?
+                        .OrderBy(m => m.CreateDate)
+                        .ThenBy(m => m.IDMensaje)
+                        .Select(m =>
+                        {
+                            var fromMe = !string.IsNullOrWhiteSpace(me) &&
+                                         string.Equals(m.IDUsuario, me, StringComparison.OrdinalIgnoreCase);
+
+                            // "ReadByOther": solo tiene sentido para MIS mensajes
+                            var readByOther = fromMe &&
+                                              !string.IsNullOrWhiteSpace(otherId) &&
+                                              (m.Lecturas?.Any(l =>
+                                                    string.Equals(l.IDUsuario, otherId, StringComparison.OrdinalIgnoreCase)) ?? false);
+
+                            return new HelpRequestChatDetailResponse.MessageView
+                            {
+                                CodeMessage = m.IDMensaje,
+                                Text = m.Mensaje ?? string.Empty,
+                                At = m.CreateDate,
+                                FromMe = fromMe,
+                                ReadByOther = readByOther
+                            };
+                        })
+                        .ToList() ?? new List<HelpRequestChatDetailResponse.MessageView>();
+
+                    return ordered;
+                }));
+
+            // Message: from SolicitudAyudaChatMensajeModel -> ChatMessageResponse
             CreateMap<SolicitudAyudaChatMensajeModel, ChatMessageResponse>()
                 .ForMember(d => d.CodeMessage, o => o.MapFrom(s => s.IDMensaje))
                 .ForMember(d => d.CodeChat, o => o.MapFrom(s => s.IDChat))
-                .ForMember(d => d.Message, o => o.MapFrom(s => s.Mensaje))
+                .ForMember(d => d.Message, o => o.MapFrom(s => s.Mensaje ?? string.Empty))
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreateDate))
-                .ForMember(d => d.Readed, o => o.MapFrom(s => s.LeidoPorUsuarioActual))
-                .ForMember(d => d.SentByMe, o => o.MapFrom((s, d, dm, ctx) =>
-                    {
-                        var userId = ctx.Items.ContainsKey("UserId") ? ctx.Items["UserId"] as string : null;
-                        return !string.IsNullOrWhiteSpace(userId) && s.IDUsuario == userId;
-                    }
-                ));
-            #endregion
+                // Readed: si el backend seteó un flag rápido, úsalo; si no, calculá por lecturas del usuario actual
+                .ForMember(d => d.Readed, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    if (s.LeidoPorUsuarioActual) return s.LeidoPorUsuarioActual;
 
-            #region Events
-            CreateMap<AddAnswerEvent, AnswerResponse>().ReverseMap();
+                    var me = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
+                    if (string.IsNullOrWhiteSpace(me)) return false;
+
+                    return s.Lecturas?.Any(l =>
+                        string.Equals(l.IDUsuario, me, StringComparison.OrdinalIgnoreCase)) ?? false;
+                }))
+                // SentByMe: útil para listados/históricos; en tu acción luego lo podés sobrescribir si querés
+                .ForMember(d => d.SentByMe, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    var me = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
+                    return !string.IsNullOrWhiteSpace(me) &&
+                           string.Equals(s.IDUsuario, me, StringComparison.OrdinalIgnoreCase);
+                }));
+
             #endregion
         }
 
@@ -267,6 +393,17 @@ namespace ApiForums.Mapping
             }
             return new RequestHelpTimeSlot { Slots = slotItems };
         }
+
+        // helper local para iniciales (puede vivir donde prefieras)
+        private static string BuildInitials(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "--";
+            var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant();
+            return (parts[0][0].ToString() + parts[^1][0].ToString()).ToUpperInvariant();
+        }
         #endregion
     }
 }
+
+

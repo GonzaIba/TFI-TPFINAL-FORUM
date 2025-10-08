@@ -7,7 +7,9 @@ namespace Core.Contracts.Services
     public interface ISolicitudAyudaService : IGenericService<SolicitudAyudaModel>
     {
         Task<CursorPage<SolicitudAyudaModel>> GetRequestsHelp(int limit, DateTime anchorUtc, (DateTime createdAt, int id)? after, string? userId, string? search);
+        Task<List<SolicitudAyudaModel>> GetMyRequestsHelp(string? userId);
         Task<bool> CreateHelpRequest(CreateHelpRequest request);
+        Task<(SolicitudAyudaModel, int?)> GetDetailRequestsHelp(int codeRequest, string codeUser);
     }
 }
 

@@ -36,6 +36,7 @@ namespace Core.Domain.Models
         public virtual ICollection<SolicitudAyudaEtiquetasModel> SolicitudAyudaEtiquetas { get; set; } = new HashSet<SolicitudAyudaEtiquetasModel>();
         public virtual ICollection<SolicitudAyudaDisponibilidadModel> Disponibilidades { get; set; } = new HashSet<SolicitudAyudaDisponibilidadModel>();
         public virtual ICollection<SolicitudAyudaHistorialModel> Historial { get; set; } = new HashSet<SolicitudAyudaHistorialModel>();
+        [NotMapped]
         public virtual Users? UsuarioSolicitante { get; set; }
         public virtual ICollection<SolicitudAyudaChatModel> Chats { get; set; } = new HashSet<SolicitudAyudaChatModel>();
     }

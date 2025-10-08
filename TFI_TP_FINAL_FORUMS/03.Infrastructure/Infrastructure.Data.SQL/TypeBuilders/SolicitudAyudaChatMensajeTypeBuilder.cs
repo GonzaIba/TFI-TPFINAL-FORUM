@@ -23,6 +23,8 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.HasIndex(e => e.IDChat).HasDatabaseName("IX_SAChatMsg_Chat");
             builder.HasIndex(e => new { e.IDChat, e.CreateDate }).HasDatabaseName("IX_SAChatMsg_ChatDate");
 
+            builder.Ignore(x => x.UpdateDate);
+
             builder.ToTable("SolicitudAyudaChatMensaje");
         }
     }

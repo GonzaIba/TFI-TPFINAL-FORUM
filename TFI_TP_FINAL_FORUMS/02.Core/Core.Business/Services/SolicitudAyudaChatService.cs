@@ -93,7 +93,7 @@ namespace Core.Business.Services
         {
             var normalizedUserId = NormalizeUserId(userId, nameof(userId));
 
-            var chat = (await _chatRepo.Get(c => c.IDSolicitudAyuda == idSolicitud && c.IDChat == chatCode, includeProperties: "Solicitud,Participantes,Mensajes,Mensajes.Lecturas", tracking: true)).FirstOrDefault();
+            var chat = (await _chatRepo.Get(c => c.IDSolicitudAyuda == idSolicitud && c.IDChat == chatCode, includeProperties: "Solicitud,Participantes,Mensajes,Mensajes.Lecturas", tracking: false)).FirstOrDefault();
             if(chat is null)
                 throw new ArgumentException("No se encontró el chat indicado para la solicitud de ayuda.", nameof(chatCode));
 

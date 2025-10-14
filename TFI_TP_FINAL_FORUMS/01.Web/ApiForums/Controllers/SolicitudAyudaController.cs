@@ -48,6 +48,14 @@ namespace ApiForums.Controllers
             return Ok(new SuccessfulResponse(result));
         }
 
+        [HttpPut("{id:int}/ActualizarHorarios")]
+        public async Task<IActionResult> UpdateDisponibility([FromRoute] int id,[FromBody] UpdateDisponibilityRequest request)
+        {
+            //Validaciones...
+            var result = await _solicitudAyudaService.UpdateDisponibility(id, request);
+            return Ok(new SuccessfulResponse(result));
+        }
+
         [HttpGet("ObtenerSolicitudesDeAyuda")]
         public async Task<IActionResult> GetRequestsHelp(
             [FromQuery] int limit = 8,

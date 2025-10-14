@@ -242,6 +242,35 @@ namespace Core.Business.Services
             return await q.ToListAsync();
         }
 
+        public async Task<bool> UpdateDisponibility(int id, UpdateDisponibilityRequest request)
+        {
+            var requestHelp = (await _repository.Get(x => x.IDSolicitudAyuda == id && x.IDUsuarioSolicitante == request.UserId, 
+                includeProperties: "Disponibilidades", tracking: true)).FirstOrDefault();
+            if (requestHelp == null)
+                throw new ApiForumException("No se encontró la solicitud de ayuda indicada o no tenés permisos para modificarla.");
+
+            // Reemplazamos las disponibilidades actuales por las nuevas
+            requestHelp.Disponibilidades.Clear();
+            if (request.TimeSlot?.Slots != null && request.TimeSlot.Slots.Count > 0)
+            {
+                foreach (var slot in request.TimeSlot.Slots)
+                {
+                    if (DateTime.TryParse(slot.Start, null, DateTimeStyles.RoundtripKind, out var inicio) &&
+                        DateTime.TryParse(slot.End, null, DateTimeStyles.RoundtripKind, out var fin) &&
+                        fin > inicio)
+                    {
+                        requestHelp.Disponibilidades.Add(new SolicitudAyudaDisponibilidadModel
+                        {
+                            Inicio = inicio, //Se queda en UTC
+                            Fin = fin, //Se queda en UTC
+                            Estado = 1
+                        });
+                    }
+                }
+            }
+            return await _unitOfWorkForum.Complete();
+        }
+
         #region Helpers for GetRequestsHelp
         private static string EscapeLike(string input)
         {

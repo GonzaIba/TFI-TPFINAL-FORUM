@@ -1,8 +1,8 @@
-﻿using Core.Business.Services;
+﻿using Core.Business.Publishers;
+using Core.Business.Services;
+using Core.Contracts.Publishers;
 using Core.Contracts.Services;
-using IoC.Resolver.Register;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Core.Domain.GenericEntityClass;
 using CrossCutting.EmailService.Configurations;
 using CrossCutting.EmailService.Contracts;
 using CrossCutting.EmailService.Factory;
@@ -12,12 +12,13 @@ using CrossCutting.StorageService.Configurations;
 using CrossCutting.StorageService.Contracts;
 using CrossCutting.StorageService.Factory;
 using CrossCutting.StorageService.Services;
-using Microsoft.EntityFrameworkCore;
 using Infrastructure.Data.SQL;
-using Core.Contracts.Publishers;
 using Infrastructure.Data.SQL.Publishers;
+using IoC.Resolver.Register;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
-using Core.Business.Publishers;
 
 namespace IoC.Resolver
 {
@@ -27,6 +28,8 @@ namespace IoC.Resolver
         {
             services.AddScoped<DbContext, ApplicationGatewayDbContext>();
             services.AddScoped<DbContext, ApplicationDbContext>();
+            services.Configure<JaasOptions>(options => configuration.GetSection(JaasOptions.SectionName).Bind(options));
+            services.AddScoped<IJaasTokenService, JaasTokenService>();
 
             services.RegisterDataLayer(configuration);
             services.RegisterUnitOfWork();

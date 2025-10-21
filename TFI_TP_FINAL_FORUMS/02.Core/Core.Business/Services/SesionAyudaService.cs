@@ -2,9 +2,12 @@
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
+using Core.Domain.GenericEntityClass;
 using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
+using CrossCutting.Helpers;
+using Microsoft.Extensions.Options;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
@@ -19,14 +22,21 @@ namespace Core.Business.Services
         private readonly IUnitOfWorkGateway _unitOfWorkGateway;
         private readonly IUnitOfWorkForum _unitOfWorkForum;
         private readonly ISolicitudAyudaRepository _solicitudAyudaRepository;
+        private readonly IJaasTokenService _jaas;
+        private readonly IOptions<JaasOptions> _jaasOpts;
+
         public SesionAyudaService(
             IUnitOfWorkForum unitOfWork, 
-            IUnitOfWorkGateway unitOfWorkGateway
+            IUnitOfWorkGateway unitOfWorkGateway,
+            IJaasTokenService jaas,
+            IOptions<JaasOptions> jaasOpts
         ) : base(unitOfWork, unitOfWork.GetRepository<ISesionAyudaRepository>())
         {
             _unitOfWorkGateway = unitOfWorkGateway;
             _unitOfWorkForum = unitOfWork;
             _solicitudAyudaRepository = unitOfWork.GetRepository<ISolicitudAyudaRepository>();
+            _jaas = jaas;
+            _jaasOpts = jaasOpts;
         }
 
         public async Task<bool> AcceptTyC(AcceptTyCRequest request)
@@ -113,21 +123,99 @@ namespace Core.Business.Services
             return session;
         }
 
-        public async Task<SesionAyudaModel> EnterSession(EnterSessionRequest request)
+        public async Task<SessionResponse> EnterSession(EnterSessionRequest request)
         {
-            var user = (await _unitOfWorkGateway.GetRepository<IUsersRepository>().Get(x => x.Id == request.UserId)).FirstOrDefault();
+            var user = (await _unitOfWorkGateway.GetRepository<IUsersRepository>()
+                .Get(x => x.Id == request.UserId, includeProperties: "UsersForum"))
+                .FirstOrDefault();
             if (user == null)
                 throw new Exception("User not found");
 
-            var session = (await _unitOfWork.GetRepository<ISesionAyudaRepository>().Get(x => x.IDSesion == request.CodeSession, includeProperties: "Reserva,Reserva.Disponibilidad,Disponibilidades.Reservas.Solicitud")).FirstOrDefault();
+            var session = (await _unitOfWork.GetRepository<ISesionAyudaRepository>()
+                .Get(x => x.IDSesion == request.CodeSession,
+                     includeProperties: "Reserva,Reserva.Disponibilidad,Reserva.Disponibilidad.Solicitud"))
+                .FirstOrDefault();
             if (session == null)
                 throw new ApiForumException("Help session not found for the active reservation");
 
-            var requestHelp = session.Reserva.Disponibilidad.Solicitud;
-            if (requestHelp.IDUsuarioSolicitante != request.UserId && session.Reserva.IDUsuarioAyudante != request.UserId)
-                throw new ApiForumException("User is not authorized to access this help session");
+            var req = session.Reserva.Disponibilidad.Solicitud;
+            var isOwner = req.IDUsuarioSolicitante == request.UserId
+                       || session.Reserva.IDUsuarioAyudante == request.UserId;
 
-            return session;
+            // Ventana tomada de la disponibilidad (asumo horario local almacenado)
+            // Ya los tenés en UTC
+            var initAt = TimeHelper.EnsureUtc(session.Reserva.Disponibilidad.Inicio);
+            var expiresAt = TimeHelper.EnsureUtc(session.Reserva.Disponibilidad.Fin);
+
+            // nbf: no antes de ahora-5s, ni más de 2 min antes del inicio
+            var now = DateTimeOffset.UtcNow;
+            var nbf = (now > new DateTimeOffset(initAt).AddMinutes(-2) ? now : new DateTimeOffset(initAt)).AddSeconds(-5);
+
+            // exp: la hora de fin real
+            var exp = new DateTimeOffset(expiresAt);
+
+            // Garantía mínima: exp > nbf
+            if (exp <= nbf)
+                exp = nbf.AddMinutes(1);
+
+            var appId = _jaasOpts.Value.AppId;
+            var serverUrl = _jaasOpts.Value.ServerUrl;
+
+            // unificamos minúsculas
+            var roomName = $"livehelp-{session.IDSesion:D}";
+            var roomFull = $"{appId}/{roomName}";
+
+            var role = isOwner ? "moderator" : "participant";
+
+            // JWT
+            var displayName = string.Join(" ", new[] { user.Nombre, user.Apellido }
+                                          .Where(s => !string.IsNullOrWhiteSpace(s))).Trim();
+            if (string.IsNullOrWhiteSpace(displayName))
+                displayName = user.UserName ?? "Usuario";
+
+            //var avatar = user.UsersForum?.ImageForum;
+            var avatar = "";
+
+            var jwt = _jaas.CreateToken(
+                appId: appId,
+                room: roomName,
+                notBefore: nbf,
+                expiresAt: exp,
+                userId: user.Id,
+                displayName: displayName,
+                email: user.Email,
+                avatarUrl: avatar,
+                isModerator: isOwner
+            );
+
+            var shouldCloseAt = exp.AddSeconds(_jaasOpts.Value.GraceSeconds).UtcDateTime; // Z
+
+            return new SessionResponse
+            {
+                CodeSession = session.IDSesion.ToString(),
+                Domain = $"liveHelp/meeting/{session.IDSesion:D}",
+                RoomName = roomName,
+                InitAt = initAt,
+                ExpiresAt = expiresAt,
+                IsOwner = isOwner,
+
+                Provider = "jaas",
+                AppId = appId,
+                Room = roomFull,
+                Jwt = jwt,
+                ServerUrl = serverUrl,
+                Role = role,
+                ShouldCloseAt = shouldCloseAt,
+
+                Ui = new UiSettings
+                {
+                    DisplayName = displayName,
+                    AvatarUrl = avatar,
+                    StartWithAudioMuted = true,
+                    StartWithVideoMuted = true
+                }
+            };
         }
+
     }
 }

@@ -247,7 +247,7 @@ namespace Core.Business.Services
                     && !state.Equals("Expirada", StringComparison.OrdinalIgnoreCase);
             }
 
-            var userExists = (await _repository.Get(x => x.Id == normalizedUser, tracking: false)).Any();
+            var userExists = (await _repository.Get(x => x.Id == normalizedUser, tracking: false))?.Any() ?? false;
             if (!userExists)
                 throw new ApiForumException("El usuario no existe.");
 
@@ -293,12 +293,11 @@ namespace Core.Business.Services
 
                 if (!seenMeetings.Add(session.IDSesion)) return;
 
-                var startUtc = EnsureUtc(session.Inicio);
-                var endUtc = EnsureUtc(session.Fin);
-                var expiresAtUtc = endUtc.AddMinutes(15);
-                if (expiresAtUtc <= nowUtc) return;
+                var startUtc = EnsureUtc(session.Reserva.Disponibilidad.Inicio);
+                var endUtc = EnsureUtc(session.Reserva.Disponibilidad.Fin);
 
-                var isLive = reservation.Estado == 2 && startUtc <= nowUtc && nowUtc <= expiresAtUtc;
+                //var isLive = reservation.Estado == 2 && startUtc <= nowUtc && nowUtc <= expiresAtUtc;
+                var isLive = startUtc <= nowUtc && nowUtc <= endUtc;
                 var isSoon = !isLive
                           && startUtc >= nowUtc
                           && startUtc <= nowUtc.AddMinutes(10)
@@ -308,9 +307,7 @@ namespace Core.Business.Services
                     ? chatCode
                     : (int?)null;
 
-                var ctaHref = chatId.HasValue
-                    ? $"/forum/liveHelp/meeting/{request.IDSolicitudAyuda}/meeting?chatId={chatId.Value}"
-                    : $"/forum/liveHelp/meeting/{request.IDSolicitudAyuda}";
+                var ctaHref = $"/forum/liveHelp/meeting/{session.IDSesion}";
 
                 if (!isLive && !isSoon)
                 {
@@ -363,7 +360,7 @@ namespace Core.Business.Services
                                         : $"Tu reunión '{request.Titulo}' empieza en {FormatFutureDuration(startUtc - nowUtc)}",
                     Message = isLive ? "Entrá ahora para no perderte nada." : "Preparate y entrá a tiempo.",
                     CreatedAt = nowUtc,
-                    ExpiresAt = isLive ? expiresAtUtc : startUtc.AddMinutes(5),
+                    ExpiresAt = isLive ? endUtc : startUtc.AddMinutes(5),
                     Sticky = isLive,
                     ChannelSuggested = isLive ? "modal" : "toast",
                     Cta = new AlertCtaResponse

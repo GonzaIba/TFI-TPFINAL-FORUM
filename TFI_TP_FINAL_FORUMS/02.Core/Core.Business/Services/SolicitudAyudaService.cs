@@ -256,6 +256,14 @@ namespace Core.Business.Services
 
         public async Task<List<SolicitudAyudaModel>> GetRequestsHelpConfirmed(string? userId)
         {
+            static DateTime EnsureUtc(DateTime value) =>
+                value.Kind switch
+                {
+                    DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+                    DateTimeKind.Local => value.ToUniversalTime(),
+                    _ => value
+                };
+
             if (string.IsNullOrWhiteSpace(userId))
                 return [];
 
@@ -295,6 +303,8 @@ namespace Core.Business.Services
                 .ToDictionary(u => u.Id);
 
             var list = await query.ToListAsync();
+            var utcNow = DateTime.UtcNow;
+            list = list.Where(x => utcNow <= EnsureUtc(x.Disponibilidades.First(y => y.Active).Fin)).ToList();
 
             foreach (var s in list)
                 if (usuarios.TryGetValue(s.IDUsuarioSolicitante, out var user))

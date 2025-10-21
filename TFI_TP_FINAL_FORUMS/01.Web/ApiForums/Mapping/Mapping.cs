@@ -371,7 +371,7 @@ namespace ApiForums.Mapping
                 )
                 .ReverseMap();
 
-            CreateMap<SesionAyudaModel,SessionResponse>()
+            CreateMap<SesionAyudaModel,GetSessionResponse>()
                 .ForMember(d => d.CodeSession, o => o.MapFrom(s => s.IDSesion))
                 .ForMember(d => d.Domain, o => o.MapFrom(s => s.Dominio))
                 .ForMember(d => d.RoomName, o => o.MapFrom(s => s.NombreSala))

@@ -46,7 +46,7 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> GetSession([FromQuery] int codeRequestHelp, [FromQuery] string userId)
         {
             var result = await _sesionAyudaService.GetSession(codeRequestHelp, userId);
-            var session = _mapper.Map<SessionResponse>(result, opt => { opt.Items["UserId"] = userId; } );
+            var session = _mapper.Map<GetSessionResponse>(result, opt => { opt.Items["UserId"] = userId; } );
             return Ok(session);
         }
 
@@ -54,8 +54,8 @@ namespace ApiForums.Controllers
         public async Task<IActionResult> EnterSession([FromBody] EnterSessionRequest enterSession)
         {
             var result = await _sesionAyudaService.EnterSession(enterSession);
-            var session = _mapper.Map<SessionResponse>(result, opt => { opt.Items["UserId"] = enterSession.UserId; } );
-            return Ok(session);
+            //var session = _mapper.Map<SessionResponse>(result, opt => { opt.Items["UserId"] = userId; });
+            return Ok(result);
         }
     }
 }

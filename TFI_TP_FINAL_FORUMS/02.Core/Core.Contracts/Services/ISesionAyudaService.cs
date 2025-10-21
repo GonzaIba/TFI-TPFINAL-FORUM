@@ -14,6 +14,6 @@ namespace Core.Contracts.Services
         public Task<bool> AcceptTyC(AcceptTyCRequest request);
         public Task<TerminosCondicionesModel> GetTyC();
         public Task<SesionAyudaModel> GetSession(int codeRequestHelp, string userId);
-        public Task<SesionAyudaModel> EnterSession(EnterSessionRequest request);
+        public Task<SessionResponse> EnterSession(EnterSessionRequest request);
     }
 }

@@ -25,5 +25,12 @@ namespace CrossCutting.Helpers
             return elapsed >= timeSpan;
         }
 
+        public static DateTime EnsureUtc(DateTime value) =>
+        value.Kind switch
+        {
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+            DateTimeKind.Local => value.ToUniversalTime(),
+            _ => value
+        };
     }
 }

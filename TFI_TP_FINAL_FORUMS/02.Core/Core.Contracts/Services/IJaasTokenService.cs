@@ -10,6 +10,6 @@ namespace Core.Contracts.Services
     {
         string CreateToken(string appId, string room, DateTimeOffset notBefore, DateTimeOffset expiresAt,
                    string? userId = null, string? displayName = null, string? email = null, string? avatarUrl = null,
-                   string? issuerOverride = null);
+                   bool isModerator = false, string? issuerOverride = null);
     }
 }

@@ -12,6 +12,7 @@ using Core.Domain.Specification.Business;
 using CrossCutting.Extensions.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using System.Linq;
 
 namespace Core.Business.Services
 {
@@ -39,6 +40,8 @@ namespace Core.Business.Services
             string? search
         )
         {
+            var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
+            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Activa", tracking: true)).First();
             const string Collation = "Latin1_General_100_CI_AI";
 
             var userFiltersRepository = _unitOfWorkGateway.GetRepository<IUserFiltersRepository>();
@@ -68,6 +71,8 @@ namespace Core.Business.Services
                 includeProperties: "SolicitudAyudaEstado,SolicitudAyudaEtiquetas.Etiqueta,Disponibilidades",
                 tracking: false
             );
+
+            q = q.Where(s => s.IDEstado == estadoActiva.IDEstado); //Obtenemos solo las que esten activas
 
             // Filtro por usuario (excluir autor)
             if (!string.IsNullOrWhiteSpace(userId))
@@ -233,13 +238,70 @@ namespace Core.Business.Services
             if (string.IsNullOrWhiteSpace(userId))
                 return [];
 
+            var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
+            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Activa", tracking: true)).First();
+
             var q = _repository.Query(
                 s => s.IDUsuarioSolicitante == userId && s.FechaVencimiento >= DateTime.UtcNow,
                 includeProperties: "SolicitudAyudaEstado,SolicitudAyudaEtiquetas.Etiqueta,Disponibilidades",
                 tracking: false
-            ).OrderByDescending(s => s.CreateDate).ThenByDescending(s => s.IDSolicitudAyuda);
+            );
+
+            q = q.Where(s => s.IDEstado == estadoActiva.IDEstado)
+                .OrderByDescending(s => s.CreateDate)
+                .ThenByDescending(s => s.IDSolicitudAyuda);
 
             return await q.ToListAsync();
+        }
+
+        public async Task<List<SolicitudAyudaModel>> GetRequestsHelpConfirmed(string? userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return [];
+
+            var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
+            var estadoReservada = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
+
+            // 1) IDs como solicitante
+            var idsSolicitanteQ = _repository.Query(
+                    s => s.IDUsuarioSolicitante == userId && s.IDEstado == estadoReservada.IDEstado,
+                    tracking: false)
+                .Select(s => s.IDSolicitudAyuda);
+
+            // 2) IDs como ayudante (a través de la reserva)
+            var idsAyudanteQ = _unitOfWork.GetRepository<ISolicitudAyudaReservaRepository>()
+                .Query(r => r.IDUsuarioAyudante == userId && r.Disponibilidad.Solicitud.IDEstado == estadoReservada.IDEstado,
+                       tracking: false)
+                .Select(r => r.Disponibilidad.Solicitud.IDSolicitudAyuda);
+
+            var ids = await idsSolicitanteQ
+                .Concat(idsAyudanteQ)
+                .Distinct()
+                .ToListAsync();
+
+            if (ids.Count == 0) return [];
+
+            // 3) Única query con Includes y orden
+            var query = _repository.Query(s => ids.Contains(s.IDSolicitudAyuda),
+                                          includeProperties: "SolicitudAyudaEstado,SolicitudAyudaEtiquetas.Etiqueta,Disponibilidades,Disponibilidades.Reservas",
+                                          tracking: false)
+                                   .OrderByDescending(s => s.CreateDate)
+                                   .ThenByDescending(s => s.IDSolicitudAyuda);
+
+            // Lookup de usuarios
+            var idsAyudantes = query.Select(p => p.IDUsuarioSolicitante).Distinct().ToList();
+            var usuarios = (await _usersRepository
+                .Get(x => idsAyudantes.Contains(x.Id), includeProperties: "UsersForum", tracking: false))
+                .ToDictionary(u => u.Id);
+
+            var list = await query.ToListAsync();
+
+            foreach (var s in list)
+                if (usuarios.TryGetValue(s.IDUsuarioSolicitante, out var user))
+                    s.UsuarioSolicitante = user;
+
+            return list; // devolvés la misma lista que mutaste
+
         }
 
         public async Task<bool> UpdateDisponibility(int id, UpdateDisponibilityRequest request)
@@ -269,6 +331,56 @@ namespace Core.Business.Services
                 }
             }
             return await _unitOfWorkForum.Complete();
+        }
+
+        public async Task<bool> ConfirmRequestHelp(int codeRequest, ConfirmHelpRequest request)
+        {
+            var user = (await _usersRepository.Get(x => x.Id == request.UserId, tracking: false)).FirstOrDefault();
+            if (user == null)
+                throw new ApiForumException("No existe el usuario.");
+
+            var requestHelp = (await _repository.Get(x => x.IDSolicitudAyuda == codeRequest && x.IDUsuarioSolicitante != request.UserId,
+                includeProperties: "SolicitudAyudaEstado", tracking: true)).FirstOrDefault();
+
+            if (requestHelp == null)
+                throw new ApiForumException("No se encontró la solicitud de ayuda indicada o no tenés permisos para confirmarla.");
+
+            var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
+            var estadoReservada = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
+
+            if (requestHelp.SolicitudAyudaEstado == estadoReservada)
+                throw new ApiForumException("La solicitud de ayuda ya se encuentra reservada.");
+
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
+            requestHelp.IDEstado = estadoReservada.IDEstado;
+            await _unitOfWorkForum.SaveChangesAsync();
+
+            SolicitudAyudaReservaModel reserva = new SolicitudAyudaReservaModel
+            {
+                IDDisponibilidad = request.TimeSlot.CodeSlot,
+                IDUsuarioAyudante = request.UserId,
+                Estado = 1 // Activo
+            };
+            var reservaRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaReservaRepository>();
+            await reservaRepo.Insert(reserva);
+            await _unitOfWorkForum.SaveChangesAsync();
+
+            var idSession = Guid.NewGuid();
+            SesionAyudaModel sesionAyudaModel = new SesionAyudaModel
+            {
+                IDSesion = idSession,
+                IDReserva = reserva.IDReserva,
+                Dominio = $"liveHelp/meeting/{idSession}",
+                NombreSala = $"liveHelp-{idSession}",
+                CreateDate = DateTime.UtcNow,
+                Inicio = request.TimeSlot.Start,
+                Fin = request.TimeSlot.End,
+                Estado = SessionStateEnum.Pendiente.ToString() // Activa
+            };
+            await _unitOfWorkForum.GetRepository<ISesionAyudaRepository>().Insert(sesionAyudaModel);
+            await _unitOfWorkForum.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return true;
         }
 
         #region Helpers for GetRequestsHelp

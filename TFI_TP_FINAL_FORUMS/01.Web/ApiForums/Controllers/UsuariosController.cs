@@ -117,6 +117,17 @@ namespace ApiForums.Controllers
             return Ok(userForum);
         }
 
+        [HttpGet]
+        [Route("Alertas")]
+        public async Task<IActionResult> GetAlerts([FromQuery] string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                return BadRequest("Debe indicar el usuario.");
+
+            var alerts = await _usuarioService.GetAlertsAsync(userId.Trim());
+            return Ok(alerts);
+        }
+
         [HttpPost]
         [Route("MarcarNotificacionleida")]
         public async Task<IActionResult> MarkNotificationAsRead([FromBody] MarkNotificationAsReadRequest request)

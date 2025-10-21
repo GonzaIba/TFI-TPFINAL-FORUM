@@ -49,7 +49,7 @@ namespace ApiForums.Controllers
         }
 
         [HttpPut("{id:int}/ActualizarHorarios")]
-        public async Task<IActionResult> UpdateDisponibility([FromRoute] int id,[FromBody] UpdateDisponibilityRequest request)
+        public async Task<IActionResult> UpdateDisponibility([FromRoute] int id, [FromBody] UpdateDisponibilityRequest request)
         {
             //Validaciones...
             var result = await _solicitudAyudaService.UpdateDisponibility(id, request);
@@ -94,6 +94,14 @@ namespace ApiForums.Controllers
         {
             var page = await _solicitudAyudaService.GetMyRequestsHelp(userId);
             var mapped = _mapper.Map<List<RequestHelpResponse>>(page);
+            return Ok(mapped);
+        }
+
+        [HttpGet("ObtenerSolicitudesConfirmadas")]
+        public async Task<IActionResult> GetRequestHelpConfirmed([FromQuery] string? userId = null)
+        {
+            var page = await _solicitudAyudaService.GetRequestsHelpConfirmed(userId);
+            var mapped = _mapper.Map<List<RequestHelpConfirmedResponse>>(page, opt => { opt.Items["UserId"] = userId; });
             return Ok(mapped);
         }
 
@@ -228,6 +236,13 @@ namespace ApiForums.Controllers
 
             var count = await _chatMsgService.CountUnreadAsync(chat.IDChat, normalizedUser);
             return Ok(new ChatUnreadCountResponse { Count = count });
+        }
+
+        [HttpPost("{id:int}/ConfirmarSolicitud")]
+        public async Task<IActionResult> ConfirmRequestHelp([FromRoute] int id, [FromBody] ConfirmHelpRequest request)
+        {
+            var result = await _solicitudAyudaService.ConfirmRequestHelp(id, request);
+            return Ok(new SuccessfulResponse(result));
         }
     }
 }

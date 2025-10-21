@@ -60,6 +60,11 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.CountTotal, opt => opt.MapFrom(src => src.EtiquetasPublicaciones.Count()))
                 .ReverseMap();
 
+            CreateMap<TerminosCondicionesModel,TerminosCondicionesResponse>()
+                .ForMember(dest => dest.Contenido, opt => opt.MapFrom(src => src.Descripcion))
+                .ForMember(dest => dest.Titulo, opt => opt.MapFrom(src => src.Nombre))
+                .ReverseMap();
+
             CreateMap<Users, UsersForumPreviewResponse>()
                 .ForMember(dest => dest.CompleteName, opt => opt.MapFrom(src => src.Nombre + " " + src.Apellido))
                 .ForMember(dest => dest.Initials, opt => opt.MapFrom(src => ObtenerIniciales(src.Nombre + " " + src.Apellido)))
@@ -329,7 +334,60 @@ namespace ApiForums.Mapping
                            string.Equals(s.IDUsuario, me, StringComparison.OrdinalIgnoreCase);
                 }));
 
+            CreateMap<SolicitudAyudaModel, RequestHelpConfirmedResponse>()
+                .ForMember(d => d.CodeRequestHelp, o => o.MapFrom(s => s.IDSolicitudAyuda))
+                .ForMember(d => d.TitleHelp, o => o.MapFrom(s => s.Titulo))
+                .ForMember(d => d.Message, o => o.MapFrom(s => s.Descripcion))
+                .ForMember(d => d.Status, o => o.MapFrom(s => s.SolicitudAyudaEstado.Estado))
+                .ForMember(d => d.Languages, o => o.MapFrom(s =>
+                    string.IsNullOrWhiteSpace(s.Lenguaje)
+                    ? new List<string>()
+                    : s.Lenguaje
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => x.Trim())
+                        .Where(x => x.Length > 0)
+                        .ToList()
+                ))
+                .ForMember(d => d.Labels, o => o.MapFrom(s => s.SolicitudAyudaEtiquetas.Select(x => x.Etiqueta.NombreEtiqueta)))
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.CreateDate))
+                .ForMember(d => d.Regard, o => o.MapFrom(s => s.RecompensaBase))
+                .ForMember(d => d.InitAt, o => o.MapFrom(s =>
+                    s.Disponibilidades
+                     .Where(disp => disp.Reservas.Any())
+                     .OrderBy(disp => disp.Inicio)
+                     .Select(disp => (DateTime?)disp.Inicio)
+                     .FirstOrDefault()
+                ))
+                .ForMember(d => d.IsOwner, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    var userId = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
+                    if (string.IsNullOrEmpty(userId))
+                        return false;
+                    return s.IDUsuarioSolicitante == userId;
+                }))
+                .ForMember(d => d.UserCreator, o =>
+                    o.MapFrom((s, d, dm, ctx) =>
+                    ctx.Mapper.Map<UsersForumPreviewResponse>(s.UsuarioSolicitante))
+                )
+                .ReverseMap();
+
+            CreateMap<SesionAyudaModel,SessionResponse>()
+                .ForMember(d => d.CodeSession, o => o.MapFrom(s => s.IDSesion))
+                .ForMember(d => d.Domain, o => o.MapFrom(s => s.Dominio))
+                .ForMember(d => d.RoomName, o => o.MapFrom(s => s.NombreSala))
+                .ForMember(d => d.InitAt, o => o.MapFrom(s => s.Reserva.Disponibilidad.Inicio))
+                .ForMember(d => d.ExpiresAt, o => o.MapFrom(s => s.Reserva.Disponibilidad.Fin))
+                .ForMember(d => d.IsOwner, o => o.MapFrom((s, _, __, ctx) =>
+                {
+                    var userId = ctx.Items.TryGetValue("UserId", out var u) ? u as string : null;
+                    if (string.IsNullOrEmpty(userId))
+                        return false;
+                    return s.Reserva.Disponibilidad.Solicitud.IDUsuarioSolicitante == userId;
+                }))
+                .ReverseMap();
             #endregion
+
+            CreateMap<AnswerResponse, AddAnswerEvent>();
         }
 
         #region Helpers
@@ -390,7 +448,7 @@ namespace ApiForums.Mapping
                     for (var dt = start; dt.Add(interval) <= end; dt = dt.Add(interval))
                     {
                         var slotEnd = dt.Add(interval) <= end ? dt.Add(interval) : end;
-                        slotItems.Add(new TimeSlotItem { Start = dt, End = slotEnd });
+                        slotItems.Add(new TimeSlotItem { CodeSlot = disp.IDDisponibilidad, Start = dt, End = slotEnd });
                     }
                 }
             }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Response
 {
-    public class RequestHelpResponse
+    public class RequestHelpConfirmedResponse
     {
         public UsersForumPreviewResponse UserCreator { get; set; }
         public int CodeRequestHelp { get; set; }
@@ -17,19 +17,7 @@ namespace Core.Domain.Response
         public List<string> Labels { get; set; }
         public DateTime CreatedAt { get; set; }
         public decimal Regard { get; set; }
-        public DateTime ExpiresAt { get; set; }
-        public RequestHelpTimeSlot TimeSlot { get; set; }
-    }
-
-    public class RequestHelpTimeSlot
-    {
-        public List<TimeSlotItem> Slots { get; set; }
-    }
-
-    public class TimeSlotItem
-    {
-        public int CodeSlot { get; set; }
-        public DateTime Start { get; set; }
-        public DateTime End { get; set; }
+        public DateTime InitAt { get; set; }
+        public bool IsOwner { get; set; }
     }
 }

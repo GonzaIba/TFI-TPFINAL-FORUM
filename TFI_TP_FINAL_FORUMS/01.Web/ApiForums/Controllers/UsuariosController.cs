@@ -39,14 +39,14 @@ namespace ApiForums.Controllers
 
             var mappedUsers = result.Select(r => new UsersForumPreviewResponse
             {
-                CompleteName = r.Key.Nombre + " " + r.Key.Apellido,
-                Initials = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
+                CompleteName = r.Key.FirstName + " " + r.Key.LastName,
+                Initials = r.Key.FirstName.Substring(0, 1) + r.Key.LastName?.Substring(0, 1) ?? "",
                 ShortDescription = r.Key.UsersForum?.ShortDescriptionForum,
                 LongDescription = r.Key.UsersForum?.LongDescriptionForum,
                 Image = r.Key.UsersForum?.ImageForum,
-                DateFrom = "Desde " + r.Key.FechaCreado.Year.ToString(),
+                DateFrom = "Desde " + r.Key.CreatedDate.Year.ToString(),
                 Score = r.Value,
-                LastTimeOnline = r.Key.UsersForum?.LastTimeConnectedForum ?? r.Key.FechaCreado
+                LastTimeOnline = r.Key.UsersForum?.LastTimeConnectedForum ?? r.Key.CreatedDate
             });
 
             return Ok(mappedUsers);
@@ -62,9 +62,9 @@ namespace ApiForums.Controllers
 
             var mappedUsers = result.Select(r => new UsersForumPreviewResponse
             {
-                CompleteName = r.Key.Nombre + " " + r.Key.Apellido,
-                Initials = r.Key.Nombre.Substring(0, 1) + r.Key.Apellido?.Substring(0, 1) ?? "",
-                DateFrom = "Desde " + r.Key.FechaCreado.Year.ToString(),
+                CompleteName = r.Key.FirstName + " " + r.Key.LastName,
+                Initials = r.Key.FirstName.Substring(0, 1) + r.Key.LastName?.Substring(0, 1) ?? "",
+                DateFrom = "Desde " + r.Key.CreatedDate.Year.ToString(),
                 Score = r.Value,
             });
 
@@ -81,10 +81,10 @@ namespace ApiForums.Controllers
 
             var mappedUsers = result.Item2.Select(r => new UserForumResponse
             {
-                Name = r.Key.Nombre + " " + r.Key.Apellido,
+                Name = r.Key.FirstName + " " + r.Key.LastName,
                 Score = r.Value,
                 Email = r.Key.Email,
-                CreatedDate =  r.Key.FechaCreado,
+                CreatedDate =  r.Key.CreatedDate,
             });
 
             var response = _mapper.Map<List<UserForumResponse>>(

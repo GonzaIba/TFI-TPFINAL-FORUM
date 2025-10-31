@@ -244,5 +244,12 @@ namespace ApiForums.Controllers
             var result = await _solicitudAyudaService.ConfirmRequestHelp(id, request);
             return Ok(new SuccessfulResponse(result));
         }
+
+        [HttpDelete("{id:int}/CancelarSolicitud")]
+        public async Task<IActionResult> CancelRequestHelp([FromRoute] int id, [FromQuery] string userId)
+        {
+            var result = await _solicitudAyudaService.CancelRequestHelp(id, userId);
+            return Ok(new SuccessfulResponse(result));
+        }
     }
 }

@@ -3,6 +3,8 @@ using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Enum;
 using Core.Domain.Exceptions.BaseException;
+using Core.Domain.Exceptions.BusinessExceptions;
+using Core.Domain.Exceptions.GenericExceptions;
 using Core.Domain.GenericEntityClass;
 using Core.Domain.IdentityModels;
 using Core.Domain.Models;
@@ -151,7 +153,7 @@ namespace Core.Business.Services
 
             var user = (await _usersRepository.Get(x => x.Id == request.UserId, tracking: false)).FirstOrDefault();
             if (user == null)
-                throw new ApiForumException("No existe el usuario.");
+                throw new UserNotFoundException();
 
             var nowUtc = DateTime.UtcNow;
 
@@ -225,7 +227,7 @@ namespace Core.Business.Services
         {
             var requestHelp = (await _repository.Get(x=> x.IDSolicitudAyuda == codeRequest, includeProperties: "SolicitudAyudaEstado,SolicitudAyudaEtiquetas.Etiqueta,Disponibilidades,Chats")).FirstOrDefault();
             if (requestHelp == null)
-                throw new ApiForumException("No se encontró la solicitud de ayuda indicada.");
+                throw new RequestHelpCantAccessException();
 
             requestHelp.UsuarioSolicitante = (await _usersRepository.Get(x => x.Id == requestHelp.IDUsuarioSolicitante, tracking: false, includeProperties: "UsersForum")).FirstOrDefault();
 
@@ -319,7 +321,7 @@ namespace Core.Business.Services
             var requestHelp = (await _repository.Get(x => x.IDSolicitudAyuda == id && x.IDUsuarioSolicitante == request.UserId, 
                 includeProperties: "Disponibilidades", tracking: true)).FirstOrDefault();
             if (requestHelp == null)
-                throw new ApiForumException("No se encontró la solicitud de ayuda indicada o no tenés permisos para modificarla.");
+                throw new RequestHelpCantAccessException();
 
             // Reemplazamos las disponibilidades actuales por las nuevas
             requestHelp.Disponibilidades.Clear();
@@ -347,19 +349,19 @@ namespace Core.Business.Services
         {
             var user = (await _usersRepository.Get(x => x.Id == request.UserId, tracking: false)).FirstOrDefault();
             if (user == null)
-                throw new ApiForumException("No existe el usuario.");
+                throw new UserNotFoundException();
 
             var requestHelp = (await _repository.Get(x => x.IDSolicitudAyuda == codeRequest && x.IDUsuarioSolicitante != request.UserId,
                 includeProperties: "SolicitudAyudaEstado", tracking: true)).FirstOrDefault();
 
             if (requestHelp == null)
-                throw new ApiForumException("No se encontró la solicitud de ayuda indicada o no tenés permisos para confirmarla.");
+                throw new RequestHelpCantAccessException();
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
             var estadoReservada = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
 
             if (requestHelp.SolicitudAyudaEstado == estadoReservada)
-                throw new ApiForumException("La solicitud de ayuda ya se encuentra reservada.");
+                throw new RequestHelpReservedException();
 
             using var transaction = await _unitOfWork.BeginTransactionAsync();
             requestHelp.IDEstado = estadoReservada.IDEstado;
@@ -391,6 +393,23 @@ namespace Core.Business.Services
             await _unitOfWorkForum.SaveChangesAsync();
             await transaction.CommitAsync();
             return true;
+        }
+
+        public async Task<bool> CancelRequestHelp(int codeRequest, string userId)
+        {
+            var user = (await _usersRepository.Get(x => x.Id == userId)).FirstOrDefault();
+            if(user == null)
+                throw new UserNotFoundException();
+
+            var requestHelp = (await _repository.Get(x => x.IDSolicitudAyuda == codeRequest && x.IDUsuarioSolicitante == userId,
+                includeProperties: "SolicitudAyudaEstado", tracking: true)).FirstOrDefault();
+            if (requestHelp == null)
+                throw new RequestHelpCantAccessException();
+
+            var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
+            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Cancelada", tracking: true)).First();
+            requestHelp.IDEstado = estadoActiva.IDEstado;
+            return await _unitOfWorkForum.Complete();
         }
 
         #region Helpers for GetRequestsHelp

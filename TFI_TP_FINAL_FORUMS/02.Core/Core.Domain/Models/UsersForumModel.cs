@@ -13,6 +13,11 @@ namespace Core.Domain.Models
         public string? ShortDescriptionForum { get; set; }
         public string? LongDescriptionForum { get; set; }
         public string? ImageForum { get; set; }
+        public bool Onboarded { get; set; }
+        public bool HasSeenIntroPublications { get; set; }
+        public bool HasSeenIntroLabels { get; set; }
+        public bool HasSeenIntroUsers { get; set; }
+        public bool HasSeenIntroLiveHelp { get; set; }
         public DateTime LastTimeConnectedForum { get; set; }
 
         public Users User { get; set; }

@@ -2,6 +2,8 @@
 using Core.Contracts.Services;
 using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
+using Core.Domain.Exceptions.BusinessExceptions;
+using Core.Domain.Exceptions.GenericExceptions;
 using Core.Domain.GenericEntityClass;
 using Core.Domain.Models;
 using Core.Domain.Request;
@@ -43,11 +45,11 @@ namespace Core.Business.Services
         {
             var user = (await _unitOfWorkGateway.GetRepository<IUsersRepository>().Get(x => x.Id == request.UserId)).FirstOrDefault();
             if (user == null)
-                throw new Exception("User not found");
+                throw new UserNotFoundException();
 
             var requestHelp = (await _solicitudAyudaRepository.Get(x=> x.IDSolicitudAyuda == request.CodeRequestHelp, includeProperties: "SolicitudAyudaEstado,Disponibilidades,Disponibilidades.Reservas")).FirstOrDefault();
             if (requestHelp == null)
-                throw new ApiForumException("Request Help not found");
+                throw new RequestHelpCantAccessException();
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
             var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
@@ -97,15 +99,15 @@ namespace Core.Business.Services
         {
             var user = (await _unitOfWorkGateway.GetRepository<IUsersRepository>().Get(x => x.Id == userId)).FirstOrDefault();
             if (user == null)
-                throw new Exception("User not found");
+                throw new UserNotFoundException();
 
             var requestHelp = (await _solicitudAyudaRepository.Get(x => x.IDSolicitudAyuda == codeRequestHelp, includeProperties: "SolicitudAyudaEstado,Disponibilidades,Disponibilidades.Reservas")).FirstOrDefault();
             if (requestHelp == null)
-                throw new ApiForumException("Request Help not found");
+                throw new RequestHelpCantAccessException();
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
-            if (requestHelp.SolicitudAyudaEstado != estadoActiva)
+            var estadoReservada = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
+            if (requestHelp.SolicitudAyudaEstado != estadoReservada)
                 throw new ApiForumException("The help request is not active");
 
             //Obtenemos la reserva activa. Reserva es iCollection para mantener historial de reservas canceladas en tal caso.
@@ -129,7 +131,7 @@ namespace Core.Business.Services
                 .Get(x => x.Id == request.UserId, includeProperties: "UsersForum"))
                 .FirstOrDefault();
             if (user == null)
-                throw new Exception("User not found");
+                throw new UserNotFoundException();
 
             var session = (await _unitOfWork.GetRepository<ISesionAyudaRepository>()
                 .Get(x => x.IDSesion == request.CodeSession,
@@ -168,7 +170,7 @@ namespace Core.Business.Services
             var role = isOwner ? "moderator" : "participant";
 
             // JWT
-            var displayName = string.Join(" ", new[] { user.Nombre, user.Apellido }
+            var displayName = string.Join(" ", new[] { user.FirstName, user.LastName }
                                           .Where(s => !string.IsNullOrWhiteSpace(s))).Trim();
             if (string.IsNullOrWhiteSpace(displayName))
                 displayName = user.UserName ?? "Usuario";

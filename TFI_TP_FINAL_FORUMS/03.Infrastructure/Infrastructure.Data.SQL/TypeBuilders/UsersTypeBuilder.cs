@@ -14,14 +14,14 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.Ignore(x => x.UserPrivileges);
 
-            builder.Property(x => x.FechaCreado)
+            builder.Property(x => x.CreatedDate)
                    .HasColumnType("datetime2(7)")
                    .HasDefaultValueSql("GETDATE()");
 
-            builder.Property(x => x.Nombre)
+            builder.Property(x => x.FirstName)
                    .HasColumnType("varchar(50)");
 
-            builder.Property(x => x.Apellido)
+            builder.Property(x => x.LastName)
                    .HasColumnType("varchar(50)");
 
             //builder.HasOne(x => x.Country)

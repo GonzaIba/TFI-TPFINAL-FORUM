@@ -51,8 +51,8 @@ namespace Core.Business.Services
                 var userDb = (await _repository.Get(x => x.Id == user.Id)).FirstOrDefault();
                 userDb.Active = true;
                 userDb.Email = user.Email;
-                userDb.Nombre = user.Nombre;
-                userDb.Apellido = user.Apellido;
+                userDb.FirstName = user.FirstName;
+                userDb.LastName = user.LastName;
                 userDb.PhoneNumber = user.PhoneNumber;
                 userDb.UserName = user.UserName;
                 await _repository.Update(userDb);
@@ -114,7 +114,7 @@ namespace Core.Business.Services
                 var paged = await _repository.GetPagedElements(
                     pageIndex,
                     pageCount,
-                    orderByExpression: p => p.Nombre, 
+                    orderByExpression: p => p.FirstName, 
                     ascending: false,
                     combinedSpecification,
                     includeProperties: "UsersForum",
@@ -226,10 +226,12 @@ namespace Core.Business.Services
             static string FormatFutureDuration(TimeSpan span)
             {
                 if (span < TimeSpan.Zero) span = TimeSpan.Zero;
-                if (span.TotalDays >= 1) return $"{Math.Max(1, (int)Math.Ceiling(span.TotalDays))}d";
-                if (span.TotalHours >= 1) return $"{Math.Max(1, (int)Math.Ceiling(span.TotalHours))}h";
-                return $"{Math.Max(1, (int)Math.Ceiling(span.TotalMinutes))}m";
+                // Opción A: mantener días/horas/minutos pero truncando (coincide con el front en la idea de truncar)
+                if (span.TotalDays >= 1) return $"{Math.Max(1, (int)Math.Floor(span.TotalDays))}d";
+                if (span.TotalHours >= 1) return $"{Math.Max(1, (int)Math.Floor(span.TotalHours))}h";
+                return $"{Math.Max(1, (int)Math.Floor(span.TotalMinutes))}m";
             }
+
 
             static string FormatPastDuration(TimeSpan span)
             {

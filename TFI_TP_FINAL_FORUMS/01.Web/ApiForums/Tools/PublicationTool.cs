@@ -10,6 +10,12 @@ namespace ApiForums.Tools
     [McpServerToolType]
     public sealed class PublicationsTool
     {
+        [McpServerTool(Name = "ConocerPaginaPublicaciones"), Description("Introducción a la página de publicaciones")]
+        public static string PublicationsIntroduction()
+        {
+            return "Esta es una página en el que podes buscar/crear publicaciones para resolver tus dudas sobre ciberseguridad.";
+        }
+
         [McpServerTool(Name = "BuscarPublicacion"), Description("Busca una publicacion por nombre de titulo")]
         public static async Task<string> BuscarPublicacion(
         [Description("Nombre del título de la publicación a buscar")] string titleName,
@@ -32,19 +38,16 @@ namespace ApiForums.Tools
                 var pub = (await pubService.Get(u => u.IDPublicacion == publicationId, tracking: false)).FirstOrDefault();
                 if (pub == null) return "No se encontró la publicación.";
 
-                // ✅ Obtenés el cliente de chat así:
-                //IChatClient chat =
-                //    new OpenAIClient(config["AI:ApiKey"])
-                //        .AsChatClient("gpt-4o-mini");
-
                 var mensajes = new[]
                 {
                     new ChatMessage(ChatRole.User, $"Resumí la siguiente publicación: {pub.Contenido}"),
                     new ChatMessage(ChatRole.Assistant, "Claro, aquí tienes un resumen de la publicación.")
                 };
 
-                var response = await chat.GetResponseAsync(mensajes, new ChatOptions { MaxOutputTokens = 150 });
-                return response?.Text ?? "No se pudo generar un resumen.";
+                //var response = await chat.GetResponseAsync(mensajes, new ChatOptions { MaxOutputTokens = 150 });
+                //return response?.Text ?? "No se pudo generar un resumen.";
+
+                return pub.Contenido;
             }
             catch (Exception ex)
             {

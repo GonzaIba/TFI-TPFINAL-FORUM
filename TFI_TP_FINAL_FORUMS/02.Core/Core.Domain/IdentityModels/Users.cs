@@ -40,11 +40,11 @@ namespace Core.Domain.IdentityModels
 
 
         //Propiedades Genéricas
-        public string? LenguajePreferencia { get; set; }
-        public DateTime FechaCreado { get; set; }
+        public string? LanguagePreference { get; set; }
+        public DateTime CreatedDate { get; set; }
         public bool Active { get; set; }
-        public string Nombre { get; set; }
-        public string? Apellido { get; set; }
+        public string FirstName { get; set; }
+        public string? LastName { get; set; }
 
 
         //Para educacional

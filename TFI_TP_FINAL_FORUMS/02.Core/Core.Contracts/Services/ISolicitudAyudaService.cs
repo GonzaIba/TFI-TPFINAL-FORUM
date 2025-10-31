@@ -12,6 +12,7 @@ namespace Core.Contracts.Services
         Task<bool> UpdateDisponibility(int id, UpdateDisponibilityRequest request);
         Task<(SolicitudAyudaModel, int?)> GetDetailRequestsHelp(int codeRequest, string codeUser);
         Task<bool> ConfirmRequestHelp(int codeRequest, ConfirmHelpRequest request);
+        Task<bool> CancelRequestHelp(int codeRequest, string userId);
         Task<List<SolicitudAyudaModel>> GetRequestsHelpConfirmed(string? userId);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Core.Contracts.Repositories;
 using Core.Domain.Models;
+using Core.Domain.Response;
 using Core.Domain.Views;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ML;
@@ -84,13 +85,36 @@ namespace Infrastructure.Data.SQL.Repositories
                 .ToList();
         }
 
-        public async Task<IEnumerable<PublicacionModel>> GetTopPublicationsLastWeek()
+        public async Task<List<PublicacionModel>> GetTopPublicationsLastWeek()
         {
-            var topPublications = await _context.Set<TopTenPublicationsLastWeekView>().AsNoTracking().ToListAsync();
-            var publicationIds = topPublications.Select(p => p.IDPublicacion).ToList();
-            var result = await Get(x => publicationIds.Contains(x.IDPublicacion), tracking: false, ignoreQueryFilters: true, includeProperties: "EtiquetasPublicacion,EtiquetasPublicacion.Etiqueta,Respuestas,PublicacionesGuardadas");
-            return result;
+            var topIds = await _context.Set<TopTenPublicationsLastWeekView>()
+                                       .AsNoTracking()
+                                       .Select(x => x.IDPublicacion)
+                                       .ToListAsync();
+
+            if (topIds.Count == 0)              // <- corta acá
+                return [];
+
+            var orderMap = topIds.Select((id, i) => new { id, i })
+                                 .ToDictionary(x => x.id, x => x.i);
+
+            var publicaciones = await _entities
+                .AsNoTracking()
+                .Where(p => topIds.Contains(p.IDPublicacion))           // 1) FILTRÁ PRIMERO
+                .Include(p => p.EtiquetasPublicacion)                    // 2) INCLUDES
+                .ThenInclude(ep => ep.Etiqueta)
+                .Include(p => p.Respuestas)                              //    (podés filtrar abajo)
+                .Include(p => p.PublicacionesGuardadas)
+                .AsSplitQuery()                                          // 3) EVITA EL MEGA JOIN
+                .ToListAsync();
+
+            // 4) Reordená según el TOP original (el IN no garantiza el orden):
+            publicaciones = publicaciones
+                .OrderBy(p => orderMap.TryGetValue(p.IDPublicacion, out var pos) ? pos : int.MaxValue).ToList();
+
+            return publicaciones;
         }
+
 
         #region Helpers
         private float Cosine(VBuffer<float> a, VBuffer<float> b)

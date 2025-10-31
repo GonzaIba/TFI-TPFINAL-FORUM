@@ -66,29 +66,29 @@ namespace ApiForums.Mapping
                 .ReverseMap();
 
             CreateMap<Users, UsersForumPreviewResponse>()
-                .ForMember(dest => dest.CompleteName, opt => opt.MapFrom(src => src.Nombre + " " + src.Apellido))
-                .ForMember(dest => dest.Initials, opt => opt.MapFrom(src => ObtenerIniciales(src.Nombre + " " + src.Apellido)))
+                .ForMember(dest => dest.CompleteName, opt => opt.MapFrom(src => src.FirstName + " " + src.LastName))
+                .ForMember(dest => dest.Initials, opt => opt.MapFrom(src => ObtenerIniciales(src.FirstName + " " + src.LastName)))
                 .ForMember(dest => dest.ShortDescription, opt => opt.MapFrom(src => src.UsersForum.ShortDescriptionForum))
                 .ForMember(dest => dest.LongDescription, opt => opt.MapFrom(src => src.UsersForum.LongDescriptionForum))
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.UsersForum.ImageForum))
-                .ForMember(dest => dest.DateFrom, opt => opt.MapFrom(src => src.FechaCreado))
+                .ForMember(dest => dest.DateFrom, opt => opt.MapFrom(src => src.CreatedDate))
                 .ForMember(dest => dest.LastTimeOnline, opt => opt.MapFrom(src => src.UsersForum.LastTimeConnectedForum))
                 .ForMember(dest => dest.Score, opt => opt.Ignore()) // Lo configuraremos después
                 .ReverseMap();
             //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
 
             CreateMap<Users, UserForumResponse>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Nombre))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.FirstName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreado));
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate));
             //.ForMember(dest => dest.Puntaje, opt => opt.MapFrom(src => src.RecompensasUsuarios.Sum(x => x.CantidadRecompensa)));
 
             CreateMap<Users, DetailsUserForumResponse>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Nombre))
-                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Apellido))
-                .ForMember(dest => dest.LanguagePreference, opt => opt.MapFrom(src => src.LenguajePreferencia))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.LanguagePreference, opt => opt.MapFrom(src => src.LanguagePreference))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.FechaCreado))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate))
                 .ForMember(dest => dest.ShortDescriptionForum, opt => opt.MapFrom(src => src.UsersForum.ShortDescriptionForum))
                 .ForMember(dest => dest.LongDescriptionForum, opt => opt.MapFrom(src => src.UsersForum.LongDescriptionForum))
                 .ForMember(dest => dest.ImageForum, opt => opt.MapFrom(src => src.UsersForum.ImageForum))

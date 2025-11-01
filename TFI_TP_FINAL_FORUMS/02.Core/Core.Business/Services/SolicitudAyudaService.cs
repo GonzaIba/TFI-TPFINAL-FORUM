@@ -43,7 +43,7 @@ namespace Core.Business.Services
         )
         {
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Activa", tracking: true)).First();
+            var estadoActiva = (await estadoRepo.Get(x => x.Estado == RequestHelpStateEnum.Activa.ToString(), tracking: true)).First();
             const string Collation = "Latin1_General_100_CI_AI";
 
             var userFiltersRepository = _unitOfWorkGateway.GetRepository<IUserFiltersRepository>();
@@ -159,7 +159,7 @@ namespace Core.Business.Services
 
             // Estado inicial: "Activa"; si no existe, lo creamos
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Activa", tracking: true)).First();
+            var estadoActiva = (await estadoRepo.Get(x => x.Estado == RequestHelpStateEnum.Activa.ToString(), tracking: true)).First();
 
             var solicitud = new SolicitudAyudaModel
             {
@@ -241,7 +241,7 @@ namespace Core.Business.Services
                 return [];
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Activa", tracking: true)).First();
+            var estadoActiva = (await estadoRepo.Get(x => x.Estado == RequestHelpStateEnum.Activa.ToString(), tracking: true)).First();
 
             var q = _repository.Query(
                 s => s.IDUsuarioSolicitante == userId && s.FechaVencimiento >= DateTime.UtcNow,
@@ -270,7 +270,7 @@ namespace Core.Business.Services
                 return [];
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoReservada = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
+            var estadoReservada = (await estadoRepo.Get(x => x.Estado == RequestHelpStateEnum.Reservada.ToString(), tracking: true)).First();
 
             // 1) IDs como solicitante
             var idsSolicitanteQ = _repository.Query(
@@ -306,7 +306,7 @@ namespace Core.Business.Services
 
             var list = await query.ToListAsync();
             var utcNow = DateTime.UtcNow;
-            list = list.Where(x => utcNow <= EnsureUtc(x.Disponibilidades.First(y => y.Active).Fin)).ToList();
+            list = list.Where(x => utcNow <= x.Disponibilidades.First(y => y.Active).Fin).ToList();
 
             foreach (var s in list)
                 if (usuarios.TryGetValue(s.IDUsuarioSolicitante, out var user))
@@ -358,7 +358,7 @@ namespace Core.Business.Services
                 throw new RequestHelpCantAccessException();
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoReservada = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
+            var estadoReservada = (await estadoRepo.Get(x => x.Estado == RequestHelpStateEnum.Reservada.ToString(), tracking: true)).First();
 
             if (requestHelp.SolicitudAyudaEstado == estadoReservada)
                 throw new RequestHelpReservedException();
@@ -371,11 +371,15 @@ namespace Core.Business.Services
             {
                 IDDisponibilidad = request.TimeSlot.CodeSlot,
                 IDUsuarioAyudante = request.UserId,
+                CreateDate = DateTime.UtcNow,
                 Estado = 1 // Activo
             };
             var reservaRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaReservaRepository>();
             await reservaRepo.Insert(reserva);
             await _unitOfWorkForum.SaveChangesAsync();
+
+            var sesionEstadoRepo = _unitOfWorkForum.GetRepository<ISesionAyudaEstadoRepository>();
+            var estadoPendiente = (await sesionEstadoRepo.Get(x => x.Estado == SessionStateEnum.Pendiente.ToString(), tracking: true)).First();
 
             var idSession = Guid.NewGuid();
             SesionAyudaModel sesionAyudaModel = new SesionAyudaModel
@@ -387,7 +391,8 @@ namespace Core.Business.Services
                 CreateDate = DateTime.UtcNow,
                 Inicio = request.TimeSlot.Start,
                 Fin = request.TimeSlot.End,
-                Estado = SessionStateEnum.Pendiente.ToString() // Activa
+                IDEstado = estadoPendiente.IDEstado,
+                //SesionAyudaEstado = estadoPendiente
             };
             await _unitOfWorkForum.GetRepository<ISesionAyudaRepository>().Insert(sesionAyudaModel);
             await _unitOfWorkForum.SaveChangesAsync();
@@ -407,10 +412,76 @@ namespace Core.Business.Services
                 throw new RequestHelpCantAccessException();
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Cancelada", tracking: true)).First();
-            requestHelp.IDEstado = estadoActiva.IDEstado;
+            var estadoCancelada = (await estadoRepo.Get(x => x.Estado == RequestHelpStateEnum.Cancelada.ToString(), tracking: true)).First();
+            requestHelp.IDEstado = estadoCancelada.IDEstado;
             return await _unitOfWorkForum.Complete();
         }
+
+        public async Task<bool> CancelConfirmedRequestHelp(int codeRequest, string userId)
+        {
+            // 1) Traigo la solicitud con tracking y reservas activas
+            var requestHelp = (await _repository.Get(
+                x => x.IDSolicitudAyuda == codeRequest && x.IDUsuarioSolicitante != userId,
+                includeProperties: "SolicitudAyudaEstado,Disponibilidades,Disponibilidades.Reservas,Disponibilidades.Reservas.Sesion",
+                tracking: true))
+                .FirstOrDefault();
+
+            if (requestHelp == null)
+                throw new RequestHelpCantAccessException();
+
+            var user = _usersRepository.Query(x => x.Id == userId).FirstOrDefault();
+            if (user == null)
+                throw new UserNotFoundException();
+
+            // 2) Reserva activa del ayudante que está cancelando
+            var reserved = requestHelp.Disponibilidades
+                .SelectMany(d => d.Reservas)
+                .FirstOrDefault(r => r.IDUsuarioAyudante == userId && r.Estado == 1); // 1 = Reservada/Activa
+
+            if (reserved == null)
+                throw new RequestHelpReservedException(); // (nombre confuso: aquí es "no reservada")
+
+            // Ventana mínima de 1 hora
+            DateTime? sessionStartLocal = reserved.Disponibilidad.Inicio;
+            var nowUtc = DateTime.UtcNow;
+
+            if (sessionStartLocal.HasValue)
+            {
+                var sessionStartUtc = DateTime.SpecifyKind(sessionStartLocal.Value, DateTimeKind.Utc);
+                if ((sessionStartUtc - nowUtc) <= TimeSpan.FromHours(1))
+                    throw new RequestHelpTooLateToCancelException();
+            }
+
+            using var tx = await _unitOfWork.BeginTransactionAsync();
+
+            // 3) "Pausar el reloj": sumo el tiempo bloqueado a FechaVencimiento
+            // Asegurate de que reserved.CreateDate esté en UTC; si no, normalizalo
+            var reservedSinceUtc = DateTime.SpecifyKind(reserved.CreateDate, DateTimeKind.Utc);
+
+            var elapsed = nowUtc - reservedSinceUtc;
+            if (elapsed > TimeSpan.Zero)
+            {
+                // Si tu columna es DateTime/DateTimeOffset, ambos soportan Add
+                requestHelp.FechaVencimiento = requestHelp.FechaVencimiento.Add(elapsed);
+            }
+
+            // 4) Estado vuelve a Activa
+            var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
+            var estadoActiva = (await estadoRepo.Get(
+                x => x.Estado == RequestHelpStateEnum.Activa.ToString(),
+                tracking: true)).First();
+            requestHelp.IDEstado = estadoActiva.IDEstado;
+            requestHelp.RecompensaBase = Math.Max(1m, requestHelp.RecompensaBase + 0.5m); // agrego un poco
+            await _repository.Update(requestHelp);
+
+            // 5) Borro la reserva y la sesion
+            await _unitOfWorkForum.GetRepository<ISesionAyudaRepository>().Delete(reserved.Sesion);
+            await _unitOfWorkForum.GetRepository<ISolicitudAyudaReservaRepository>().Delete(reserved);
+            var result = await _unitOfWorkForum.Complete();
+            await tx.CommitAsync();
+            return result;
+        }
+
 
         #region Helpers for GetRequestsHelp
         private static string EscapeLike(string input)

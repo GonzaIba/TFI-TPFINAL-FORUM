@@ -486,13 +486,11 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<DateTime>("Fin")
                         .HasColumnType("datetime2(3)");
+
+                    b.Property<int>("IDEstado")
+                        .HasColumnType("int");
 
                     b.Property<int>("IDReserva")
                         .HasColumnType("int");
@@ -510,6 +508,8 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     b.HasKey("IDSesion");
 
+                    b.HasIndex("IDEstado");
+
                     b.HasIndex("IDReserva")
                         .IsUnique()
                         .HasDatabaseName("IX_SesionAyuda_Reserva");
@@ -519,6 +519,28 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasDatabaseName("UQ_SesionAyuda_Sala");
 
                     b.ToTable("SesionAyuda", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.SesionAyudaEstadoModel", b =>
+                {
+                    b.Property<int>("IDEstado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDEstado"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("IDEstado");
+
+                    b.HasIndex("Estado")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_SesionAyudaEstado_Estado");
+
+                    b.ToTable("SesionAyudaEstado", (string)null);
                 });
 
             modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaChatMensajeLecturaModel", b =>
@@ -1128,11 +1150,19 @@ namespace Infrastructure.Data.SQL.Migrations
 
             modelBuilder.Entity("Core.Domain.Models.SesionAyudaModel", b =>
                 {
+                    b.HasOne("Core.Domain.Models.SesionAyudaEstadoModel", "SesionAyudaEstado")
+                        .WithMany("Sesiones")
+                        .HasForeignKey("IDEstado")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Core.Domain.Models.SolicitudAyudaReservaModel", "Reserva")
                         .WithOne("Sesion")
                         .HasForeignKey("Core.Domain.Models.SesionAyudaModel", "IDReserva")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("SesionAyudaEstado");
 
                     b.Navigation("Reserva");
                 });
@@ -1336,6 +1366,11 @@ namespace Infrastructure.Data.SQL.Migrations
             modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaEstadoModel", b =>
                 {
                     b.Navigation("Solicitudes");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.SesionAyudaEstadoModel", b =>
+                {
+                    b.Navigation("Sesiones");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaModel", b =>

@@ -4,6 +4,7 @@ using Core.Contracts.UoW;
 using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Exceptions.BusinessExceptions;
 using Core.Domain.Exceptions.GenericExceptions;
+using Core.Domain.Enum;
 using Core.Domain.GenericEntityClass;
 using Core.Domain.Models;
 using Core.Domain.Request;
@@ -52,8 +53,8 @@ namespace Core.Business.Services
                 throw new RequestHelpCantAccessException();
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoActiva = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
-            if (requestHelp.SolicitudAyudaEstado != estadoActiva)
+            var estadoReservada = (await estadoRepo.Get(x => x.Estado == RequestHelpStateEnum.Reservada.ToString(), tracking: true)).First();
+            if (requestHelp.SolicitudAyudaEstado != estadoReservada)
                 throw new ApiForumException("The help request is not active");
 
             //Obtenemos la reserva activa. Reserva es iCollection para mantener historial de reservas canceladas en tal caso.
@@ -106,7 +107,7 @@ namespace Core.Business.Services
                 throw new RequestHelpCantAccessException();
 
             var estadoRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
-            var estadoReservada = (await estadoRepo.Get(x => x.Estado == "Reservada", tracking: true)).First();
+            var estadoReservada = (await estadoRepo.Get(x => x.Estado == RequestHelpStateEnum.Reservada.ToString(), tracking: true)).First();
             if (requestHelp.SolicitudAyudaEstado != estadoReservada)
                 throw new ApiForumException("The help request is not active");
 

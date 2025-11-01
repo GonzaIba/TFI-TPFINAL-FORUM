@@ -1,4 +1,5 @@
 ﻿using Core.Domain.Exceptions.BaseException;
+using System.Net;
 
 namespace Core.Domain.Exceptions.GenericExceptions
 {

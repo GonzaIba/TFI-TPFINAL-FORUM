@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace Core.Domain.Enum
 {
-    public enum SessionStateEnum
+    public enum RequestHelpStateEnum
     {
-        Pendiente = 1,
-        Iniciada,
+        Activa = 1,
+        Reservada,
+        Cancelada,
         Finalizada,
-        Cancelada
+        Expirada
     }
 }

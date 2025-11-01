@@ -12,6 +12,7 @@ using Core.Domain.GenericEntityClass;
 using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Request;
 using Core.Domain.Response;
+using Core.Domain.Enum;
 
 namespace Core.Business.Services
 {
@@ -244,9 +245,9 @@ namespace Core.Business.Services
             static bool IsRequestActiveState(string? state)
             {
                 if (string.IsNullOrWhiteSpace(state)) return true;
-                return !state.Equals("Cerrada", StringComparison.OrdinalIgnoreCase)
-                    && !state.Equals("Cancelada", StringComparison.OrdinalIgnoreCase)
-                    && !state.Equals("Expirada", StringComparison.OrdinalIgnoreCase);
+                    return !state.Equals("Cerrada", StringComparison.OrdinalIgnoreCase)
+                        && !state.Equals(RequestHelpStateEnum.Cancelada.ToString(), StringComparison.OrdinalIgnoreCase)
+                        && !state.Equals(RequestHelpStateEnum.Expirada.ToString(), StringComparison.OrdinalIgnoreCase);
             }
 
             var userExists = (await _repository.Get(x => x.Id == normalizedUser, tracking: false))?.Any() ?? false;

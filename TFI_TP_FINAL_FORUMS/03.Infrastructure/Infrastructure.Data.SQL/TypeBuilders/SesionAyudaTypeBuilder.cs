@@ -16,11 +16,16 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(e => e.IDReserva).IsRequired();
             builder.Property(e => e.Dominio).IsRequired().HasMaxLength(200); //.HasDefaultValue("meet.jit.si");
             builder.Property(e => e.NombreSala).IsRequired().HasMaxLength(200);
-            builder.Property(e => e.Estado).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.IDEstado).IsRequired();
 
             builder.HasOne(e => e.Reserva)
                    .WithOne(r => r.Sesion)
                    .HasForeignKey<SesionAyudaModel>(e => e.IDReserva)
+                   .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne(e => e.SesionAyudaEstado)
+                   .WithMany(s => s.Sesiones)
+                   .HasForeignKey(e => e.IDEstado)
                    .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(e => e.TerminosCondiciones)

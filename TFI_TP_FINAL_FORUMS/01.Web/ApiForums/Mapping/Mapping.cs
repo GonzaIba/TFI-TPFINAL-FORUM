@@ -74,6 +74,7 @@ namespace ApiForums.Mapping
                 .ForMember(dest => dest.DateFrom, opt => opt.MapFrom(src => src.CreatedDate))
                 .ForMember(dest => dest.LastTimeOnline, opt => opt.MapFrom(src => src.UsersForum.LastTimeConnectedForum))
                 .ForMember(dest => dest.Score, opt => opt.Ignore()) // Lo configuraremos después
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ReverseMap();
             //.ForMember(dest => dest.UltimaVezConectado, opt => opt.MapFrom(src => src.UltimaVezConectadoForum)); // Asumo que Users tiene una propiedad llamada LastConnected
 

@@ -8,6 +8,7 @@ namespace Core.Domain.Response
 {
     public class UsersForumPreviewResponse
     {
+        public string Email { get; set; }
         public string CompleteName { get; set; }
         public string Initials { get; set; }
         public string? ShortDescription { get; set; }
@@ -15,6 +16,6 @@ namespace Core.Domain.Response
         public string? Image { get; set; }
         public string? DateFrom { get; set; }
         public int Score { get; set; }
-        public DateTime LastTimeOnline { get; set; }
+        public DateTime? LastTimeOnline { get; set; }
     }
 }

@@ -46,7 +46,8 @@ namespace ApiForums.Controllers
                 Image = r.Key.UsersForum?.ImageForum,
                 DateFrom = "Desde " + r.Key.CreatedDate.Year.ToString(),
                 Score = r.Value,
-                LastTimeOnline = r.Key.UsersForum?.LastTimeConnectedForum ?? r.Key.CreatedDate
+                LastTimeOnline = r.Key.UsersForum?.LastTimeConnectedForum,
+                Email = r.Key.Email
             });
 
             return Ok(mappedUsers);
@@ -62,10 +63,15 @@ namespace ApiForums.Controllers
 
             var mappedUsers = result.Select(r => new UsersForumPreviewResponse
             {
+                Email = r.Key.Email,
                 CompleteName = r.Key.FirstName + " " + r.Key.LastName,
                 Initials = r.Key.FirstName.Substring(0, 1) + r.Key.LastName?.Substring(0, 1) ?? "",
                 DateFrom = "Desde " + r.Key.CreatedDate.Year.ToString(),
                 Score = r.Value,
+                LastTimeOnline = r.Key.UsersForum?.LastTimeConnectedForum,
+                Image = r.Key.UsersForum?.ImageForum,
+                LongDescription = r.Key.UsersForum?.LongDescriptionForum,
+                ShortDescription = r.Key.UsersForum?.ShortDescriptionForum,
             });
 
             return Ok(mappedUsers);

@@ -17,5 +17,6 @@ namespace Core.Contracts.Services
         public Task<List<NotificacionesModel>> GetNotificationsAsync(string userId);
         public Task<bool> MarkNotificationAsReadAsync(MarkNotificationAsReadRequest request);
         public Task<IReadOnlyList<AlertResponse>> GetAlertsAsync(string userId);
+        public Task<bool> DeleteUserForumAsync(DeleteUserForumRequest request);
     }
 }

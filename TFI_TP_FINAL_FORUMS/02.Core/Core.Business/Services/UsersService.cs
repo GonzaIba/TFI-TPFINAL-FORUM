@@ -1,18 +1,21 @@
-﻿using Core.Contracts.Repositories;
+﻿using AutoMapper;
+using Core.Contracts.Publishers;
+using Core.Contracts.Repositories;
 using Core.Contracts.Services;
-using Core.Domain.IdentityModels;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using System.Linq.Expressions;
 using Core.Contracts.UoW;
-using Core.Domain.Specification;
-using CrossCutting.Extensions.Linq;
-using Core.Domain.Models;
-using Core.Domain.GenericEntityClass;
+using Core.Domain.Enum;
 using Core.Domain.Exceptions.BaseException;
+using Core.Domain.GenericEntityClass;
+using Core.Domain.IdentityModels;
+using Core.Domain.Models;
 using Core.Domain.Request;
 using Core.Domain.Response;
-using Core.Domain.Enum;
+using Core.Domain.Specification;
+using CrossCutting.Extensions.Linq;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace Core.Business.Services
 {
@@ -23,13 +26,15 @@ namespace Core.Business.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWorkForum _unitOfWorkForum;
         private readonly IUnitOfWorkGateway _unitOfWorkGateway;
+        private readonly IPublisherNotification _publisherNotification;
 
         public UsersService(
             IUnitOfWorkGateway unitOfWorkGateway,
             IUnitOfWorkForum unitOfWorkForum,
             IMapper mapper,
             IEmailService emailService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IPublisherNotification publisherNotification)
             : base(unitOfWorkGateway, unitOfWorkGateway.GetRepository<IUsersRepository>())
         {
             _emailService = emailService;
@@ -37,6 +42,7 @@ namespace Core.Business.Services
             _httpContextAccessor = httpContextAccessor;
             _unitOfWorkForum = unitOfWorkForum;
             _unitOfWorkGateway = unitOfWorkGateway;
+            _publisherNotification = publisherNotification;
         }      
         
         public async Task<List<Users>> GetUsersAsync()
@@ -528,6 +534,295 @@ namespace Core.Business.Services
             }
 
             return ordered;
+        }
+
+        public async Task<bool> DeleteUserForumAsync(DeleteUserForumRequest request)
+        {
+            if (request is null)
+                throw new ApiForumException("Solicitud inválida.");
+
+            if (string.IsNullOrWhiteSpace(request.UserId))
+                throw new ApiForumException("Debe indicar el usuario.");
+
+            var user = (await _repository.Get(
+                x => x.Id == request.UserId,
+                includeProperties: "UsersForum",
+                tracking: true)).FirstOrDefault();
+
+            if (user is null)
+                throw new ApiForumException("El usuario no existe.");
+
+            static string BuildDisplayName(Users currentUser)
+            {
+                var parts = new List<string>();
+
+                if (!string.IsNullOrWhiteSpace(currentUser.FirstName))
+                    parts.Add(currentUser.FirstName.Trim());
+
+                if (!string.IsNullOrWhiteSpace(currentUser.LastName))
+                    parts.Add(currentUser.LastName.Trim());
+
+                if (parts.Count > 0)
+                    return string.Join(" ", parts);
+
+                if (!string.IsNullOrWhiteSpace(currentUser.Email))
+                    return currentUser.Email;
+
+                return "el usuario";
+            }
+
+            var displayName = BuildDisplayName(user);
+            var nowUtc = DateTime.UtcNow;
+
+            const byte AvailabilityCancelledState = 4;
+            const byte AvailabilityAvailableState = 4;
+            const byte ReservationCancelledState = 3;
+
+            static DateTime NormalizeToUtc(DateTime value) =>
+                value.Kind switch
+                {
+                    DateTimeKind.Utc => value,
+                    DateTimeKind.Local => value.ToUniversalTime(),
+                    _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+                };
+
+            var notificationPayload = new List<(string UserId, string Message)>();
+
+            void QueueNotification(string? targetUserId, string message)
+            {
+                if (string.IsNullOrWhiteSpace(targetUserId) || string.IsNullOrWhiteSpace(message))
+                    return;
+
+                var candidate = targetUserId.Trim();
+                if (candidate.Length == 0)
+                    return;
+
+                if (string.Equals(candidate, request.UserId, StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                notificationPayload.Add((candidate, message));
+            }
+
+            var solicitudRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaRepository>();
+            var reservaRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaReservaRepository>();
+            var estadoSolicitudRepo = _unitOfWorkForum.GetRepository<ISolicitudAyudaEstadoRepository>();
+            var estadoSesionRepo = _unitOfWorkForum.GetRepository<ISesionAyudaEstadoRepository>();
+            var notificationRepo = _unitOfWorkForum.GetRepository<INotificacionRepository>();
+
+            var solicitudEstados = (await estadoSolicitudRepo.Get(tracking: true))
+                .ToDictionary(e => e.Estado, e => e, StringComparer.OrdinalIgnoreCase);
+
+            solicitudEstados.TryGetValue(RequestHelpStateEnum.Cancelada.ToString(), out var estadoSolicitudCancelada);
+            solicitudEstados.TryGetValue(RequestHelpStateEnum.Activa.ToString(), out var estadoSolicitudActiva);
+
+            var sesionEstados = (await estadoSesionRepo.Get(tracking: true)).ToList();
+            var sesionEstadoPorNombre = sesionEstados.ToDictionary(e => e.Estado, e => e, StringComparer.OrdinalIgnoreCase);
+            var sesionEstadoPorId = sesionEstados.ToDictionary(e => e.IDEstado, e => e.Estado);
+
+            sesionEstadoPorNombre.TryGetValue(SessionStateEnum.Cancelada.ToString(), out var estadoSesionCancelada);
+
+            string? ResolveSessionState(SesionAyudaModel session)
+            {
+                if (session.SesionAyudaEstado?.Estado is string value && !string.IsNullOrWhiteSpace(value))
+                    return value;
+
+                return sesionEstadoPorId.TryGetValue(session.IDEstado, out var resolved) ? resolved : null;
+            }
+
+            bool ShouldNotifySession(SesionAyudaModel? session)
+            {
+                if (session is null)
+                    return false;
+
+                var stateName = ResolveSessionState(session);
+                if (!string.IsNullOrWhiteSpace(stateName))
+                {
+                    if (string.Equals(stateName, SessionStateEnum.Cancelada.ToString(), StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(stateName, SessionStateEnum.Finalizada.ToString(), StringComparison.OrdinalIgnoreCase))
+                        return false;
+                }
+
+                var endUtc = NormalizeToUtc(session.Fin);
+                return endUtc > nowUtc;
+            }
+
+            void CancelSession(SesionAyudaModel? session)
+            {
+                if (session is null)
+                    return;
+
+                session.Active = false;
+                session.UpdateDate = nowUtc;
+
+                if (estadoSesionCancelada is not null)
+                    session.IDEstado = estadoSesionCancelada.IDEstado;
+            }
+
+            var myRequests = (await solicitudRepo.Get(
+                x => x.IDUsuarioSolicitante == request.UserId,
+                includeProperties: "Disponibilidades,Disponibilidades.Reservas,Disponibilidades.Reservas.Sesion,Disponibilidades.Reservas.Sesion.SesionAyudaEstado,Chats,Chats.Participantes,Chats.Mensajes",
+                tracking: true)).ToList();
+
+            foreach (var requestHelp in myRequests)
+            {
+                if (estadoSolicitudCancelada is not null)
+                    requestHelp.IDEstado = estadoSolicitudCancelada.IDEstado;
+
+                requestHelp.Active = false;
+                requestHelp.UpdateDate = nowUtc;
+
+                if (requestHelp.Disponibilidades != null)
+                {
+                    foreach (var availability in requestHelp.Disponibilidades)
+                    {
+                        availability.Active = false;
+                        availability.UpdateDate = nowUtc;
+
+                        if (availability.Estado != AvailabilityCancelledState && availability.Estado != 5)
+                            availability.Estado = AvailabilityCancelledState;
+
+                        if (availability.Reservas != null)
+                        {
+                            foreach (var reservation in availability.Reservas)
+                            {
+                                var shouldNotify = ShouldNotifySession(reservation.Sesion);
+
+                                reservation.Active = false;
+                                reservation.UpdateDate = nowUtc;
+                                reservation.Estado = ReservationCancelledState;
+
+                                CancelSession(reservation.Sesion);
+
+                                if (shouldNotify)
+                                {
+                                    var message = $"La sesión de ayuda \"{requestHelp.Titulo}\" fue cancelada porque {displayName} fue inhabilitado.";
+                                    QueueNotification(requestHelp.IDUsuarioSolicitante, message);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (requestHelp.Chats != null)
+                {
+                    foreach (var chat in requestHelp.Chats)
+                    {
+                        chat.Active = false;
+                        chat.UpdateDate = nowUtc;
+
+                        if (chat.Participantes != null)
+                        {
+                            foreach (var participant in chat.Participantes)
+                            {
+                                participant.Active = false;
+                                participant.UpdateDate = nowUtc;
+                            }
+                        }
+
+                        if (chat.Mensajes != null)
+                        {
+                            foreach (var message in chat.Mensajes)
+                            {
+                                message.Active = false;
+                                message.UpdateDate = nowUtc;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var helperReservations = (await reservaRepo.Get(
+                x => x.IDUsuarioAyudante == request.UserId,
+                includeProperties: "Sesion,Sesion.SesionAyudaEstado,Disponibilidad,Disponibilidad.Solicitud,Disponibilidad.Solicitud.SolicitudAyudaEstado,Disponibilidad.Solicitud.Chats,Disponibilidad.Solicitud.Chats.Participantes",
+                tracking: true)).ToList();
+
+            var reopenedRequests = new HashSet<int>();
+
+            foreach (var reservation in helperReservations)
+            {
+                var shouldNotify = ShouldNotifySession(reservation.Sesion);
+
+                reservation.Active = false;
+                reservation.UpdateDate = nowUtc;
+                reservation.Estado = ReservationCancelledState;
+
+                CancelSession(reservation.Sesion);
+
+                var availability = reservation.Disponibilidad;
+                if (availability is not null)
+                {
+                    availability.Estado = AvailabilityAvailableState;
+                    availability.UpdateDate = nowUtc;
+                }
+
+                var requestHelp = availability?.Solicitud;
+                if (requestHelp is not null && !string.Equals(requestHelp.IDUsuarioSolicitante, request.UserId, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (estadoSolicitudActiva is not null)
+                        requestHelp.IDEstado = estadoSolicitudActiva.IDEstado;
+
+                    if (reopenedRequests.Add(requestHelp.IDSolicitudAyuda))
+                    {
+                        var reservedSince = NormalizeToUtc(reservation.CreateDate);
+                        var elapsed = nowUtc - reservedSince;
+                        if (elapsed > TimeSpan.Zero)
+                            requestHelp.FechaVencimiento = requestHelp.FechaVencimiento.Add(elapsed);
+                    }
+
+                    requestHelp.UpdateDate = nowUtc;
+
+                    if (requestHelp.Chats != null)
+                    {
+                        foreach (var chat in requestHelp.Chats)
+                        {
+                            if (chat.Participantes is null)
+                                continue;
+
+                            foreach (var participant in chat.Participantes.Where(p => string.Equals(p.IDUsuario, request.UserId, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                participant.Active = false;
+                                participant.UpdateDate = nowUtc;
+                            }
+                        }
+                    }
+
+                    if (shouldNotify)
+                    {
+                        var message = $"La sesión de ayuda \"{requestHelp.Titulo}\" fue cancelada porque el ayudante {displayName} eliminó su cuenta del foro.";
+                        QueueNotification(requestHelp.IDUsuarioSolicitante, message);
+                    }
+                }
+            }
+
+            var savedNotifications = new List<NotificacionesModel>();
+
+            foreach (var payload in notificationPayload.Distinct())
+            {
+                var notification = new NotificacionesModel
+                {
+                    IDUsuario = payload.UserId,
+                    Mensaje = payload.Message,
+                    FechaNotificacion = nowUtc,
+                    Leida = false
+                };
+
+                await notificationRepo.Insert(notification);
+                savedNotifications.Add(notification);
+            }
+
+            await _unitOfWorkForum.SaveChangesAsync();
+
+            foreach (var notification in savedNotifications)
+            {
+                await _publisherNotification.AddNotification(
+                    notification.IDNotificacion,
+                    notification.IDUsuario,
+                    notification.Mensaje,
+                    notification.FechaNotificacion,
+                    notification.Leida);
+            }
+
+            return true;
         }
 
 

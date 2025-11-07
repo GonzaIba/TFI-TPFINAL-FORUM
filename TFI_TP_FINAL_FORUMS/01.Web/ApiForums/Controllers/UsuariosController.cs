@@ -142,5 +142,13 @@ namespace ApiForums.Controllers
             var successfulResponse = _mapper.Map<SuccessfulResponse>(result);
             return Ok(successfulResponse);
         }
+
+        [HttpDelete]
+        [Route("EliminarUsuario")]
+        public async Task<IActionResult> DeleteUserForum([FromQuery] DeleteUserForumRequest request)
+        {
+            var result = await _usuarioService.DeleteUserForumAsync(request);
+            return Ok(new SuccessfulResponse(result));
+        }
     }
 }

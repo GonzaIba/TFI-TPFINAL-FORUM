@@ -10,6 +10,7 @@ namespace Core.Domain.Models
         {
             Archivos = new HashSet<ArchivoModel>();
             RespuestasVotos = new HashSet<RespuestaVotoModel>();
+            Denuncias = new HashSet<DenunciaModel>();
         }
 
         public int IDRespuesta { get; set; }
@@ -26,5 +27,6 @@ namespace Core.Domain.Models
         public PublicacionModel Publicacion { get; set; }
         public ICollection<ArchivoModel> Archivos { get; set; }
         public ICollection<RespuestaVotoModel> RespuestasVotos { get; set; }
+        public ICollection<DenunciaModel> Denuncias { get; set; }
     }
 }

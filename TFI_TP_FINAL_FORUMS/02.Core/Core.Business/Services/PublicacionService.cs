@@ -28,6 +28,7 @@ namespace Core.Business.Services
         private readonly IPublicacionVotoRepository _publicacionVotoRepository;
         private readonly IRespuestaVotoRepository _respuestaVotoRepository;
         private readonly IRespuestaRepository _respuestaRepository;
+        private readonly IDenunciaRepository _denunciaRepository;
         private readonly IUsersRepository _usersRepository;
         private readonly IPublisherPublication _publicationPublisher;
         private readonly IPublisherNotification _publisherNotification;
@@ -50,6 +51,7 @@ namespace Core.Business.Services
             _publicacionVotoRepository = _unitOfWork.GetRepository<IPublicacionVotoRepository>();
             _respuestaVotoRepository = _unitOfWork.GetRepository<IRespuestaVotoRepository>();
             _respuestaRepository = _unitOfWork.GetRepository<IRespuestaRepository>();
+            _denunciaRepository = _unitOfWork.GetRepository<IDenunciaRepository>();
             _textoPrediccionRepository = _unitOfWork.GetRepository<ITextoPrediccionRepository>();
             _publicationPublisher = publicationPublisher;
             _publisherNotification = publisherNotification;
@@ -725,6 +727,64 @@ namespace Core.Business.Services
             return new AnswerPublicationVoteResponse(true, false);           
         }
 
+        public async Task<bool> ReportPublication(ReportPublicationRequest request)
+        {
+            try
+            {
+                await ValidateReportPayloadAsync(request.UserId, request.Reason, request.Detail);
+
+                var publication = (await _repository.Get(x => x.IDPublicacion == request.CodePublication, tracking: false)).FirstOrDefault();
+                if (publication == null)
+                    throw new PublicationNotFoundException();
+
+                var report = new DenunciaModel
+                {
+                    IDUsuarioReporto = request.UserId,
+                    IDPublicacion = publication.IDPublicacion,
+                    Motivo = request.Reason.Trim(),
+                    Detalle = request.Detail?.Trim(),
+                    FechaDenuncia = DateTime.Now,
+                    CreateDate = DateTime.Now
+                };
+
+                await _denunciaRepository.Insert(report);
+                return await _unitOfWork.Complete();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<bool> ReportAnswer(ReportAnswerRequest request)
+        {
+            try
+            {
+                await ValidateReportPayloadAsync(request.UserId, request.Reason, request.Detail);
+
+                var answer = (await _respuestaRepository.Get(x => x.IDRespuesta == request.AnswerCode, tracking: false)).FirstOrDefault();
+                if (answer == null)
+                    throw new PublicationNotFoundException();
+
+                var report = new DenunciaModel
+                {
+                    IDUsuarioReporto = request.UserId,
+                    IDRespuesta = answer.IDRespuesta,
+                    Motivo = request.Reason.Trim(),
+                    Detalle = request.Detail?.Trim(),
+                    FechaDenuncia = DateTime.Now,
+                    CreateDate = DateTime.Now
+                };
+
+                await _denunciaRepository.Insert(report);
+                return await _unitOfWork.Complete();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<PublicacionModel>> GetTopPublications()
         {
             var repo = _unitOfWork.GetRepository<IPublicacionRepository>();
@@ -790,6 +850,22 @@ namespace Core.Business.Services
                 Text = text,
                 Filters = filters
             };
+        }
+
+        private async Task ValidateReportPayloadAsync(string userId, string reason, string detail)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ApiForumException("Debe indicar el usuario que realiza la denuncia.");
+
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new ApiForumException("Debe indicar el motivo de la denuncia.");
+
+            if (string.IsNullOrWhiteSpace(detail))
+                throw new ApiForumException("Debe detallar el motivo de la denuncia.");
+
+            var user = await _usersService.GetByIdAsync(userId);
+            if (user == null)
+                throw new ApiForumException("No existe el usuario.");
         }
 
         //private Specification<PublicacionModel> BuildFilterSpecification(SearchFilters filters)

@@ -13,6 +13,7 @@ namespace Core.Domain.Models
             Archivos = new HashSet<ArchivoModel>();
             PublicacionesGuardadas = new HashSet<PublicacionGuardadaModel>();
             PublicacionesVotos = new HashSet<PublicacionVotoModel>();
+            Denuncias = new HashSet<DenunciaModel>();
         }
         public int IDPublicacion { get; set; }
         public string IDUsuario { get; set; }
@@ -33,5 +34,6 @@ namespace Core.Domain.Models
         public ICollection<ArchivoModel> Archivos { get; set; }
         public ICollection<PublicacionGuardadaModel> PublicacionesGuardadas { get; set; }
         public ICollection<PublicacionVotoModel> PublicacionesVotos { get; set; }
+        public ICollection<DenunciaModel> Denuncias { get; set; }
     }
 }

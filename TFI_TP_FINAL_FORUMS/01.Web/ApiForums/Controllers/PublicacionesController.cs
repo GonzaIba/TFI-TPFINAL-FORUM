@@ -173,6 +173,22 @@ namespace ApiForums.Controllers
         }
 
         [HttpPost]
+        [Route("DenunciarPublicacion")]
+        public async Task<IActionResult> ReportPublication([FromBody] ReportPublicationRequest request)
+        {
+            var result = await _publicacionService.ReportPublication(request);
+            return Ok(new SuccessfulResponse(result));
+        }
+
+        [HttpPost]
+        [Route("DenunciarRespuesta")]
+        public async Task<IActionResult> ReportAnswer([FromBody] ReportAnswerRequest request)
+        {
+            var result = await _publicacionService.ReportAnswer(request);
+            return Ok(new SuccessfulResponse(result));
+        }
+
+        [HttpPost]
         [Route("EliminarRespuestaPropia")]
         public async Task<IActionResult> DeleteAnswerByUser([FromBody] DeleteAnswerRequest request)
         {

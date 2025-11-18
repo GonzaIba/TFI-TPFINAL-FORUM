@@ -24,5 +24,7 @@ namespace Core.Contracts.Services
         Task<IEnumerable<PublicacionModel>> GetRelatedPublications(int publicationCode);
         Task<IEnumerable<PublicacionModel>> GetTopPublications();
         Task<bool> DeleteAnswerByUser(DeleteAnswerRequest request);
+        Task<bool> ReportPublication(ReportPublicationRequest request);
+        Task<bool> ReportAnswer(ReportAnswerRequest request);
     }
 }

@@ -253,6 +253,65 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.ToTable("PublicacionesGuardadas", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.DenunciaModel", b =>
+                {
+                    b.Property<int>("IDDenuncia")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IDDenuncia"));
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<string>("Detalle")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("FechaDenuncia")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<int?>("IDPublicacion")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IDRespuesta")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IDUsuarioReporto")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("IDDenuncia");
+
+                    b.HasIndex("IDPublicacion");
+
+                    b.HasIndex("IDRespuesta");
+
+                    b.HasIndex("IDUsuarioReporto");
+
+                    b.ToTable("Denuncias", (string)null);
+
+                    b.HasCheckConstraint("CK_Denuncias_PublicacionOrRespuesta", "(([IDPublicacion] IS NOT NULL AND [IDRespuesta] IS NULL) OR ([IDPublicacion] IS NULL AND [IDRespuesta] IS NOT NULL))");
+                });
+
             modelBuilder.Entity("Core.Domain.Models.PublicacionModel", b =>
                 {
                     b.Property<int>("IDPublicacion")
@@ -1104,6 +1163,23 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("Publicacion");
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.DenunciaModel", b =>
+                {
+                    b.HasOne("Core.Domain.Models.PublicacionModel", "Publicacion")
+                        .WithMany("Denuncias")
+                        .HasForeignKey("IDPublicacion")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Core.Domain.Models.RespuestaModel", "Respuesta")
+                        .WithMany("Denuncias")
+                        .HasForeignKey("IDRespuesta")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Publicacion");
+
+                    b.Navigation("Respuesta");
+                });
+
             modelBuilder.Entity("Core.Domain.Models.PublicacionVotoModel", b =>
                 {
                     b.HasOne("Core.Domain.Models.PublicacionModel", "Publicacion")
@@ -1320,6 +1396,8 @@ namespace Infrastructure.Data.SQL.Migrations
                 {
                     b.Navigation("Archivos");
 
+                    b.Navigation("Denuncias");
+
                     b.Navigation("EtiquetasPublicacion");
 
                     b.Navigation("PublicacionesGuardadas");
@@ -1337,6 +1415,8 @@ namespace Infrastructure.Data.SQL.Migrations
             modelBuilder.Entity("Core.Domain.Models.RespuestaModel", b =>
                 {
                     b.Navigation("Archivos");
+
+                    b.Navigation("Denuncias");
 
                     b.Navigation("RespuestasVotos");
                 });

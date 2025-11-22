@@ -4,17 +4,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# 🔧 Si tu Web API está en otro path, ajustá esta línea
-# Ejemplos posibles:
-# "TFI_TP_FINAL_FORUMS/01.Web/Api/ApiForums.csproj"
-# "01.Web/Api/ApiForums.csproj"
-# "01.Web/Api/Api.csproj"
+# "TFI_TP_FINAL_FORUMS/01.Web/ApiForums/ApiForums.csproj"
+# "01.Web/ApiForums/ApiForums.csproj"
 COPY . .
 
 # 🔧 MISMO path que arriba
-RUN dotnet restore "TFI_TP_FINAL_FORUMS/01.Web/Api/ApiForums.csproj"
+RUN dotnet restore "TFI_TP_FINAL_FORUMS/01.Web/ApiForums/ApiForums.csproj"
 
-RUN dotnet publish "TFI_TP_FINAL_FORUMS/01.Web/Api/ApiForums.csproj" \
+RUN dotnet publish "TFI_TP_FINAL_FORUMS/01.Web/ApiForums/ApiForums.csproj" \
     -c Release -o /app/publish /p:UseAppHost=false
 
 

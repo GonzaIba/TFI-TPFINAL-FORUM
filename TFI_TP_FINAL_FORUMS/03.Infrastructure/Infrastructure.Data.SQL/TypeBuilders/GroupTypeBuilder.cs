@@ -17,11 +17,11 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.Property(x => x.Name)
                    .IsRequired()
-                   .HasColumnType("nvarchar(50)");
+                   .HasColumnType("varchar(50)");
 
             builder.Property(x => x.Description)
                    .IsRequired()
-                   .HasColumnType("nvarchar(250)");
+                   .HasColumnType("varchar(250)");
 
             builder.Ignore(x => x.UpdateDate);
 

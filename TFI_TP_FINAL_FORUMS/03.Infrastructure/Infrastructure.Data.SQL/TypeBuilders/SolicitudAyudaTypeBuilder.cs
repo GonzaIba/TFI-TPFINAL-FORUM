@@ -22,7 +22,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(e => e.RowVersion).IsRowVersion().IsConcurrencyToken();
             builder.Property(e => e.RecompensaBase).HasPrecision(12, 2).IsRequired();
             builder.Property(e => e.IncrementoPorHora).HasPrecision(6, 4).IsRequired();
-            builder.Property(e => e.FechaVencimiento).HasColumnType("datetime2(3)").IsRequired(); //.HasDefaultValueSql("DATEADD(HOUR,48,SYSUTCDATETIME())").IsRequired();
+            builder.Property(e => e.FechaVencimiento).HasColumnType("timestamp(3) with time zone").IsRequired(); //.HasDefaultValueSql("DATEADD(HOUR,48,SYSUTCDATETIME())").IsRequired();
             builder.Property(e => e.IDUsuarioSolicitante).IsRequired().HasMaxLength(450);
             builder.Property(e => e.IDEstado).IsRequired();
 

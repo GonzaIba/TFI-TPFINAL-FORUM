@@ -20,7 +20,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(e => e.EstadoNuevo).IsRequired();
             builder.Property(e => e.Motivo).HasMaxLength(300);
             builder.Property(e => e.UserIdAccion).HasMaxLength(450);
-            builder.Property(e => e.CreateDate).HasColumnType("datetime2(3)");
+            builder.Property(e => e.CreateDate).HasColumnType("timestamp(3) with time zone");
 
             builder.HasOne(e => e.Solicitud)
                    .WithMany(s => s.Historial)

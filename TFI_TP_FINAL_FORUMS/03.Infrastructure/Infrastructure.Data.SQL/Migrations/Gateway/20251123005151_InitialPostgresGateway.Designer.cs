@@ -3,17 +3,20 @@ using System;
 using Infrastructure.Data.SQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Infrastructure.Data.SQL.Migrations
+namespace Infrastructure.Data.SQL.Migrations.Gateway
 {
-    [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(ApplicationGatewayDbContext))]
+    [Migration("20251123005151_InitialPostgresGateway")]
+    partial class InitialPostgresGateway
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,248 @@ namespace Infrastructure.Data.SQL.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.Roles", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.RolesClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("RolesClaim", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.Users", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp(7) with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("LanguagePreference")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalizedUserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SecurityStamp")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.UsersClaims", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UsersClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.UsersLogin", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UsersLogin", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.UsersRoles", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("UsersRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.UsersToken", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("UsersToken", (string)null);
+                });
 
             modelBuilder.Entity("Core.Domain.Models.ArchivoModel", b =>
                 {
@@ -218,6 +463,114 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.ToTable("EtiquetasPrediccionModelo", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.FilterModel", b =>
+                {
+                    b.Property<int>("IDFilter")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IDFilter"));
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Api")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<int>("IDFilterType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Options")
+                        .HasColumnType("varchar(1000)");
+
+                    b.HasKey("IDFilter");
+
+                    b.HasIndex("IDFilterType");
+
+                    b.ToTable("Filter", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.FilterTypeModel", b =>
+                {
+                    b.Property<int>("IDFilterType")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IDFilterType"));
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("varchar(400)");
+
+                    b.HasKey("IDFilterType");
+
+                    b.ToTable("FilterType", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.GroupFiltersModel", b =>
+                {
+                    b.Property<int>("IDGroup")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("IDFilter")
+                        .HasColumnType("integer");
+
+                    b.HasKey("IDGroup", "IDFilter");
+
+                    b.HasIndex("IDFilter");
+
+                    b.ToTable("GroupFilters", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.GroupModel", b =>
+                {
+                    b.Property<int>("IDGroup")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IDGroup"));
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("varchar(250)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("IDGroup");
+
+                    b.ToTable("Group", (string)null);
+                });
+
             modelBuilder.Entity("Core.Domain.Models.MedallaModel", b =>
                 {
                     b.Property<int>("IDMedalla")
@@ -310,6 +663,8 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     b.HasIndex("IDPublicacion");
 
+                    b.HasIndex("IDUsuario");
+
                     b.ToTable("PublicacionesGuardadas", (string)null);
                 });
 
@@ -332,6 +687,11 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Property<string>("Contenido")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime?>("FechaCierre")
                         .HasColumnType("timestamp with time zone");
@@ -360,10 +720,15 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UsersId")
+                        .HasColumnType("text");
+
                     b.Property<int>("Visitas")
                         .HasColumnType("integer");
 
                     b.HasKey("IDPublicacion");
+
+                    b.HasIndex("UsersId");
 
                     b.ToTable("Publicaciones", (string)null);
                 });
@@ -376,6 +741,11 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Property<string>("IDUsuario")
                         .HasColumnType("text");
 
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -385,6 +755,8 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasColumnType("boolean");
 
                     b.HasKey("IDPublicacion", "IDUsuario");
+
+                    b.HasIndex("IDUsuario");
 
                     b.ToTable("PublicacionesVotos", (string)null);
                 });
@@ -455,9 +827,14 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
 
+                    b.Property<string>("UsersId")
+                        .HasColumnType("text");
+
                     b.HasKey("IDRecompensaUsuario");
 
                     b.HasIndex("IDRecompensa");
+
+                    b.HasIndex("UsersId");
 
                     b.ToTable("RecompensasUsuario", (string)null);
                 });
@@ -474,6 +851,11 @@ namespace Infrastructure.Data.SQL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
@@ -498,9 +880,14 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UsersId")
+                        .HasColumnType("text");
+
                     b.HasKey("IDRespuesta");
 
                     b.HasIndex("IDPublicacion");
+
+                    b.HasIndex("UsersId");
 
                     b.ToTable("Respuestas", (string)null);
                 });
@@ -513,6 +900,11 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Property<string>("IDUsuario")
                         .HasColumnType("text");
 
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -522,6 +914,8 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasColumnType("boolean");
 
                     b.HasKey("IDRespuesta", "IDUsuario");
+
+                    b.HasIndex("IDUsuario");
 
                     b.ToTable("RespuestasVotos", (string)null);
                 });
@@ -739,6 +1133,11 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IDDisponibilidad"));
 
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -855,6 +1254,8 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     b.HasKey("IDHistorial");
 
+                    b.HasIndex("UserIdAccion");
+
                     b.HasIndex("IDSolicitudAyuda", "CreateDate")
                         .HasDatabaseName("IX_SAH_Solicitud");
 
@@ -922,6 +1323,9 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Property<byte>("Urgencia")
                         .HasColumnType("smallint");
 
+                    b.Property<string>("UsersId")
+                        .HasColumnType("text");
+
                     b.HasKey("IDSolicitudAyuda");
 
                     b.HasIndex("FechaVencimiento")
@@ -932,6 +1336,8 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     b.HasIndex("IDUsuarioSolicitante")
                         .HasDatabaseName("IX_SA_Solicitante");
+
+                    b.HasIndex("UsersId");
 
                     b.ToTable("SolicitudAyuda", (string)null);
                 });
@@ -1065,6 +1471,62 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.ToTable("TextoPredicciones", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.UserFiltersModel", b =>
+                {
+                    b.Property<int>("IDFilter")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("IDFilter", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserFilters", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.UsersForumModel", b =>
+                {
+                    b.Property<string>("IdUser")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("HasSeenIntroLabels")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasSeenIntroLiveHelp")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasSeenIntroPublications")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasSeenIntroUsers")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ImageForum")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastTimeConnectedForum")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LongDescriptionForum")
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<bool>("Onboarded")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ShortDescriptionForum")
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("IdUser");
+
+                    b.ToTable("UsersForum", (string)null);
+                });
+
             modelBuilder.Entity("Core.Domain.Models.UsuarioMedallaModel", b =>
                 {
                     b.Property<int>("IDUsuarioMedalla")
@@ -1088,31 +1550,83 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     b.HasIndex("IDMedalla");
 
+                    b.HasIndex("IDUsuario");
+
                     b.ToTable("UsuariosMedallas", (string)null);
                 });
 
-            modelBuilder.Entity("Core.Domain.Views.TopTenPublicationsLastWeekView", b =>
+            modelBuilder.Entity("Core.Domain.IdentityModels.RefreshToken", b =>
                 {
-                    b.Property<int>("IDPublicacion")
-                        .HasColumnType("integer");
+                    b.HasOne("Core.Domain.IdentityModels.Users", "Users")
+                        .WithMany("UserRefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.ToTable((string)null);
-
-                    b.ToView("vw_topTenPublicationsLastWeek", (string)null);
+                    b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("Core.Domain.Views.TopThreeUsersLastWeekView", b =>
+            modelBuilder.Entity("Core.Domain.IdentityModels.RolesClaim", b =>
                 {
-                    b.Property<string>("IDUsuario")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.HasOne("Core.Domain.IdentityModels.Roles", "Role")
+                        .WithMany("RoleClaims")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<int>("TotalRecompensa")
-                        .HasColumnType("integer");
+                    b.Navigation("Role");
+                });
 
-                    b.ToTable((string)null);
+            modelBuilder.Entity("Core.Domain.IdentityModels.UsersClaims", b =>
+                {
+                    b.HasOne("Core.Domain.IdentityModels.Users", "User")
+                        .WithMany("UsersClaims")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.ToView("vw_topThreeUsersLastWeek", (string)null);
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.UsersLogin", b =>
+                {
+                    b.HasOne("Core.Domain.IdentityModels.Users", "User")
+                        .WithMany("UsersLogin")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.UsersRoles", b =>
+                {
+                    b.HasOne("Core.Domain.IdentityModels.Roles", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.IdentityModels.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.UsersToken", b =>
+                {
+                    b.HasOne("Core.Domain.IdentityModels.Users", "User")
+                        .WithMany("UsersTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.ArchivoModel", b =>
@@ -1170,6 +1684,36 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("Publicacion");
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.FilterModel", b =>
+                {
+                    b.HasOne("Core.Domain.Models.FilterTypeModel", "FilterType")
+                        .WithMany("Filters")
+                        .HasForeignKey("IDFilterType")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FilterType");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.GroupFiltersModel", b =>
+                {
+                    b.HasOne("Core.Domain.Models.FilterModel", "Filter")
+                        .WithMany("GroupFilters")
+                        .HasForeignKey("IDFilter")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.Models.GroupModel", "Group")
+                        .WithMany("GroupFilters")
+                        .HasForeignKey("IDGroup")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Filter");
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("Core.Domain.Models.PublicacionGuardadaModel", b =>
                 {
                     b.HasOne("Core.Domain.Models.PublicacionModel", "Publicacion")
@@ -1178,7 +1722,22 @@ namespace Infrastructure.Data.SQL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.IdentityModels.Users", "Usuario")
+                        .WithMany("PublicacionesGuardadas")
+                        .HasForeignKey("IDUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Publicacion");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.PublicacionModel", b =>
+                {
+                    b.HasOne("Core.Domain.IdentityModels.Users", null)
+                        .WithMany("Publicaciones")
+                        .HasForeignKey("UsersId");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.PublicacionVotoModel", b =>
@@ -1189,7 +1748,15 @@ namespace Infrastructure.Data.SQL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.IdentityModels.Users", "Usuario")
+                        .WithMany("PublicacionesVotos")
+                        .HasForeignKey("IDUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Publicacion");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.RecompensaUsuarioModel", b =>
@@ -1199,6 +1766,10 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasForeignKey("IDRecompensa")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Core.Domain.IdentityModels.Users", null)
+                        .WithMany("RecompensasUsuarios")
+                        .HasForeignKey("UsersId");
 
                     b.Navigation("Recompensa");
                 });
@@ -1211,6 +1782,10 @@ namespace Infrastructure.Data.SQL.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.IdentityModels.Users", null)
+                        .WithMany("Respuestas")
+                        .HasForeignKey("UsersId");
+
                     b.Navigation("Publicacion");
                 });
 
@@ -1222,7 +1797,15 @@ namespace Infrastructure.Data.SQL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.IdentityModels.Users", "Usuario")
+                        .WithMany("RespuestasVotos")
+                        .HasForeignKey("IDUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Respuesta");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.SesionAyudaModel", b =>
@@ -1326,7 +1909,14 @@ namespace Infrastructure.Data.SQL.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.IdentityModels.Users", "UsuarioAccion")
+                        .WithMany("SolicitudAyudaHistorial")
+                        .HasForeignKey("UserIdAccion")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("Solicitud");
+
+                    b.Navigation("UsuarioAccion");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.SolicitudAyudaModel", b =>
@@ -1336,6 +1926,10 @@ namespace Infrastructure.Data.SQL.Migrations
                         .HasForeignKey("IDEstado")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("Core.Domain.IdentityModels.Users", null)
+                        .WithMany("SolicitudesAyuda")
+                        .HasForeignKey("UsersId");
 
                     b.Navigation("SolicitudAyudaEstado");
                 });
@@ -1348,7 +1942,15 @@ namespace Infrastructure.Data.SQL.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.IdentityModels.Users", "UsuarioAyudante")
+                        .WithMany("SolicitudesAyudaReserva")
+                        .HasForeignKey("IDUsuarioAyudante")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Disponibilidad");
+
+                    b.Navigation("UsuarioAyudante");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.TerminosCondicionesSesionAyudaModel", b =>
@@ -1370,6 +1972,36 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("TerminosCondiciones");
                 });
 
+            modelBuilder.Entity("Core.Domain.Models.UserFiltersModel", b =>
+                {
+                    b.HasOne("Core.Domain.Models.FilterModel", "Filter")
+                        .WithMany("UserFilters")
+                        .HasForeignKey("IDFilter")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Core.Domain.IdentityModels.Users", "User")
+                        .WithMany("UserFilters")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Filter");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.UsersForumModel", b =>
+                {
+                    b.HasOne("Core.Domain.IdentityModels.Users", "User")
+                        .WithOne("UsersForum")
+                        .HasForeignKey("Core.Domain.Models.UsersForumModel", "IdUser")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Core.Domain.Models.UsuarioMedallaModel", b =>
                 {
                     b.HasOne("Core.Domain.Models.MedallaModel", "Medalla")
@@ -1378,7 +2010,58 @@ namespace Infrastructure.Data.SQL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.IdentityModels.Users", "Usuario")
+                        .WithMany("UsuarioMedallas")
+                        .HasForeignKey("IDUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Medalla");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.Roles", b =>
+                {
+                    b.Navigation("RoleClaims");
+
+                    b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Core.Domain.IdentityModels.Users", b =>
+                {
+                    b.Navigation("Publicaciones");
+
+                    b.Navigation("PublicacionesGuardadas");
+
+                    b.Navigation("PublicacionesVotos");
+
+                    b.Navigation("RecompensasUsuarios");
+
+                    b.Navigation("Respuestas");
+
+                    b.Navigation("RespuestasVotos");
+
+                    b.Navigation("SolicitudAyudaHistorial");
+
+                    b.Navigation("SolicitudesAyuda");
+
+                    b.Navigation("SolicitudesAyudaReserva");
+
+                    b.Navigation("UserFilters");
+
+                    b.Navigation("UserRefreshTokens");
+
+                    b.Navigation("UsersClaims");
+
+                    b.Navigation("UsersForum")
+                        .IsRequired();
+
+                    b.Navigation("UsersLogin");
+
+                    b.Navigation("UsersTokens");
+
+                    b.Navigation("UsuarioMedallas");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.EtiquetaModel", b =>
@@ -1386,6 +2069,23 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.Navigation("EtiquetasPublicaciones");
 
                     b.Navigation("SolicitudAyudaEtiquetas");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.FilterModel", b =>
+                {
+                    b.Navigation("GroupFilters");
+
+                    b.Navigation("UserFilters");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.FilterTypeModel", b =>
+                {
+                    b.Navigation("Filters");
+                });
+
+            modelBuilder.Entity("Core.Domain.Models.GroupModel", b =>
+                {
+                    b.Navigation("GroupFilters");
                 });
 
             modelBuilder.Entity("Core.Domain.Models.MedallaModel", b =>

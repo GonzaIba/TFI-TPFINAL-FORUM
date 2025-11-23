@@ -22,7 +22,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
                    .HasColumnType("varchar(500)");
 
             builder.Property(x => x.ImageForum)
-                   .HasColumnType("varchar(max)");
+                   .HasColumnType("text");
 
             builder.HasOne(x => x.User)
                    .WithOne(z => z.UsersForum)

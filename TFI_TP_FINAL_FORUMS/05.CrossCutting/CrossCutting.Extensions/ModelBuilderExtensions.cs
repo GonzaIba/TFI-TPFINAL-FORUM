@@ -52,10 +52,10 @@ namespace CrossCutting.Extensions
             foreach (var et in builder.Model.GetEntityTypes()
                                           .Where(e => genericEntity.IsAssignableFrom(e.ClrType)))
             {
-                // CreateDate con DEFAULT getdate()
+                // CreateDate con DEFAULT CURRENT_TIMESTAMP
                 builder.Entity(et.ClrType)
                        .Property<DateTime>("CreateDate")
-                       .HasDefaultValueSql("getdate()")
+                       .HasDefaultValueSql("CURRENT_TIMESTAMP")
                        .ValueGeneratedOnAdd();
 
                 // Active con DEFAULT true

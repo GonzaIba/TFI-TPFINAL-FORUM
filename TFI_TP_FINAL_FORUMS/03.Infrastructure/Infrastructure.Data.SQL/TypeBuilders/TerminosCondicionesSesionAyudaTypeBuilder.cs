@@ -22,7 +22,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.Property(e => e.FechaAceptado)
                    .IsRequired()
-                   .HasColumnType("datetime2(3)");
+                   .HasColumnType("timestamp(3) with time zone");
 
             builder.HasOne(e => e.TerminosCondiciones)
                    .WithMany(t => t.TerminosCondicionesSesionesAyuda)

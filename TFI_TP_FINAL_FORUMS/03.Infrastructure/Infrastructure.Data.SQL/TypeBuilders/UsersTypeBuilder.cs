@@ -15,8 +15,8 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Ignore(x => x.UserPrivileges);
 
             builder.Property(x => x.CreatedDate)
-                   .HasColumnType("datetime2(7)")
-                   .HasDefaultValueSql("GETDATE()");
+                   .HasColumnType("timestamp(7) with time zone")
+                   .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.Property(x => x.FirstName)
                    .HasColumnType("varchar(50)");

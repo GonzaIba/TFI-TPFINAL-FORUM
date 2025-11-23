@@ -17,7 +17,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(ru => ru.IDRecompensaUsuario).IsRequired();
             builder.Property(ru => ru.IDUsuario).IsRequired().HasMaxLength(450);
             builder.Property(ru => ru.IDRecompensa).IsRequired();
-            builder.Property(ru => ru.FechaObtencion).IsRequired().HasDefaultValueSql("GETDATE()");
+            builder.Property(ru => ru.FechaObtencion).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.HasOne(ru => ru.Recompensa)
                 .WithMany(r => r.RecompensasUsuarios)

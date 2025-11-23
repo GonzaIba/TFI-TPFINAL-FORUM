@@ -14,8 +14,8 @@ namespace Infrastructure.Data.SQL.TypeBuilders
         public void Configure(EntityTypeBuilder<TextoPrediccionModel> builder)
         {
             builder.HasKey(a => a.IDTextoPrediccion);
-            builder.Property(a => a.Texto).IsRequired(false).HasColumnType("nvarchar(max)");
-            builder.Property(a => a.Etiquetas).IsRequired(false).HasColumnType("nvarchar(max)");
+            builder.Property(a => a.Texto).IsRequired(false).HasColumnType("text");
+            builder.Property(a => a.Etiquetas).IsRequired(false).HasColumnType("text");
 
             builder.ToTable("TextoPredicciones");
         }

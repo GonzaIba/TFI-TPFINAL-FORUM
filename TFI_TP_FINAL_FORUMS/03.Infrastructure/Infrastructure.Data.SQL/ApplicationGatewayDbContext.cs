@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using MySql.EntityFrameworkCore;
-using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +22,7 @@ namespace Infrastructure.Data.SQL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly)
-                .SetPropertyDefaultSqlValue("CreateDate", "getdate()")
+                .SetPropertyDefaultSqlValue("CreateDate", "CURRENT_TIMESTAMP")
                 .SetPropertyDefaultValue<bool>("Active", true)
                 .SetPropertyQueryFilter("Active", true)
                 .ConfigureGenericProperties(typeof(GenericEntity));

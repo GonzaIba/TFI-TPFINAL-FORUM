@@ -2,7 +2,7 @@
 using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Response.BaseResponse;
 using Newtonsoft.Json;
-using System.Data.SqlClient;
+using Npgsql;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Text.Json;
@@ -73,7 +73,7 @@ namespace ApiForums.Middleware
                         await _next(context);
                     }
                 }
-                catch (SqlException ex)
+                catch (PostgresException ex)
                 {
                     _logger.LogError(ex, ex.Message);
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

@@ -21,7 +21,7 @@ namespace Infrastructure.Data.SQL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly)
-                .SetPropertyDefaultSqlValue("CreateDate", "getdate()")
+                .SetPropertyDefaultSqlValue("CreateDate", "CURRENT_TIMESTAMP")
                 .SetPropertyDefaultValue<bool>("Active", true)
                 .SetPropertyQueryFilter("Active", true);
                 //.ConfigureGenericProperties(typeof(GenericEntity));

@@ -17,7 +17,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.Property(x => x.Value)
                    .IsRequired()
-                   .HasColumnType("nvarchar(max)");
+                   .HasColumnType("text");
 
             builder.HasOne(x => x.User)
                    .WithMany(x => x.UserFilters)

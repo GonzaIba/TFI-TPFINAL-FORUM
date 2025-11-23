@@ -18,7 +18,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(m => m.NombreMedalla).IsRequired().HasMaxLength(100);
             builder.Property(m => m.Descripcion).IsRequired().HasMaxLength(1000);
             builder.Property(m => m.CantidadEntregada).IsRequired();
-            builder.Property(m => m.ImagenMedalla).IsRequired().HasColumnType("nvarchar(max)");
+            builder.Property(m => m.ImagenMedalla).IsRequired().HasColumnType("text");
 
             builder.ToTable("Medallas");
         }

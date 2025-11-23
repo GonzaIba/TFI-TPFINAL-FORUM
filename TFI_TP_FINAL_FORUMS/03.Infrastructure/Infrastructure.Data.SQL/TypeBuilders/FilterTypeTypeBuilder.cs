@@ -17,7 +17,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.Property(x => x.Type)
                    .IsRequired()
-                   .HasColumnType("nvarchar(400)");
+                   .HasColumnType("varchar(400)");
 
             builder.ToTable("FilterType");
         }

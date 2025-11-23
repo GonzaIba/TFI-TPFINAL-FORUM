@@ -16,8 +16,8 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.HasKey(e => e.IDDisponibilidad);
             builder.Property(e => e.IDDisponibilidad).ValueGeneratedOnAdd();
             builder.Property(e => e.IDSolicitudAyuda).IsRequired();
-            builder.Property(e => e.Inicio).HasColumnType("datetime2(3)").IsRequired();
-            builder.Property(e => e.Fin).HasColumnType("datetime2(3)").IsRequired();
+            builder.Property(e => e.Inicio).HasColumnType("timestamp(3) with time zone").IsRequired();
+            builder.Property(e => e.Fin).HasColumnType("timestamp(3) with time zone").IsRequired();
             builder.Property(e => e.Estado).IsRequired();
             builder.Property(e => e.RowVersion).IsRowVersion().IsConcurrencyToken();
             builder.Ignore(e => e.Active);

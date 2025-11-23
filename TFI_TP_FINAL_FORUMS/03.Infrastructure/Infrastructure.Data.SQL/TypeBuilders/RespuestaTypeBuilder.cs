@@ -18,7 +18,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(r => r.IDPublicacion).IsRequired();
             builder.Property(r => r.IDUsuario).IsRequired().HasMaxLength(450);
             builder.Property(r => r.TextoRespuesta).IsRequired();
-            builder.Property(r => r.FechaCreacion).IsRequired().HasDefaultValueSql("GETDATE()");
+            builder.Property(r => r.FechaCreacion).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             builder.Property(r => r.RespuestaCorrecta).IsRequired();
             builder.Ignore(r => r.CreateDate);
 

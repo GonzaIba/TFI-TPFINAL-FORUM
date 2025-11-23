@@ -12,7 +12,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.Property(d => d.IDUsuarioReporto).IsRequired().HasMaxLength(450);
             builder.Property(d => d.Motivo).IsRequired().HasMaxLength(200);
             builder.Property(d => d.Detalle).HasMaxLength(2000).IsRequired(false);
-            builder.Property(d => d.FechaDenuncia).IsRequired().HasDefaultValueSql("getdate()");
+            builder.Property(d => d.FechaDenuncia).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
             builder.Property(d => d.IDPublicacion).IsRequired(false);
             builder.Property(d => d.IDRespuesta).IsRequired(false);
 

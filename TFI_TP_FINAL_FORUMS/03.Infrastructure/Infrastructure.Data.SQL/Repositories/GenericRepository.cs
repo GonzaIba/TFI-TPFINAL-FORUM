@@ -2,7 +2,6 @@
 using Core.Domain.GenericEntityClass;
 using Core.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Data.SQL.Repositories

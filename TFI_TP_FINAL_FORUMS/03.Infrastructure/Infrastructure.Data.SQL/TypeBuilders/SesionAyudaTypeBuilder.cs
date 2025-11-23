@@ -11,8 +11,8 @@ namespace Infrastructure.Data.SQL.TypeBuilders
             builder.HasKey(e => e.IDSesion);
             builder.Property(e => e.IDSesion).ValueGeneratedNever(); // Guid provisto por app
 
-            builder.Property(e => e.Inicio).HasColumnType("datetime2(3)");
-            builder.Property(e => e.Fin).HasColumnType("datetime2(3)");
+            builder.Property(e => e.Inicio).HasColumnType("timestamp(3) with time zone");
+            builder.Property(e => e.Fin).HasColumnType("timestamp(3) with time zone");
             builder.Property(e => e.IDReserva).IsRequired();
             builder.Property(e => e.Dominio).IsRequired().HasMaxLength(200); //.HasDefaultValue("meet.jit.si");
             builder.Property(e => e.NombreSala).IsRequired().HasMaxLength(200);

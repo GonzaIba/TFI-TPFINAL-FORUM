@@ -17,11 +17,11 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.Property(x => x.Name)
                    .IsRequired()
-                   .HasColumnType("nvarchar(50)");
+                   .HasColumnType("varchar(50)");
 
             builder.Property(x => x.Description)
                    .IsRequired()
-                   .HasColumnType("nvarchar(250)");
+                   .HasColumnType("varchar(250)");
 
             builder.Property(x => x.Api)
                    .IsRequired()
@@ -30,7 +30,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.Property(x => x.Options)
                    .IsRequired(false)
-                   .HasColumnType("nvarchar(1000)");
+                   .HasColumnType("varchar(1000)");
 
             builder.HasOne(x => x.FilterType)
                    .WithMany(z => z.Filters)

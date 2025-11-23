@@ -9,7 +9,7 @@ using Microsoft.ML.Data;
 using Microsoft.ML.Trainers.FastTree;
 using Microsoft.ML.Trainers;
 using Microsoft.ML;
-using System.Data.SqlClient;
+using Npgsql;
 using Microsoft.ML.Data;
 using Microsoft.ML.Transforms.Text;
 
@@ -17,7 +17,7 @@ namespace Infrastructure_ML
 {
     public partial class PublicacionTituloML
     {
-        public const string RetrainConnectionString = @"Data Source=.;Initial Catalog=TFI_PLOFTEC_FORUM;Integrated Security=True";
+        public const string RetrainConnectionString = @"Host=localhost;Port=5432;Database=tfi_ploftec_forum;Username=forum_user;Password=1234";
         public const string RetrainCommandString = @"SELECT Texto, Etiquetas FROM [dbo].[TextoPredicciones]";
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Infrastructure_ML
         public static IDataView LoadIDataViewFromDatabase(MLContext mlContext, string connectionString, string commandText)
         {
             DatabaseLoader loader = mlContext.Data.CreateDatabaseLoader<ModelInput>();
-            DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, commandText);
+            DatabaseSource dbSource = new DatabaseSource(NpgsqlFactory.Instance, connectionString, commandText);
 
             return loader.Load(dbSource);
         }

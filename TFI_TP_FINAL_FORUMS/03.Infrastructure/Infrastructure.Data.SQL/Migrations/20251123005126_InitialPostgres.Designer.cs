@@ -131,7 +131,7 @@ namespace Infrastructure.Data.SQL.Migrations
 
                     b.ToTable("Denuncias", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Denuncias_PublicacionOrRespuesta", "(([IDPublicacion] IS NOT NULL AND [IDRespuesta] IS NULL) OR ([IDPublicacion] IS NULL AND [IDRespuesta] IS NOT NULL))");
+                            t.HasCheckConstraint("CK_Denuncias_PublicacionOrRespuesta", "((\"IDPublicacion\" IS NOT NULL AND \"IDRespuesta\" IS NULL) OR (\"IDPublicacion\" IS NULL AND \"IDRespuesta\" IS NOT NULL))");
                         });
                 });
 
@@ -976,7 +976,7 @@ namespace Infrastructure.Data.SQL.Migrations
                     b.HasIndex("IDDisponibilidad")
                         .IsUnique()
                         .HasDatabaseName("UX_SolRes_Disponibilidad_Activa")
-                        .HasFilter("([Estado] IN (0,1,2))");
+                        .HasFilter("(\"Estado\" IN (0,1,2))");
 
                     b.HasIndex("IDUsuarioAyudante", "Estado")
                         .HasDatabaseName("IX_SolRes_Ayudante");

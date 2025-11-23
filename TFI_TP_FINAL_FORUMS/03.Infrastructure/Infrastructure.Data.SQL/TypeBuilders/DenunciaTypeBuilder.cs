@@ -28,7 +28,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.HasCheckConstraint(
                 "CK_Denuncias_PublicacionOrRespuesta",
-                "(([IDPublicacion] IS NOT NULL AND [IDRespuesta] IS NULL) OR ([IDPublicacion] IS NULL AND [IDRespuesta] IS NOT NULL))");
+                "((\"IDPublicacion\" IS NOT NULL AND \"IDRespuesta\" IS NULL) OR (\"IDPublicacion\" IS NULL AND \"IDRespuesta\" IS NOT NULL))");
 
             builder.HasIndex(d => d.IDPublicacion);
             builder.HasIndex(d => d.IDRespuesta);

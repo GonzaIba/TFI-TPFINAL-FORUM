@@ -34,7 +34,7 @@ namespace Infrastructure.Data.SQL.TypeBuilders
 
             builder.HasIndex(e => e.IDDisponibilidad)
                    .IsUnique()
-                   .HasFilter("([Estado] IN (0,1,2))")
+                   .HasFilter("(\"Estado\" IN (0,1,2))")
                    .HasDatabaseName("UX_SolRes_Disponibilidad_Activa");
 
             builder.ToTable("SolicitudAyudaReserva");

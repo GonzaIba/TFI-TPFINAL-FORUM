@@ -835,7 +835,7 @@ namespace Infrastructure.Data.SQL.Migrations.Gateway
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Denuncias", x => x.IDDenuncia);
-                    table.CheckConstraint("CK_Denuncias_PublicacionOrRespuesta", "(([IDPublicacion] IS NOT NULL AND [IDRespuesta] IS NULL) OR ([IDPublicacion] IS NULL AND [IDRespuesta] IS NOT NULL))");
+                    table.CheckConstraint("CK_Denuncias_PublicacionOrRespuesta", "((\"IDPublicacion\" IS NOT NULL AND \"IDRespuesta\" IS NULL) OR (\"IDPublicacion\" IS NULL AND \"IDRespuesta\" IS NOT NULL))");
                     table.ForeignKey(
                         name: "FK_Denuncias_Publicaciones_IDPublicacion",
                         column: x => x.IDPublicacion,
@@ -1245,7 +1245,7 @@ namespace Infrastructure.Data.SQL.Migrations.Gateway
                 table: "SolicitudAyudaReserva",
                 column: "IDDisponibilidad",
                 unique: true,
-                filter: "([Estado] IN (0,1,2))");
+                filter: "(\"Estado\" IN (0,1,2))");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TerminosCondicionesSesionAyuda_IDSesion",

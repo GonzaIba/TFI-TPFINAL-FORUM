@@ -3,9 +3,8 @@ using Core.Domain.Exceptions.BaseException;
 using Core.Domain.Response.BaseResponse;
 using Newtonsoft.Json;
 using Npgsql;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Text.Json;
+using System.Text;
 using _ = ApiForums.Middleware.Helpers.RequestAnalize;
 
 namespace ApiForums.Middleware
@@ -25,118 +24,153 @@ namespace ApiForums.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            //⛔ evitá interferir con rutas especiales como / mcp o / mcp / sse
+            // No tocar las rutas MCP
+            if (_.IsMcp(context))
+            {
+                await _next(context);
+                return;
+            }
+
+            var originalBodyStream = context.Response.Body;
+
+            await using var responseBody = new MemoryStream();
+            context.Response.Body = responseBody;
+
             try
             {
-                if (_.IsMcp(context))
+                // Ejecuta el pipeline normal
+                await _next(context);
+
+                // Si es un endpoint de controlador, envolvemos la respuesta en GenericApiResponse
+                if (_.IsControllerPath(context.Request.Path))
                 {
-                    await _next(context); // dejá que mcp maneje la respuesta completa
-                    return;
+                    await WrapSuccessResponseAsync(context, originalBodyStream, responseBody);
                 }
+                else
+                {
+                    // Para rutas que no queremos tocar, devolvemos tal cual
+                    responseBody.Seek(0, SeekOrigin.Begin);
+                    await responseBody.CopyToAsync(originalBodyStream);
+                }
+            }
+            catch (PostgresException ex)
+            {
+                _logger.LogError(ex, ex.Message);
+
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    context.Response.ContentType = "application/json; charset=utf-8";
+                }
+
+                await WrapErrorResponseAsync(context, originalBodyStream, responseBody, null);
+            }
+            catch (ExceptionBase exBase)
+            {
+                _logger.LogError(exBase, exBase.Message);
+
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = exBase.HttpCode;
+                    context.Response.ContentType = "application/json; charset=utf-8";
+                }
+
+                await WrapErrorResponseAsync(context, originalBodyStream, responseBody, exBase);
+
+                // Si querés que el middleware “se coma” el error, sacá este throw
+                // throw;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
 
-                throw;
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    context.Response.ContentType = "application/json; charset=utf-8";
+                }
+
+                await WrapErrorResponseAsync(context, originalBodyStream, responseBody, null);
             }
-
-
-            using (var responseBody = new MemoryStream())
+            finally
             {
-                var originalBodyStream = context.Response.Body;
-                context.Response.Body = responseBody;
-                try
-                {
-                    if (_.IsControllerPath(context.Request.Path)) // Verificar si la solicitud está dirigida a un endpoint de un controlador
-                    {
-                        await _next(context);
-                        responseBody.Seek(0, SeekOrigin.Begin);
-                        var serializer = new Newtonsoft.Json.JsonSerializer();
-                        await using (var writer = new StreamWriter(originalBodyStream))
-                        await using (var jsonWriter = new JsonTextWriter(writer))
-                        {
-                            var apiResponse = new GenericApiResponse<object>
-                            {
-                                Meta =
-                                {
-                                    Service = context.Request.Path,
-                                    ResponseCode =  _.GetHttpStatusMessage(context.Response.StatusCode),
-                                },
-                                Data = JsonConvert.DeserializeObject<object>(await new StreamReader(responseBody).ReadToEndAsync())
-                            };
-                            serializer.Serialize(jsonWriter, apiResponse);
-                        }
-                        context.Response.Body = originalBodyStream;
-                    }
-                    else
-                    {
-                        await _next(context);
-                    }
-                }
-                catch (PostgresException ex)
-                {
-                    _logger.LogError(ex, ex.Message);
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    context.Response.ContentType = "application/json";
-                    await SerializeApiResponseAsync(originalBodyStream, context, responseBody);
-                }
-                catch (ExceptionBase exBase)
-                {
-                    _logger.LogError(exBase, exBase.Message);
-                    context.Response.StatusCode = exBase.HttpCode;
-                    context.Response.ContentType = "application/json";
-                    await SerializeApiResponseAsync(originalBodyStream, context, responseBody, exBase);
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, ex.Message);
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    context.Response.ContentType = "application/json";
-                    await SerializeApiResponseAsync(originalBodyStream, context, responseBody);
-                }
+                context.Response.Body = originalBodyStream;
             }
         }
-
 
         #region Helpers
 
-        private async Task SerializeApiResponseAsync(Stream originalBodyStream, HttpContext context, Stream responseBody)
+        private async Task WrapSuccessResponseAsync(
+            HttpContext context,
+            Stream originalBodyStream,
+            Stream responseBody)
         {
             responseBody.Seek(0, SeekOrigin.Begin);
-            var serializer = new Newtonsoft.Json.JsonSerializer();
-            await using (var jsonWriter = new JsonTextWriter(new StreamWriter(originalBodyStream, leaveOpen: true)))
-            {
-                var responseCode = _.GetHttpStatusMessage(context.Response.StatusCode);
+            var bodyText = await new StreamReader(responseBody).ReadToEndAsync();
 
-                var apiResponse = new GenericApiResponse<object>
+            var apiResponse = new GenericApiResponse<object>
+            {
+                Meta =
                 {
-                    Meta = { Method = context.Request.Method, Service = context.Request.Path, ResponseCode = responseCode },
-                    Data = JsonConvert.DeserializeObject<object>(await new StreamReader(responseBody).ReadToEndAsync())
-                };
-                serializer.Serialize(jsonWriter, apiResponse);
-            }
-            await Task.CompletedTask;
+                    Method = context.Request.Method,
+                    Service = context.Request.Path,
+                    ResponseCode = _.GetHttpStatusMessage(context.Response.StatusCode)
+                },
+                Data = string.IsNullOrWhiteSpace(bodyText)
+                    ? null
+                    : JsonConvert.DeserializeObject<object>(bodyText)
+            };
+
+            var json = JsonConvert.SerializeObject(apiResponse);
+            var buffer = Encoding.UTF8.GetBytes(json);
+
+            context.Response.Body = originalBodyStream;
+            context.Response.ContentType ??= "application/json; charset=utf-8";
+
+            await originalBodyStream.WriteAsync(buffer, 0, buffer.Length);
+            await originalBodyStream.FlushAsync();
         }
 
-        private async Task SerializeApiResponseAsync(Stream originalBodyStream, HttpContext context, Stream responseBody, ExceptionBase exceptionBase)
+        private async Task WrapErrorResponseAsync(
+            HttpContext context,
+            Stream originalBodyStream,
+            Stream responseBody,
+            ExceptionBase? exceptionBase)
         {
+            // Intentamos leer el body que haya quedado (si hay algo)
             responseBody.Seek(0, SeekOrigin.Begin);
-            var serializer = new Newtonsoft.Json.JsonSerializer();
-            await using (var jsonWriter = new JsonTextWriter(new StreamWriter(originalBodyStream, leaveOpen: true)))
-            {
-                var responseCode = _.GetHttpStatusMessage(context.Response.StatusCode);
+            var bodyText = await new StreamReader(responseBody).ReadToEndAsync();
 
-                var apiResponse = new GenericApiResponse<object>
+            var responseCode = _.GetHttpStatusMessage(context.Response.StatusCode);
+
+            var apiResponse = new GenericApiResponse<object>
+            {
+                Meta =
                 {
-                    Meta = { Method = context.Request.Method, Service = context.Request.Path, ResponseCode = responseCode },
-                    Data = null,
-                    Errors = { ErrorsList = { exceptionBase } }
-                };
-                serializer.Serialize(jsonWriter, apiResponse);
+                    Method = context.Request.Method,
+                    Service = context.Request.Path,
+                    ResponseCode = responseCode
+                },
+                Data = (!string.IsNullOrWhiteSpace(bodyText) && exceptionBase == null)
+                    ? JsonConvert.DeserializeObject<object>(bodyText)
+                    : null
+            };
+
+            if (exceptionBase != null)
+            {
+                apiResponse.Errors.ErrorsList.Add(exceptionBase);
             }
-            await Task.CompletedTask;
+
+            var json = JsonConvert.SerializeObject(apiResponse);
+            var buffer = Encoding.UTF8.GetBytes(json);
+
+            context.Response.Body = originalBodyStream;
+            context.Response.ContentType ??= "application/json; charset=utf-8";
+
+            await originalBodyStream.WriteAsync(buffer, 0, buffer.Length);
+            await originalBodyStream.FlushAsync();
         }
+
         #endregion
     }
 }

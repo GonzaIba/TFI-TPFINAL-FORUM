@@ -67,8 +67,8 @@ namespace Core.Business.Services
 
                 PublicacionModel publication = new();
                 publication.IDUsuario = user.Id;
-                publication.CreateDate = DateTime.Now;
-                publication.FechaCreacion = DateTime.Now;
+                publication.CreateDate = DateTime.UtcNow;
+                publication.FechaCreacion = DateTime.UtcNow;
                 publication.FechaCierre = null;
                 publication.Titulo = request.Title;
                 publication.Contenido = request.Content;
@@ -174,7 +174,7 @@ namespace Core.Business.Services
                     IDPublicacion = request.CodePublication,
                     IDUsuario = user.Id,
                     TextoRespuesta = request.TextResponse,
-                    FechaCreacion = DateTime.Now,
+                    FechaCreacion = DateTime.UtcNow,
                     RespuestaCorrecta = false,
                     Active = true
                 };
@@ -193,7 +193,7 @@ namespace Core.Business.Services
                     {
                         Mensaje = $"El usuario {(user is null ? "Desconocido" : (user.FirstName + " " + user.LastName))} ha respondido a tu publicación {publication.IDPublicacion}.",
                         IDUsuario = publication.IDUsuario, // Le notificamos al autor de la publicación
-                        FechaNotificacion = DateTime.Now,
+                        FechaNotificacion = DateTime.UtcNow,
                         Leida = false
                     };
                     await _unitOfWork.GetRepository<INotificacionRepository>().Insert(notificacionesModel);
@@ -599,7 +599,7 @@ namespace Core.Business.Services
                 NotificacionesModel notificacionesModel = new();
                 notificacionesModel.Mensaje = $"El usuario {(userCreator is null ? "Desconocido" : (userCreator.FirstName + " " + userCreator.LastName))} ha votado tu publicación  como {(request.IsPositive ? "positivo" : "negativo")}.";
                 notificacionesModel.IDUsuario = publication.IDUsuario; // Asignar al usuario de la publicación
-                notificacionesModel.FechaNotificacion = DateTime.Now;
+                notificacionesModel.FechaNotificacion = DateTime.UtcNow;
                 notificacionesModel.Leida = false;
                 await notifRepo.Insert(notificacionesModel);
                 await _publisherNotification.AddNotification(
@@ -682,7 +682,7 @@ namespace Core.Business.Services
                 {
                     Mensaje = $"El usuario {(userCreator is null ? "Desconocido" : (userCreator.FirstName + " " + userCreator.LastName))} ha votado tu respuesta como {(request.IsPositive ? "positivo" : "negativo")}",
                     IDUsuario = answer.IDUsuario, // Asignar al usuario de la respuesta
-                    FechaNotificacion = DateTime.Now,
+                    FechaNotificacion = DateTime.UtcNow,
                     Leida = false
                 };
                 await notifRepo.Insert(notificacionesModel);
@@ -743,8 +743,8 @@ namespace Core.Business.Services
                     IDPublicacion = publication.IDPublicacion,
                     Motivo = request.Reason.Trim(),
                     Detalle = request.Detail?.Trim(),
-                    FechaDenuncia = DateTime.Now,
-                    CreateDate = DateTime.Now
+                    FechaDenuncia = DateTime.UtcNow,
+                    CreateDate = DateTime.UtcNow
                 };
 
                 await _denunciaRepository.Insert(report);
@@ -772,8 +772,8 @@ namespace Core.Business.Services
                     IDRespuesta = answer.IDRespuesta,
                     Motivo = request.Reason.Trim(),
                     Detalle = request.Detail?.Trim(),
-                    FechaDenuncia = DateTime.Now,
-                    CreateDate = DateTime.Now
+                    FechaDenuncia = DateTime.UtcNow,
+                    CreateDate = DateTime.UtcNow
                 };
 
                 await _denunciaRepository.Insert(report);

@@ -25,7 +25,7 @@ namespace Core.Business.Services
             using var transaction = await _unitOfWork.BeginTransactionAsync();
             EtiquetaModel etiquetaModel = new();
             etiquetaModel.NombreEtiqueta = nombreEtiqueta;
-            etiquetaModel.CreateDate = DateTime.Now;
+            etiquetaModel.CreateDate = DateTime.UtcNow;
             await _repository.Insert(etiquetaModel);
             await _unitOfWork.SaveChangesAsync();
             var r = etiquetaModel.IDEtiqueta;

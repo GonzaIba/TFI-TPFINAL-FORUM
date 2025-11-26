@@ -115,7 +115,7 @@ namespace Infrastructure.Data.SQL
 
             foreach (var modifiedEntry in modifiedEntries)
             {
-                modifiedEntry.Property("UpdateDate").CurrentValue = DateTime.Now;
+                modifiedEntry.Property("UpdateDate").CurrentValue = DateTime.UtcNow;
             }
         }
 

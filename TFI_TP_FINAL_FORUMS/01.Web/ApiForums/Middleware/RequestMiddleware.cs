@@ -71,14 +71,14 @@ namespace ApiForums.Middleware
 
                 if (!context.Response.HasStarted)
                 {
-                    context.Response.StatusCode = exBase.HttpCode;
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     context.Response.ContentType = "application/json; charset=utf-8";
                 }
 
                 await WrapErrorResponseAsync(context, originalBodyStream, responseBody, exBase);
 
                 // Si querés que el middleware “se coma” el error, sacá este throw
-                // throw;
+                //throw;
             }
             catch (Exception ex)
             {

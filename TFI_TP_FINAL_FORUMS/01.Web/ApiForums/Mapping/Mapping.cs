@@ -437,23 +437,19 @@ namespace ApiForums.Mapping
         private static RequestHelpTimeSlot BuildTimeSlots(SolicitudAyudaModel src)
         {
             var now = DateTime.UtcNow;
-            var slotItems = new List<TimeSlotItem>();
-            if (src?.Disponibilidades == null) return new RequestHelpTimeSlot { Slots = slotItems };
-            foreach (var disp in src.Disponibilidades)
-            {
-                if (disp.Estado == 1 && disp.Fin > now)
+
+            var slots = src?.Disponibilidades?
+                .Where(d => d.Active && d.Estado == 1 && d.Fin > now)
+                .OrderBy(d => d.Inicio)
+                .Select(d => new TimeSlotItem
                 {
-                    var start = disp.Inicio > now ? disp.Inicio : now;
-                    var end = disp.Fin;
-                    var interval = (end - start).TotalMinutes >= 30 ? TimeSpan.FromMinutes(30) : TimeSpan.FromMinutes(15);
-                    for (var dt = start; dt.Add(interval) <= end; dt = dt.Add(interval))
-                    {
-                        var slotEnd = dt.Add(interval) <= end ? dt.Add(interval) : end;
-                        slotItems.Add(new TimeSlotItem { CodeSlot = disp.IDDisponibilidad, Start = dt, End = slotEnd });
-                    }
-                }
-            }
-            return new RequestHelpTimeSlot { Slots = slotItems };
+                    CodeSlot = d.IDDisponibilidad,
+                    Start = DateTime.SpecifyKind(d.Inicio, DateTimeKind.Utc),
+                    End = DateTime.SpecifyKind(d.Fin, DateTimeKind.Utc)
+                })
+                .ToList() ?? new List<TimeSlotItem>();
+
+            return new RequestHelpTimeSlot { Slots = slots };
         }
 
         // helper local para iniciales (puede vivir donde prefieras)

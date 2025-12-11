@@ -306,7 +306,8 @@ namespace Core.Business.Services
 
             var list = await query.ToListAsync();
             var utcNow = DateTime.UtcNow;
-            list = list.Where(x => utcNow <= x.Disponibilidades.First(y => y.Active).Fin).ToList();
+            //list = list.Where(x => utcNow <= x.Disponibilidades.First(y => y.Active).Fin).ToList();
+            list = list.Where(x => utcNow <= x.Disponibilidades.First(y => y.Reservas.Any(x=> x.Estado == 1)).Fin).ToList();
 
             foreach (var s in list)
                 if (usuarios.TryGetValue(s.IDUsuarioSolicitante, out var user))
